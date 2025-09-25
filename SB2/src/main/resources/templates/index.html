@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>FitTrack</title>
+    <link rel="stylesheet" href="/styles.css" />
+</head>
+<body id="home-page">
+<header class="box"><h1>FitTrack</h1></header>
+<main class="box">
+    <ul class="links">
+        <li><a href="/pages/workouts.html">Тренування</a></li>
+        <li><a href="/pages/advice.html">Поради</a></li>
+        <li><a href="/pages/templates.html">Шаблони</a></li>
+    </ul>
+    <div class="motivational-quote">
+        <h2>Мотиваційна цитата</h2>
+        <p th:text="${quote}">Завантаження цитати...</p>
+        <button id="refresh-quote" onclick="location.reload()">Оновити цитату</button>
+    </div>
+</main>
+<footer class="box"><small>FitTrack</small></footer>
+</body>
+</html>

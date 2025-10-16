@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <title>⚽ Football Hub - Український футбольний портал</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+    <div class="top-bar">
+        <div class="wrap">
+            <div class="top-bar-content">
+                <div class="site-logo">
+                    <span class="logo-icon">⚽</span>
+                    <span class="logo-text">FOOTBALL HUB</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="#home" class="nav-link active" data-tab="home">ГОЛОВНА</a>
+                    <a href="#news" class="nav-link" data-tab="news">НОВИНИ</a>
+                    <a href="#matches" class="nav-link" data-tab="matches">МАТЧІ</a>
+                    <a href="#teams" class="nav-link" data-tab="teams">КОМАНДИ</a>
+                    <a href="#forum" class="nav-link" data-tab="forum">ФОРУМ</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="hero-section">
+    <div class="wrap">
+        <h1 class="hero-title">Український футбол</h1>
+        <p class="hero-subtitle">Новини, результати матчів та обговорення</p>
+    </div>
+</div>
+
+<!-- Сповіщення про майбутні матчі -->
+<div id="upcoming-matches-notifications" class="notifications-container" style="display: none;"></div>
+
+<main class="site-main">
+    <div class="wrap">
+        <div class="content-layout">
+            <div class="main-content">
+                <section id="home" class="panel active">
+                    <div class="section-title">
+                        <h2>⚡ Останні новини</h2>
+                    </div>
+                    <div id="home-news" class="news-feed"></div>
+                    <div id="home-player-of-the-week" style="display: none;">
+                        <div class="section-title" style="margin-top: 40px;">
+                            <h2>⭐ Гравець тижня</h2>
+                        </div>
+                        <div id="player-of-the-week-content" class="card">
+                        </div>
+                    </div>
+                    <div class="section-title" style="margin-top: 40px;">
+                        <h2>📅 Найближчі матчі</h2>
+                    </div>
+                    <div id="home-matches" class="matches-grid"></div>
+                </section>
+
+    <section id="news" class="panel">
+        <div class="section-title">
+            <h2>📰 Всі новини</h2>
+            <button class="btn-action" onclick="toggleForms('news')">➕ Додати новину</button>
+        </div>
+
+        <div id="news-forms" class="forms-container" style="display: none;">
+            <div class="grid">
+                <form action="javascript:;" class="card api-form" data-section="news" data-method="POST" data-path="/api/news">
+                    <h3>Створити новину</h3>
+                    <label>Заголовок <input name="title" required></label>
+                    <label>Текст <textarea name="content" required rows="3"></textarea></label>
+                    <button type="submit" class="btn full">📝 Створити</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="news" data-method="GET" data-path-template="/api/news/{id}">
+                    <h3>Переглянути по ID</h3>
+                    <label>ID новини <input name="id" type="number" required></label>
+                    <button type="submit" class="btn full">🔍 Переглянути</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="news" data-method="PUT" data-path-template="/api/news/{id}">
+                    <h3>Оновити</h3>
+                    <label>ID <input name="id" type="number" required></label>
+                    <label>Заголовок <input name="title" required></label>
+                    <label>Текст <textarea name="content" required rows="2"></textarea></label>
+                    <button type="submit" class="btn full">✏️ Оновити</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="news" data-method="DELETE" data-path-template="/api/news/{id}">
+                    <h3>Видалити</h3>
+                    <label>ID <input name="id" type="number" required></label>
+                    <button type="submit" class="btn danger full">🗑️ Видалити</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="news-list" class="news-feed"></div>
+        <div class="status-bar">
+            <span class="status" id="status-news"></span>
+        </div>
+    </section>
+
+    <section id="matches" class="panel">
+        <div class="section-title">
+            <h2>⚽ Календар матчів</h2>
+            <button class="btn-action" onclick="toggleForms('matches')">➕ Додати матч</button>
+        </div>
+
+        <div id="matches-forms" class="forms-container" style="display: none;">
+            <div class="grid">
+                <form action="javascript:;" class="card api-form" data-section="matches" data-method="POST" data-path="/api/matches">
+                    <h3>Створити матч</h3>
+                    <label>Господарі <input name="homeTeam" list="teams" required></label>
+                    <label>Гості <input name="awayTeam" list="teams" required></label>
+                    <label>Початок (ISO) <input name="kickoffAt" placeholder="2025-10-10T19:30:00" required></label>
+                    <button type="submit" class="btn full">📅 Створити</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="matches" data-method="GET" data-path-template="/api/matches/{id}">
+                    <h3>Переглянути по ID</h3>
+                    <label>ID матчу <input name="id" type="number" required></label>
+                    <button type="submit" class="btn full">🔍 Переглянути</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="matches" data-method="PATCH" data-path-template="/api/matches/{id}/score">
+                    <h3>Оновити рахунок</h3>
+                    <label>ID <input name="id" type="number" required></label>
+                    <label>Голи господарів <input name="homeScore" type="number" min="0"></label>
+                    <label>Голи гостей <input name="awayScore" type="number" min="0"></label>
+                    <button type="submit" class="btn full">⚽ Оновити</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="matches" data-method="DELETE" data-path-template="/api/matches/{id}">
+                    <h3>Видалити</h3>
+                    <label>ID <input name="id" type="number" required></label>
+                    <button type="submit" class="btn danger full">🗑️ Видалити</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="matches" data-method="GET" data-path="/api/matches/teams/info" data-query="name">
+                    <h3>Інфо з Wikipedia</h3>
+                    <label>Команда <input name="name" list="teamsWiki" placeholder="Dynamo_Kyiv" required></label>
+                    <button type="submit" class="btn full">🌐 Отримати</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="matches-list" class="matches-grid"></div>
+        <div class="status-bar">
+            <span class="status" id="status-matches"></span>
+        </div>
+    </section>
+
+    <section id="teams" class="panel">
+        <div class="section-title">
+            <h2>🏆 Футбольні команди</h2>
+            <button class="btn-action" onclick="toggleForms('teams')">➕ Додати команду</button>
+        </div>
+
+        <div id="teams-forms" class="forms-container" style="display: none;">
+            <div class="grid">
+                <form action="javascript:;" class="card api-form" data-section="teams" data-method="POST" data-path="/api/teams">
+                    <h3>Додати нову команду</h3>
+                    <label>
+                        Назва команди 
+                        <input name="name" required placeholder="Наприклад: Динамо Київ">
+                    </label>
+                    <label>
+                        Ліга
+                        <select name="league" id="league-select" required>
+                            <option value="">-- Оберіть лігу --</option>
+                            <option value="UPL">🇺🇦 УПЛ</option>
+                            <option value="UCL">⭐ Ліга Чемпіонів</option>
+                            <option value="EPL">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Прем'єр-ліга</option>
+                            <option value="LaLiga">🇪🇸 Ла Ліга</option>
+                            <option value="Bundesliga">🇩🇪 Бундесліга</option>
+                            <option value="SerieA">🇮🇹 Серія А</option>
+                            <option value="Ligue1">🇫🇷 Ліга 1</option>
+                            <option value="custom">➕ Інша ліга...</option>
+                        </select>
+                    </label>
+                    <label id="custom-league-label" style="display: none;">
+                        Назва ліги
+                        <input type="text" id="custom-league-input" placeholder="Введіть назву ліги">
+                    </label>
+                    <label>
+                        Місто 
+                        <input name="city" required placeholder="Наприклад: Київ">
+                    </label>
+                    <label>
+                        Емблема (URL)
+                        <input name="emblemUrl" type="url" placeholder="https://...">
+                        <small style="color: #6c757d; font-size: 12px;">Необов'язково - можна залишити порожнім</small>
+                    </label>
+                    <button type="submit" class="btn full">🏆 Додати команду</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="leagues-tabs">
+            <button class="league-tab active" data-league="UPL">🇺🇦 УПЛ</button>
+            <button class="league-tab" data-league="UCL">⭐ Ліга Чемпіонів</button>
+            <button class="league-tab" data-league="EPL">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Прем'єр-ліга</button>
+        </div>
+
+        <div id="teams-list" class="teams-grid"></div>
+        <div class="status-bar">
+            <span class="status" id="status-teams"></span>
+        </div>
+    </section>
+
+    <section id="forum" class="panel">
+        <div class="section-title">
+            <h2>💬 Обговорення</h2>
+            <button class="btn-action" onclick="toggleForms('forum')">➕ Нова тема</button>
+        </div>
+
+        <div id="forum-forms" class="forms-container" style="display: none;">
+            <div class="grid">
+                <form action="javascript:;" class="card api-form" data-section="forum" data-method="POST" data-path="/api/forum/topics">
+                    <h3>Створити тему</h3>
+                    <label>Заголовок <input name="title" required></label>
+                    <label>Автор <input name="author" required></label>
+                    <button type="submit" class="btn full">💬 Створити</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="forum" data-method="POST" data-path-template="/api/forum/topics/{topicId}/posts">
+                    <h3>Додати пост</h3>
+                    <label>ID теми <input name="topicId" type="number" required></label>
+                    <label>Автор <input name="author" required></label>
+                    <label>Текст <textarea name="text" required rows="3"></textarea></label>
+                    <button type="submit" class="btn full">✍️ Додати</button>
+                </form>
+
+                <form action="javascript:;" class="card api-form" data-section="forum" data-method="DELETE" data-path-template="/api/forum/topics/{id}">
+                    <h3>Видалити тему</h3>
+                    <label>ID <input name="id" type="number" required></label>
+                    <button type="submit" class="btn danger full">🗑️ Видалити</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="forum-list" class="forum-topics"></div>
+        <div class="status-bar">
+            <span class="status" id="status-forum"></span>
+        </div>
+    </section>
+                <section id="moderator" class="panel">
+                    <div class="section-title">
+                        <h2>🛡️ Панель керування сайтом</h2>
+                    </div>
+                    <div class="grid">
+                        <form action="javascript:;" class="card api-form" data-section="moderator" data-method="POST" data-path="/api/moderator/player-of-the-week">
+                            <h3>⭐ Додати / Оновити гравця тижня</h3>
+                            <label>Ім'я гравця<input name="name" required></label>
+                            <label>Команда<input name="team" required></label>
+                            <label>Досягнення<textarea name="achievement" required rows="2"></textarea></label>
+                            <button type="submit" class="btn full">🏆 Оновити</button>
+                        </form>
+                        <form action="javascript:;" class="card api-form" data-section="moderator" data-method="DELETE" data-path="/api/moderator/player-of-the-week">
+                            <h3>🗑️ Видалити гравця тижня</h3>
+                            <p style="margin-bottom: 16px; font-size: 14px; color: var(--gray);">Ця дія видалить гравця тижня з головної сторінки (після перезапуску).</p>
+                            <button type="submit" class="btn danger full">❌ Видалити</button>
+                        </form>
+                    </div>
+                    <div class="status-bar">
+                        <span class="status" id="status-moderator"></span>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="sidebar">
+                <div class="widget">
+                    <h3 class="widget-title">📊 Статистика</h3>
+                    <div class="widget-content">
+                        <div class="stat-item">
+                            <span class="stat-label">Новини</span>
+                            <span class="stat-num" id="stat-news">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Матчі</span>
+                            <span class="stat-num" id="stat-matches">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Команди</span>
+                            <span class="stat-num" id="stat-teams">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Теми на форумі</span>
+                            <span class="stat-num" id="stat-topics">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="widget">
+                    <h3 class="widget-title">🔧 Налаштування</h3>
+                    <div class="widget-content">
+                        <a href="#moderator" class="nav-link btn full" data-tab="moderator" style="text-align: center;">Керування сайтом</a>
+                        <a href="/h2-console" target="_blank" class="btn full">H2 Console</a>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>⚽ Football Hub</h4>
+                <p>Український футбольний портал</p>
+                <p>Новини, результати, обговорення</p>
+            </div>
+            <div class="footer-col">
+                <h4>Розділи</h4>
+                <a href="#news">Новини</a>
+                <a href="#matches">Матчі</a>
+                <a href="#teams">Команди</a>
+                <a href="#forum">Форум</a>
+            </div>
+            <div class="footer-col">
+                <h4>Про проєкт</h4>
+                <p>Spring Boot 3.5.6</p>
+                <p>Spring Data JPA</p>
+                <p>H2 Database</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Football Hub. Всі права захищені.</p>
+        </div>
+    </div>
+</footer>
+
+<datalist id="teams">
+    <option>Dynamo Kyiv</option><option>Shakhtar Donetsk</option><option>Zorya Luhansk</option>
+    <option>SC Dnipro-1</option><option>Metalist Kharkiv</option><option>Chornomorets Odesa</option>
+    <option>Vorskla Poltava</option><option>Kolos Kovalivka</option><option>Rukh Lviv</option>
+    <option>Oleksandriya</option><option>Kryvbas Kryvyi Rih</option>
+</datalist>
+
+<datalist id="teamsWiki">
+    <option>Dynamo_Kyiv</option><option>FC_Shakhtar_Donetsk</option><option>FC_Zorya_Luhansk</option>
+    <option>SC_Dnipro-1</option><option>FC_Metalist_Kharkiv</option><option>FC_Chornomorets_Odesa</option>
+    <option>FC_Vorskla_Poltava</option><option>FC_Kolos_Kovalivka</option><option>FC_Rukh_Lviv</option>
+    <option>FC_Oleksandriya</option><option>FC_Kryvbas_Kryvyi_Rih</option>
+</datalist>
+
+<script defer src="/js/app.js"></script>
+</body>
+</html>

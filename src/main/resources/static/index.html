@@ -21,6 +21,7 @@
                     <a href="#matches" class="nav-link" data-tab="matches">МАТЧІ</a>
                     <a href="#teams" class="nav-link" data-tab="teams">КОМАНДИ</a>
                     <a href="#forum" class="nav-link" data-tab="forum">ФОРУМ</a>
+                    <a href="/activity" class="nav-link">АКТИВНІСТЬ</a>
                 </nav>
             </div>
         </div>
@@ -112,9 +113,25 @@
             <div class="grid">
                 <form action="javascript:;" class="card api-form" data-section="matches" data-method="POST" data-path="/api/matches">
                     <h3>Створити матч</h3>
-                    <label>Господарі <input name="homeTeam" list="teams" required></label>
-                    <label>Гості <input name="awayTeam" list="teams" required></label>
-                    <label>Початок (ISO) <input name="kickoffAt" placeholder="2025-10-10T19:30:00" required></label>
+                    <label>
+                        Господарі
+                        <div class="autocomplete-wrapper">
+                            <input name="homeTeam" id="homeTeamInput" required autocomplete="off" placeholder="Почніть вводити назву...">
+                            <div id="homeTeamDropdown" class="autocomplete-dropdown"></div>
+                        </div>
+                    </label>
+                    <label>
+                        Гості
+                        <div class="autocomplete-wrapper">
+                            <input name="awayTeam" id="awayTeamInput" required autocomplete="off" placeholder="Почніть вводити назву...">
+                            <div id="awayTeamDropdown" class="autocomplete-dropdown"></div>
+                        </div>
+                    </label>
+                    <label>
+                        Дата та час матчу
+                        <input name="kickoffAt" type="datetime-local" id="matchDateTime" required>
+                        <small style="color: #6c757d; font-size: 12px;">📅 Оберіть дату та час початку матчу</small>
+                    </label>
                     <button type="submit" class="btn full">📅 Створити</button>
                 </form>
 
@@ -332,13 +349,6 @@
         </div>
     </div>
 </footer>
-
-<datalist id="teams">
-    <option>Dynamo Kyiv</option><option>Shakhtar Donetsk</option><option>Zorya Luhansk</option>
-    <option>SC Dnipro-1</option><option>Metalist Kharkiv</option><option>Chornomorets Odesa</option>
-    <option>Vorskla Poltava</option><option>Kolos Kovalivka</option><option>Rukh Lviv</option>
-    <option>Oleksandriya</option><option>Kryvbas Kryvyi Rih</option>
-</datalist>
 
 <datalist id="teamsWiki">
     <option>Dynamo_Kyiv</option><option>FC_Shakhtar_Donetsk</option><option>FC_Zorya_Luhansk</option>

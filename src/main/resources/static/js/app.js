@@ -465,6 +465,13 @@ window.toggleForms = function(section) {
     if (formsContainer) {
         const isVisible = formsContainer.style.display !== 'none';
         formsContainer.style.display = isVisible ? 'none' : 'block';
+        
+        if (!isVisible && section === 'matches') {
+            initMatchDateTimeInput();
+            loadTeamsDatalist().then(() => {
+                initTeamAutocomplete();
+            });
+        }
     }
 };
 
@@ -478,6 +485,13 @@ document.addEventListener('submit', async (e) => {
     const url = buildUrl(form);
     let data = formDataJSON(form);
     
+    if (section === 'matches' && method === 'POST') {
+        if (!validateDifferentTeams()) {
+            alert('❌ Помилка: Команди повинні бути різними!');
+            return;
+        }
+    }
+    
     if (section === 'teams' && method === 'POST') {
         const leagueSelect = document.getElementById('league-select');
         const customLeagueInput = document.getElementById('custom-league-input');
@@ -485,6 +499,10 @@ document.addEventListener('submit', async (e) => {
         if (leagueSelect && leagueSelect.value === 'custom' && customLeagueInput) {
             data.league = customLeagueInput.value;
         }
+    }
+    
+    if (data.kickoffAt && data.kickoffAt.length === 16) {
+        data.kickoffAt = data.kickoffAt + ':00';
     }
 
     const {ok, status, json} = await apiFetch(method, url, data);
@@ -494,6 +512,7 @@ document.addEventListener('submit', async (e) => {
         if (section === 'teams' && method === 'POST') {
             alert(`✅ Команду "${data.name}" успішно додано до ліги ${data.league}!`);
             toggleForms('teams');
+            await loadTeamsDatalist();
         }
         
         await writeList(section);
@@ -639,13 +658,183 @@ function displayUpcomingMatchesNotifications(matches) {
     container.style.display = 'block';
 }
 
+// Ініціалізація datetime поля для матчів
+function initMatchDateTimeInput() {
+    const dateTimeInput = document.getElementById('matchDateTime');
+    if (dateTimeInput) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        dateTimeInput.min = now.toISOString().slice(0, 16);
+        
+        const tomorrow = new Date(now);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(19, 0, 0, 0);
+        tomorrow.setMinutes(tomorrow.getMinutes() - tomorrow.getTimezoneOffset());
+        dateTimeInput.value = tomorrow.toISOString().slice(0, 16);
+    }
+}
+
+// Завантаження команд для автозаповнення
+let allTeamsCache = [];
+
+async function loadTeamsDatalist() {
+    try {
+        const response = await apiFetch('GET', '/api/teams/actual');
+        if (response.ok && response.json) {
+            allTeamsCache = [];
+            
+            Object.values(response.json).forEach(leagueTeams => {
+                leagueTeams.forEach(team => {
+                    if (!allTeamsCache.includes(team.name)) {
+                        allTeamsCache.push(team.name);
+                    }
+                });
+            });
+            
+            allTeamsCache.sort();
+        }
+    } catch (error) {
+        console.error('Помилка завантаження команд:', error);
+    }
+}
+
+// Функція для показу випадаючого списку
+function showAutocomplete(input, dropdown, teams) {
+    const query = input.value.trim().toLowerCase();
+    
+    if (!query) {
+        dropdown.classList.remove('show');
+        return;
+    }
+    
+    const filtered = teams.filter(team => 
+        team.toLowerCase().includes(query)
+    );
+    
+    if (filtered.length === 0) {
+        dropdown.innerHTML = '<div class="autocomplete-empty">Команду не знайдено</div>';
+        dropdown.classList.add('show');
+        return;
+    }
+    
+    dropdown.innerHTML = filtered.map(team => 
+        `<div class="autocomplete-item" data-value="${team}">${team}</div>`
+    ).join('');
+    
+    dropdown.classList.add('show');
+    
+    dropdown.querySelectorAll('.autocomplete-item').forEach(item => {
+        item.addEventListener('click', () => {
+            input.value = item.dataset.value;
+            dropdown.classList.remove('show');
+            validateTeamSelection(input);
+        });
+    });
+}
+
+// Валідація вибору команд
+function validateTeamSelection(input) {
+    const value = input.value.trim();
+    if (!value) return true;
+    
+    const isValid = allTeamsCache.includes(value);
+    
+    if (!isValid && value.length > 0) {
+        input.setCustomValidity('Оберіть команду зі списку');
+    } else {
+        input.setCustomValidity('');
+    }
+    
+    return isValid;
+}
+
+// Перевірка що команди різні
+function validateDifferentTeams() {
+    const homeTeam = document.getElementById('homeTeamInput');
+    const awayTeam = document.getElementById('awayTeamInput');
+    
+    if (!homeTeam || !awayTeam) return true;
+    
+    const homeValue = homeTeam.value.trim();
+    const awayValue = awayTeam.value.trim();
+    
+    if (homeValue && awayValue && homeValue === awayValue) {
+        awayTeam.setCustomValidity('Команди мають бути різними');
+        return false;
+    } else {
+        awayTeam.setCustomValidity('');
+        return true;
+    }
+}
+
+// Ініціалізація autocomplete для команд
+function initTeamAutocomplete() {
+    const homeTeamInput = document.getElementById('homeTeamInput');
+    const homeTeamDropdown = document.getElementById('homeTeamDropdown');
+    const awayTeamInput = document.getElementById('awayTeamInput');
+    const awayTeamDropdown = document.getElementById('awayTeamDropdown');
+    
+    if (homeTeamInput && homeTeamDropdown) {
+        homeTeamInput.addEventListener('input', () => {
+            showAutocomplete(homeTeamInput, homeTeamDropdown, allTeamsCache);
+            validateDifferentTeams();
+        });
+        
+        homeTeamInput.addEventListener('focus', () => {
+            if (homeTeamInput.value.trim()) {
+                showAutocomplete(homeTeamInput, homeTeamDropdown, allTeamsCache);
+            }
+        });
+        
+        homeTeamInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                homeTeamDropdown.classList.remove('show');
+                validateTeamSelection(homeTeamInput);
+                validateDifferentTeams();
+            }, 200);
+        });
+    }
+    
+    if (awayTeamInput && awayTeamDropdown) {
+        awayTeamInput.addEventListener('input', () => {
+            showAutocomplete(awayTeamInput, awayTeamDropdown, allTeamsCache);
+            validateDifferentTeams();
+        });
+        
+        awayTeamInput.addEventListener('focus', () => {
+            if (awayTeamInput.value.trim()) {
+                showAutocomplete(awayTeamInput, awayTeamDropdown, allTeamsCache);
+            }
+        });
+        
+        awayTeamInput.addEventListener('blur', () => {
+            setTimeout(() => {
+                awayTeamDropdown.classList.remove('show');
+                validateTeamSelection(awayTeamInput);
+                validateDifferentTeams();
+            }, 200);
+        });
+    }
+}
+
 // Завантажувати сповіщення при першому завантаженні
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', loadUpcomingMatchesNotifications);
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUpcomingMatchesNotifications();
+        initMatchDateTimeInput();
+        loadTeamsDatalist().then(() => {
+            initTeamAutocomplete();
+        });
+    });
 } else {
     loadUpcomingMatchesNotifications();
+    initMatchDateTimeInput();
+    loadTeamsDatalist().then(() => {
+        initTeamAutocomplete();
+    });
 }
 
 // Оновлювати сповіщення кожні 5 хвилин
 setInterval(loadUpcomingMatchesNotifications, 5 * 60 * 1000);
+
 

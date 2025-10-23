@@ -15,9 +15,11 @@ import java.util.List;
 public class ForumController {
 
     private final ForumDbService forum;
+    private final com.football.ua.service.ActivityLogService activityLogService;
 
-    public ForumController(ForumDbService forum) {
+    public ForumController(ForumDbService forum, com.football.ua.service.ActivityLogService activityLogService) {
         this.forum = forum;
+        this.activityLogService = activityLogService;
     }
 
     @GetMapping("/topics")
@@ -28,7 +30,15 @@ public class ForumController {
     @PostMapping(value = "/topics", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     public TopicEntity createTopic(@RequestBody TopicCreateDto dto) {
-        return forum.createTopic(dto.title(), dto.author());
+        TopicEntity topic = forum.createTopic(dto.title(), dto.author());
+        
+        activityLogService.logActivity(
+            "Створено нову тему на форумі",
+            String.format("\"%s\" від %s", dto.title(), dto.author()),
+            "FORUM"
+        );
+        
+        return topic;
     }
 
     @DeleteMapping("/topics/{id}")
@@ -38,6 +48,12 @@ public class ForumController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Topic not found");
         }
         forum.deleteTopic(id);
+        
+        activityLogService.logActivity(
+            "Видалено тему з форуму",
+            String.format("Тема #%d видалена модератором", id),
+            "FORUM"
+        );
     }
 
     @GetMapping("/topics/{topicId}/posts")
@@ -55,7 +71,15 @@ public class ForumController {
         if (!forum.topicExists(topicId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Topic not found");
         }
-        return forum.addPost(topicId, dto.author(), dto.text());
+        PostEntity post = forum.addPost(topicId, dto.author(), dto.text());
+        
+        activityLogService.logActivity(
+            "Додано коментар на форумі",
+            String.format("%s залишив коментар у темі #%d", dto.author(), topicId),
+            "FORUM"
+        );
+        
+        return post;
     }
 
     public record TopicCreateDto(String title, String author) {}

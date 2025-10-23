@@ -1,30 +1,43 @@
 package com.football.ua.controller;
 
 import com.football.ua.model.Team;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/teams")
+@Tag(name = "Teams", description = "API для управління футбольними командами")
 public class TeamController {
+    private static final Logger log = LoggerFactory.getLogger(TeamController.class);
     private static final Map<Long, Team> db = new LinkedHashMap<>();
     private static long idSeq = 1;
 
     @GetMapping
-    public List<Team> list() { return new ArrayList<>(db.values()); }
+    @Operation(summary = "Отримати список всіх команд", description = "Повертає список всіх збережених команд")
+    public List<Team> list() {
+        log.info("Отримано запит на список всіх команд");
+        return new ArrayList<>(db.values());
+    }
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(summary = "Створити нову команду", description = "Створює нову футбольну команду")
     public Team create(@RequestBody Team body) {
+        log.info("Створюється нова команда: {}", body.name);
         body.id = idSeq++;
         db.put(body.id, body);
+        log.info("Команду успішно створено з ID: {}", body.id);
         return body;
     }
     
     @GetMapping("/actual")
     public Map<String, List<Team>> getActualTeams() {
+        log.info("Отримано запит на актуальні команди");
         Map<String, List<Team>> leagues = new LinkedHashMap<>();
         
         List<Team> upl = Arrays.asList(
@@ -80,12 +93,17 @@ public class TeamController {
         leagues.put("UCL", ucl);
         leagues.put("EPL", epl);
         
+        log.info("Повернуто {} ліг з {} командами", leagues.size(), 
+                 leagues.values().stream().mapToInt(List::size).sum());
         return leagues;
     }
     
     @GetMapping("/leagues")
     public List<String> getLeagues() {
-        return Arrays.asList("UPL", "UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
+        log.info("Отримано запит на список ліг");
+        List<String> leagues = Arrays.asList("UPL", "UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
+        log.debug("Повертається {} ліг", leagues.size());
+        return leagues;
     }
     
     private Team createTeam(String name, String league, String city, String colors, String emblemUrl) {

@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8">
+    <title>⚽ Football Hub - Редактор</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<header class="site-header">
+    <div class="top-bar">
+        <div class="wrap">
+            <div class="top-bar-content">
+                <div class="site-logo">
+                    <span class="logo-icon">⚽</span>
+                    <span class="logo-text">FOOTBALL HUB</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="#home" class="nav-link active" data-tab="home">ГОЛОВНА</a>
+                    <a href="#news" class="nav-link" data-tab="news">НОВИНИ</a>
+                    <a href="#matches" class="nav-link" data-tab="matches">МАТЧІ</a>
+                    <a href="#teams" class="nav-link" data-tab="teams">КОМАНДИ</a>
+                    <a href="#forum" class="nav-link" data-tab="forum">ФОРУМ</a>
+                    <a href="/ui/home" class="nav-link">Thymeleaf</a>
+                    <div class="dropdown editor-menu" id="editorMenu">
+                        <button class="nav-link dropdown-toggle" type="button"><span style="font-size: 18px; transform: translateY(-3px);">⚙️</span><span style="font-size: 12px; margin-left: 2px;">▾</span></button>
+                        <div class="dropdown-menu">
+                            <a href="#editor-panel" class="dropdown-item" data-tab="editor-panel">✏️ Панель редактора</a>
+                        </div>
+                    </div>
+                </nav>
+                <div id="userInfo" class="user-info">
+                    <span class="user-name"><span id="username"></span></span>
+                    <button onclick="logout()" class="btn-logout">Вийти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="hero-section">
+    <div class="wrap">
+        <h1 class="hero-title">Панель редактора</h1>
+        <p class="hero-subtitle">Управління новинами та матчами</p>
+    </div>
+</div>
+
+<main class="site-main">
+    <div class="wrap">
+        <div class="content-layout">
+            <div class="main-content">
+                <section id="home" class="panel active">
+                    <div class="section-title">
+                        <h2>⚡ Останні новини</h2>
+                    </div>
+                    <div id="home-news" class="news-feed"></div>
+                    <div id="home-player-of-the-week" style="display: none;">
+                        <div class="section-title" style="margin-top: 40px;">
+                            <h2>⭐ Гравець тижня</h2>
+                        </div>
+                        <div id="player-of-the-week-content" class="card"></div>
+                    </div>
+                    <div class="section-title" style="margin-top: 40px;">
+                        <h2>📅 Найближчі матчі</h2>
+                    </div>
+                    <div id="home-matches" class="matches-grid"></div>
+                </section>
+
+                <section id="news" class="panel">
+                    <div class="section-title">
+                        <h2>📰 Всі новини</h2>
+                    </div>
+                    <div id="all-news" class="news-feed"></div>
+                </section>
+
+                <section id="matches" class="panel">
+                    <div class="section-title">
+                        <h2>⚽ Всі матчі</h2>
+                        <label class="score-toggle">
+                            <input type="checkbox" id="showScores" checked>
+                            <div class="score-toggle-checkbox"></div>
+                            <span class="score-toggle-label">Показувати рахунок</span>
+                        </label>
+                    </div>
+                    <div id="all-matches" class="matches-grid"></div>
+                </section>
+
+                <section id="teams" class="panel">
+                    <div class="section-title">
+                        <h2>🏆 Команди</h2>
+                    </div>
+                    <div class="leagues-tabs">
+                        <button class="league-tab active" data-league="UPL">🇺🇦 УПЛ</button>
+                        <button class="league-tab" data-league="UCL">⭐ Ліга Чемпіонів</button>
+                        <button class="league-tab" data-league="EPL">🏴 Прем'єр-ліга</button>
+                    </div>
+                    <div id="teams-list" class="teams-grid"></div>
+                </section>
+
+                <section id="forum" class="panel">
+                    <div class="section-title">
+                        <h2>💬 Форум</h2>
+                        <button class="btn-action" onclick="showCreateTopicForm()">➕ Створити тему</button>
+                    </div>
+                    
+                    <div id="create-topic-form" class="card" style="display: none; margin-bottom: 20px;">
+                        <h3>Створити нову тему</h3>
+                        <form onsubmit="createForumTopic(event)">
+                            <div class="form-group">
+                                <label>Заголовок</label>
+                                <input type="text" id="topic-title" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Опис</label>
+                                <textarea id="topic-description" rows="4" required></textarea>
+                            </div>
+                            <button type="submit" class="btn">Створити тему</button>
+                            <button type="button" class="btn danger" onclick="hideCreateTopicForm()">Скасувати</button>
+                        </form>
+                    </div>
+                    
+                    <div id="forum-list"></div>
+                </section>
+
+                <section id="editor-panel" class="panel">
+                    <div class="section-title">
+                        <h2>✍️ Панель редактора</h2>
+                        <p class="section-subtitle">Керуйте контентом сайту: новинами та матчами</p>
+                    </div>
+
+                    <div class="editor-section">
+                        <div class="section-header">
+                            <h3>📰 Управління новинами</h3>
+                            <p>Створюйте, редагуйте та видаляйте новини сайту</p>
+                        </div>
+
+                        <div class="editor-grid">
+                            <div class="editor-card">
+                                <div class="card-header">
+                                    <h4>➕ Створити новину</h4>
+                                </div>
+                                <div class="card-content">
+                                    <form onsubmit="createNews(event)">
+                                        <div class="form-group">
+                                            <label>Заголовок новини</label>
+                                            <input type="text" id="news-create-title" placeholder="Введіть заголовок..." required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Текст новини</label>
+                                            <textarea id="news-create-content" rows="4" placeholder="Введіть текст новини..." required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-success">📝 Опублікувати новину</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="editor-card">
+                                <div class="card-header">
+                                    <h4>✏️ Редагувати новину</h4>
+                                </div>
+                                <div class="card-content">
+                                    <form onsubmit="updateNews(event)">
+                                        <div class="form-group">
+                                            <label>ID новини</label>
+                                            <input type="number" id="news-update-id" placeholder="123" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Новий заголовок</label>
+                                            <input type="text" id="news-update-title" placeholder="Новий заголовок..." required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Новий текст</label>
+                                            <textarea id="news-update-content" rows="4" placeholder="Оновлений текст новини..." required></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">💾 Зберегти зміни</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="editor-card danger">
+                                <div class="card-header">
+                                    <h4>🗑️ Видалити новину</h4>
+                                </div>
+                                <div class="card-content">
+                                    <form onsubmit="deleteNews(event)">
+                                        <div class="form-group">
+                                            <label>ID новини для видалення</label>
+                                            <input type="number" id="news-delete-id" placeholder="123" required>
+                                        </div>
+                                        <div class="warning-box">
+                                            <p>⚠️ Цю дію неможливо скасувати!</p>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger">🗑️ Видалити назавжди</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="editor-section">
+                        <div class="section-header">
+                            <h3>⚽ Управління матчами</h3>
+                            <p>Створюйте матчі, оновлюйте рахунки та видаляйте події</p>
+                        </div>
+
+                        <div class="editor-grid">
+                            <div class="editor-card">
+                                <div class="card-header">
+                                    <h4>➕ Створити матч</h4>
+                                </div>
+                                <div class="card-content">
+                                    <form onsubmit="createMatch(event)">
+                                        <div class="form-group">
+                                            <label>Ліга (не обов'язково)</label>
+                                            <select id="match-create-league" class="league-filter">
+                                                <option value="">Всі ліги</option>
+                                                <option value="UPL">🇺🇦 УПЛ</option>
+                                                <option value="UCL">⭐ Ліга Чемпіонів</option>
+                                                <option value="EPL">🏴 Прем'єр-ліга</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Домашня команда</label>
+                                            <div class="autocomplete-wrapper">
+                                                <input type="text" id="match-create-home-input" placeholder="Почніть вводити назву команди..." required>
+                                                <div class="autocomplete-dropdown" id="match-create-home-dropdown"></div>
+                                            </div>
+                                            <input type="hidden" id="match-create-home-id">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Гостьова команда</label>
+                                            <div class="autocomplete-wrapper">
+                                                <input type="text" id="match-create-away-input" placeholder="Почніть вводити назву команди..." required>
+                                                <div class="autocomplete-dropdown" id="match-create-away-dropdown"></div>
+                                            </div>
+                                            <input type="hidden" id="match-create-away-id">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Дата та час початку</label>
+                                            <input type="datetime-local" id="match-create-kickoff" required>
+                                        </div>
+                                        <button type="submit" class="btn btn-success">🏆 Створити матч</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="editor-card">
+                                <div class="card-header">
+                                    <h4>📊 Оновити рахунок</h4>
+                                </div>
+                                <div class="card-content">
+                                    <form onsubmit="updateMatchScore(event)">
+                                        <div class="form-group">
+                                            <label>ID матчу</label>
+                                            <input type="number" id="match-update-id" placeholder="456" required>
+                                        </div>
+                                        <div class="score-inputs">
+                                            <div class="form-group">
+                                                <label>Голи домашньої</label>
+                                                <input type="number" id="match-update-home-score" min="0" placeholder="2" required>
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Голи гостьової</label>
+                                                <input type="number" id="match-update-away-score" min="0" placeholder="1" required>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary">📈 Оновити рахунок</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="editor-card danger">
+                                <div class="card-header">
+                                    <h4>🗑️ Видалити матч</h4>
+                                </div>
+                                <div class="card-content">
+                                    <form onsubmit="deleteMatch(event)">
+                                        <div class="form-group">
+                                            <label>ID матчу для видалення</label>
+                                            <input type="number" id="match-delete-id" placeholder="456" required>
+                                        </div>
+                                        <div class="warning-box">
+                                            <p>⚠️ Цю дію неможливо скасувати!</p>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger">🗑️ Видалити назавжди</button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+
+            <aside class="sidebar">
+                <div class="widget">
+                    <h3 class="widget-title">📊 Статистика</h3>
+                    <div class="widget-content">
+                        <div class="stat-item">
+                            <span class="stat-label">Новини</span>
+                            <span class="stat-num" id="stat-news">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Матчі</span>
+                            <span class="stat-num" id="stat-matches">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Команди</span>
+                            <span class="stat-num" id="stat-teams">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Теми на форумі</span>
+                            <span class="stat-num" id="stat-topics">0</span>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+</main>
+
+<footer class="site-footer">
+    <div class="wrap">
+        <div class="footer-grid">
+            <div class="footer-col">
+                <h4>⚽ Football Hub</h4>
+                <p>Український футбольний портал</p>
+                <p>Новини, результати, обговорення</p>
+            </div>
+            <div class="footer-col">
+                <h4>Розділи</h4>
+                <a href="#news">Новини</a>
+                <a href="#matches">Матчі</a>
+                <a href="#teams">Команди</a>
+                <a href="#forum">Форум</a>
+            </div>
+            <div class="footer-col">
+                <h4>Про проєкт</h4>
+                <p>Spring Boot 3.5.6</p>
+                <p>Spring Data JPA</p>
+                <p>H2 Database</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2025 Football Hub. Всі права захищені.</p>
+        </div>
+    </div>
+</footer>
+
+<script src="/js/auth.js"></script>
+<script src="/js/app.js"></script>
+<script src="/js/editor.js"></script>
+</body>
+</html>
+

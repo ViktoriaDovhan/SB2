@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Football UA · UI демо</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="top-bar">
+        <div class="wrap">
+            <div class="top-bar-content">
+                <div class="site-logo">
+                    <span class="logo-icon">⚽</span>
+                    <span class="logo-text">FOOTBALL HUB</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="/index.html" class="nav-link">Головна SPA</a>
+                    <a th:href="@{/ui/home}" class="nav-link active">UI демо</a>
+                    <a th:href="@{/ui/feedback}" class="nav-link">Відгук</a>
+                    <a th:href="@{/ui/roles}" class="nav-link">Ролі</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="site-main">
+    <div class="wrap">
+        <div class="content-layout">
+            <div class="main-content">
+                <section class="panel active">
+                    <div class="section-title">
+                        <h2>Головна UI демо</h2>
+                        <a th:href="@{/ui/feedback}" class="btn-action">Залишити відгук</a>
+                    </div>
+
+                    <div class="card">
+                        <p>Серверна версія інтерфейсу Football UA.</p>
+
+                        <p sec:authorize="isAuthenticated()">
+                            Ви увійшли як <strong th:text="${username}">користувач</strong>.
+                        </p>
+                        <p sec:authorize="isAnonymous()">
+                            Ви переглядаєте сайт як гість.
+                        </p>
+                    </div>
+
+                    <section style="margin-top: 32px;">
+                        <div class="section-title">
+                            <h2>Відгуки користувачів</h2>
+                        </div>
+
+                        <!-- Якщо відгуків немає – показуємо пустий стан як для новин -->
+                        <div th:if="${feedbackList == null or #lists.isEmpty(feedbackList)}"
+                             class="empty-state">
+                            <h3>Поки немає відгуків</h3>
+                            <p>
+                                <a th:href="@{/ui/feedback}">Залиште перший відгук</a>
+                            </p>
+                        </div>
+
+                        <!-- Якщо відгуки є – показуємо їх у окремих картках -->
+                        <div th:if="${feedbackList != null and #lists.isEmpty(feedbackList) == false}"
+                             class="news-feed">
+                            <div th:each="f : ${feedbackList}" class="card">
+                                <h3 th:text="${f.authorName}">Користувач</h3>
+                                <p th:text="${f.message}">Текст відгуку</p>
+
+                                <!-- Кнопка видалення тільки для EDITOR або MODERATOR -->
+                                <form th:action="@{'/ui/feedback/delete/' + ${f.id}}" method="post"
+                                      sec:authorize="hasRole('EDITOR') or hasRole('MODERATOR')"
+                                      style="margin-top: 8px;">
+                                    <button type="submit" class="btn-action" style="background-color:#e53935;">
+                                        Видалити
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </section>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

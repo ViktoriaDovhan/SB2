@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Реєстрація - Football Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .register-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .register-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .register-header h1 {
+            color: #2c5282;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        .btn-register {
+            width: 100%;
+            padding: 12px;
+            background: #48bb78;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-register:hover {
+            background: #38a169;
+        }
+        .btn-register:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            background: #c6f6d5;
+            color: #2f855a;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .links a {
+            color: #4299e1;
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+        .password-strength {
+            margin-top: 5px;
+            font-size: 12px;
+        }
+        .strength-weak { color: #e53e3e; }
+        .strength-medium { color: #ed8936; }
+        .strength-strong { color: #38a169; }
+    </style>
+</head>
+<body>
+    <div class="register-container">
+        <div class="register-header">
+            <h1>⚽ Реєстрація</h1>
+            <p>Створіть обліковий запис</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="username">Ім'я користувача</label>
+                <input type="text" id="username" name="username" required minlength="3">
+                <small>Мінімум 3 символи</small>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required minlength="6">
+                <div id="passwordStrength" class="password-strength"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Підтвердіть пароль</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+            </div>
+
+            <button type="submit" class="btn-register" id="registerBtn">Зареєструватись</button>
+        </form>
+
+        <div class="links">
+            <p>Вже маєте обліковий запис? <a href="/login.html">Увійти</a></p>
+            <p><a href="/index.html">Повернутись на головну</a></p>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        // Перевірка чи користувач вже авторизований
+        if (isAuthenticated()) {
+            const role = getRole();
+            switch(role) {
+                case 'MODERATOR':
+                    window.location.href = '/moderator.html';
+                    break;
+                case 'EDITOR':
+                    window.location.href = '/editor.html';
+                    break;
+                case 'USER':
+                default:
+                    window.location.href = '/user.html';
+                    break;
+            }
+        }
+
+        const passwordInput = document.getElementById('password');
+        const strengthDiv = document.getElementById('passwordStrength');
+
+        // Перевірка складності пароля
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            let strength = 0;
+            
+            if (password.length >= 6) strength++;
+            if (password.length >= 10) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z\d]/.test(password)) strength++;
+
+            if (strength <= 2) {
+                strengthDiv.textContent = 'Слабкий пароль';
+                strengthDiv.className = 'password-strength strength-weak';
+            } else if (strength <= 4) {
+                strengthDiv.textContent = 'Середній пароль';
+                strengthDiv.className = 'password-strength strength-medium';
+            } else {
+                strengthDiv.textContent = 'Сильний пароль';
+                strengthDiv.className = 'password-strength strength-strong';
+            }
+        });
+
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const registerBtn = document.getElementById('registerBtn');
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+
+            // Приховати повідомлення
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+
+            // Перевірка паролів
+            if (password !== confirmPassword) {
+                errorMsg.textContent = 'Паролі не співпадають';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            if (password.length < 6) {
+                errorMsg.textContent = 'Пароль має містити мінімум 6 символів';
+                errorMsg.style.display = 'block';
+                return;
+            }
+
+            // Вимкнути кнопку
+            registerBtn.disabled = true;
+            registerBtn.textContent = 'Реєстрація...';
+
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.status === 201) {
+                    successMsg.textContent = 'Реєстрація успішна! Перенаправлення на сторінку входу...';
+                    successMsg.style.display = 'block';
+
+                    setTimeout(() => {
+                        window.location.href = '/login.html';
+                    }, 2000);
+                } else {
+                    errorMsg.textContent = data.error || 'Помилка реєстрації';
+                    errorMsg.style.display = 'block';
+                    registerBtn.disabled = false;
+                    registerBtn.textContent = 'Зареєструватись';
+                }
+            } catch (error) {
+                console.error('Помилка реєстрації:', error);
+                errorMsg.textContent = 'Помилка з\'єднання з сервером';
+                errorMsg.style.display = 'block';
+                registerBtn.disabled = false;
+                registerBtn.textContent = 'Зареєструватись';
+            }
+        });
+    </script>
+</body>
+</html>
+

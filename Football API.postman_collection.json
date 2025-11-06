@@ -1,0 +1,835 @@
+{
+	"info": {
+		"_postman_id": "745c261f-cee5-4453-9e22-98b5b181209a",
+		"name": "Football API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49500194",
+		"_collection_link": "https://v-dovhan-2039118.postman.co/workspace/88ed59f0-e7e0-4c8b-8850-12d3d2af3d99/collection/49500194-745c261f-cee5-4453-9e22-98b5b181209a?action=share&source=collection_link&creator=49500194"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Response contains username and role\", function () { var json = pm.response.json(); pm.expect(json).to.have.property('username'); pm.expect(json).to.have.property('role'); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"testuser\", \"password\": \"password123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register new user"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Response contains token\", function () { var json = pm.response.json(); pm.expect(json).to.have.property('token'); });",
+									"var json = pm.response.json();",
+									"if (json.token) { pm.environment.set(\"jwtToken\", json.token); }"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"user\", \"password\": \"password\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login and get JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Moderator",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Response contains token\", function () { var json = pm.response.json(); pm.expect(json).to.have.property('token'); });",
+									"var json = pm.response.json();",
+									"if (json.token) { pm.environment.set(\"jwtToken\", json.token); }"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"moderator\", \"password\": \"password\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as moderator and get JWT token"
+					},
+					"response": []
+				},
+				{
+					"name": "Login as Editor",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Response contains token\", function () { var json = pm.response.json(); pm.expect(json).to.have.property('token'); });",
+									"var json = pm.response.json();",
+									"if (json.token) { pm.environment.set(\"jwtToken\", json.token); }"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"username\": \"editor\", \"password\": \"password\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login as editor and get JWT token"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Teams",
+			"item": [
+				{
+					"name": "Get Teams",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+									"pm.test(\"Body is array\", function () { var json = pm.response.json(); pm.expect(Array.isArray(json)).to.be.true; });",
+									"pm.test(\"Array length >= 0\", function () { var json = pm.response.json(); pm.expect(json.length).to.be.at.least(0); });",
+									"pm.test(\"Content-Type is application/json\", function () { pm.expect(pm.response.headers.get('Content-Type')).to.include('application/json'); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/teams",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"teams"
+							]
+						},
+						"description": "Get all teams"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Team",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Response is JSON\", function () { pm.response.to.be.json; });",
+									"pm.test(\"Response has numeric id\", function () { var json = pm.response.json(); pm.expect(json).to.have.property('id').that.is.a('number'); });",
+									"pm.test(\"Name is non-empty string (regex)\", function () { var json = pm.response.json(); pm.expect(json.name).to.match(/^.+$/); });",
+									"pm.environment.set(\"teamId\", pm.response.json().id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"name\": \"Тестова Команда\", \"league\": \"UPL\", \"city\": \"Київ\", \"colors\": \"🔵⚪\", \"emblemUrl\": \"https://example.com/emblem.png\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/teams",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"teams"
+							]
+						},
+						"description": "Create a new team"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Actual Teams",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Body is object\", function () { var json = pm.response.json(); pm.expect(typeof json).to.eql('object'); });",
+									"pm.test(\"Object has at least one key\", function () { var json = pm.response.json(); pm.expect(Object.keys(json).length).to.be.at.least(1); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/teams/actual",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"teams",
+								"actual"
+							]
+						},
+						"description": "Get actual teams"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "News",
+			"item": [
+				{
+					"name": "Create News",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Body has id, title, content, likes\", function () { var json = pm.response.json(); ['id','title','content','likes'].forEach(function(k){pm.expect(json).to.have.property(k);}); });",
+									"pm.test(\"Title and content are non-empty\", function () { var json = pm.response.json(); pm.expect(json.title).to.be.a('string').and.not.empty; pm.expect(json.content).to.be.a('string').and.not.empty; });",
+									"pm.environment.set(\"newsId\", pm.response.json().id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"title\": \"Динамо перемогло\", \"content\": \"Київське Динамо виграло 3:1.\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/news",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"news"
+							]
+						},
+						"description": "Create news (requires EDITOR role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get News by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Title and content are non-empty strings\", function () { var json = pm.response.json(); pm.expect(json.title).to.be.a('string').and.not.empty; pm.expect(json.content).to.be.a('string').and.not.empty; });",
+									"pm.test(\"Response time < 500ms\", function () { pm.expect(pm.response.responseTime).to.be.below(500); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/news/{{newsId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"news",
+								"{{newsId}}"
+							]
+						},
+						"description": "Get news by ID"
+					},
+					"response": []
+				},
+				{
+					"name": "Like News",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"Likes is number > 0\", function () { var json = pm.response.json(); pm.expect(json.likes).to.be.a('number').and.above(0); });",
+									"pm.test(\"Likes increased if likesBefore exists\", function () { var json = pm.response.json(); var before = pm.environment.get('likesBefore'); if (before !== undefined && before !== null) { pm.expect(json.likes).to.be.above(Number(before)); } });",
+									"pm.environment.set(\"likesBefore\", pm.response.json().likes);"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/news/{{newsId}}/like",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"news",
+								"{{newsId}}",
+								"like"
+							]
+						},
+						"description": "Like news (requires USER role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get News",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/news",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"news"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update News",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"title\":\"Updated Title\",\"content\":\"Updated content.\"}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/news/{{newsId}}",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"news",
+								"{{newsId}}"
+							]
+						},
+						"description": "Update news (requires EDITOR role)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Matches",
+			"item": [
+				{
+					"name": "Create Match",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 201\", function () { pm.response.to.have.status(201); });",
+									"pm.test(\"Body has homeTeam, awayTeam, kickoffAt\", function () { var json = pm.response.json(); ['homeTeam','awayTeam','kickoffAt'].forEach(function(k){pm.expect(json).to.have.property(k);}); });",
+									"pm.environment.set(\"matchId\", pm.response.json().id);"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"homeTeam\": \"Динамо Київ\", \"awayTeam\": \"Шахтар Донецьк\", \"kickoffAt\": \"2025-10-25T18:00:00\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/matches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"matches"
+							]
+						},
+						"description": "Create match (requires EDITOR role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Match Score",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"pm.test(\"Status code is 200\", function () { pm.response.to.have.status(200); });",
+									"pm.test(\"homeScore == 2\", function () { var json = pm.response.json(); pm.expect(json.homeScore).to.eql(2); });",
+									"pm.test(\"awayScore == 1\", function () { var json = pm.response.json(); pm.expect(json.awayScore).to.eql(1); });",
+									"pm.test(\"kickoffAt matches ISO 8601\", function () { var json = pm.response.json(); pm.expect(json.kickoffAt).to.match(/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}/); });"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"homeScore\": 2, \"awayScore\": 1}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/matches/{{matchId}}/score",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"matches",
+								"{{matchId}}",
+								"score"
+							]
+						},
+						"description": "Update match score (requires EDITOR role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Matches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/matches",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"matches"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Team Info by Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/matches/teams/info?name=FC_Barcelona",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"matches",
+								"teams",
+								"info"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "FC_Barcelona"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Forum",
+			"item": [
+				{
+					"name": "Create Topic",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\"title\": \"Обговорення останнього матчу\", \"author\": \"fan123\"}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/forum/topics",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forum",
+								"topics"
+							]
+						},
+						"description": "Create forum topic (requires USER role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Topic (Owner or Moderator)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/forum/topics/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forum",
+								"topics",
+								"1"
+							]
+						},
+						"description": "Delete topic (owner or moderator only)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Post (Owner or Moderator)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/forum/topics/1/posts/1",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"forum",
+								"topics",
+								"1",
+								"posts",
+								"1"
+							]
+						},
+						"description": "Delete post (owner or moderator only)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Moderation",
+			"item": [
+				{
+					"name": "Ban User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/moderator/users/testuser/ban",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"moderator",
+								"users",
+								"testuser",
+								"ban"
+							]
+						},
+						"description": "Ban user (requires MODERATOR role)"
+					},
+					"response": []
+				},
+				{
+					"name": "Unban User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{jwtToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/moderator/users/testuser/unban",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"moderator",
+								"users",
+								"testuser",
+								"unban"
+							]
+						},
+						"description": "Unban user (requires MODERATOR role)"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "likesBefore",
+			"value": ""
+		}
+	]
+}

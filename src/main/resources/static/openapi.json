@@ -1,0 +1,595 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Football API",
+    "description": "REST API для управління футбольними матчами, командами та новинами",
+    "contact": {
+      "name": "Football Team",
+      "email": "support@football.ua"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8080",
+      "description": "Локальний сервер"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Teams",
+      "description": "API для управління футбольними командами"
+    },
+    {
+      "name": "News",
+      "description": "API для управління новинами"
+    },
+    {
+      "name": "Matches",
+      "description": "API для управління футбольними матчами"
+    }
+  ],
+  "paths": {
+    "/api/teams": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "Отримати список всіх команд",
+        "description": "Повертає список всіх збережених команд",
+        "operationId": "listTeams",
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Team"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Teams"],
+        "summary": "Створити нову команду",
+        "description": "Створює нову футбольну команду",
+        "operationId": "createTeam",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Team"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Команду успішно створено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Team"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/actual": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "Отримати актуальні команди",
+        "description": "Повертає список актуальних команд згрупованих за лігами",
+        "operationId": "getActualTeams",
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/Team"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/leagues": {
+      "get": {
+        "tags": ["Teams"],
+        "summary": "Отримати список ліг",
+        "description": "Повертає список доступних ліг",
+        "operationId": "getLeagues",
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/news": {
+      "get": {
+        "tags": ["News"],
+        "summary": "Отримати всі новини",
+        "description": "Повертає список всіх новин",
+        "operationId": "listNews",
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/News"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["News"],
+        "summary": "Створити новину",
+        "description": "Створює нову новину",
+        "operationId": "createNews",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/News"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Новину успішно створено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/News"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/news/{id}": {
+      "get": {
+        "tags": ["News"],
+        "summary": "Отримати новину за ID",
+        "description": "Повертає конкретну новину за її ідентифікатором",
+        "operationId": "getNewsById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/News"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Новину не знайдено"
+          }
+        }
+      },
+      "put": {
+        "tags": ["News"],
+        "summary": "Оновити новину",
+        "description": "Оновлює існуючу новину",
+        "operationId": "updateNews",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/News"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Новину успішно оновлено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/News"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Новину не знайдено"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["News"],
+        "summary": "Видалити новину",
+        "description": "Видаляє новину за ID",
+        "operationId": "deleteNews",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Новину успішно видалено"
+          },
+          "404": {
+            "description": "Новину не знайдено"
+          }
+        }
+      }
+    },
+    "/api/news/{id}/like": {
+      "post": {
+        "tags": ["News"],
+        "summary": "Вподобати новину",
+        "description": "Додає лайк до новини",
+        "operationId": "likeNews",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Лайк додано",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/News"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Новину не знайдено"
+          }
+        }
+      }
+    },
+    "/api/matches": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "Отримати всі матчі",
+        "description": "Повертає список всіх футбольних матчів",
+        "operationId": "listMatches",
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Match"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["Matches"],
+        "summary": "Створити новий матч",
+        "description": "Створює новий футбольний матч",
+        "operationId": "createMatch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Match"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Матч успішно створено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Match"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/{id}": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "Отримати матч за ID",
+        "description": "Повертає конкретний матч",
+        "operationId": "getMatchById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Match"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Матч не знайдено"
+          }
+        }
+      },
+      "delete": {
+        "tags": ["Matches"],
+        "summary": "Видалити матч",
+        "description": "Видаляє матч за ID",
+        "operationId": "deleteMatch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Матч успішно видалено"
+          }
+        }
+      }
+    },
+    "/api/matches/{id}/score": {
+      "patch": {
+        "tags": ["Matches"],
+        "summary": "Оновити рахунок матчу",
+        "description": "Оновлює рахунок футбольного матчу",
+        "operationId": "updateMatchScore",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "homeScore": {
+                    "type": "integer"
+                  },
+                  "awayScore": {
+                    "type": "integer"
+                  }
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Рахунок оновлено",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Match"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/teams/info": {
+      "get": {
+        "tags": ["Matches"],
+        "summary": "Отримати інформацію про команду",
+        "description": "Отримує інформацію про команду з Wikipedia",
+        "operationId": "getTeamInfo",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Успішна відповідь",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Інформацію не знайдено"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Team": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string",
+            "example": "Динамо Київ"
+          },
+          "league": {
+            "type": "string",
+            "example": "UPL"
+          },
+          "city": {
+            "type": "string",
+            "example": "Київ"
+          },
+          "colors": {
+            "type": "string",
+            "example": "🔵⚪"
+          },
+          "emblemUrl": {
+            "type": "string",
+            "example": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/FC_Dynamo_Kyiv_logo.svg/100px-FC_Dynamo_Kyiv_logo.svg.png"
+          }
+        }
+      },
+      "News": {
+        "type": "object",
+        "required": ["title", "content"],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "title": {
+            "type": "string",
+            "example": "Динамо перемогло у чемпіонаті"
+          },
+          "content": {
+            "type": "string",
+            "example": "Сьогодні відбувся важливий матч..."
+          },
+          "likes": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      },
+      "Match": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "homeTeam": {
+            "type": "string",
+            "example": "Динамо Київ"
+          },
+          "awayTeam": {
+            "type": "string",
+            "example": "Шахтар Донецьк"
+          },
+          "kickoffAt": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-10-25T18:00:00"
+          },
+          "homeScore": {
+            "type": "integer",
+            "example": 0
+          },
+          "awayScore": {
+            "type": "integer",
+            "example": 0
+          }
+        }
+      }
+    }
+  }
+}
+

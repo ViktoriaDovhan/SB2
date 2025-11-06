@@ -1,0 +1,5 @@
+2025-11-04 00:11:40.414 [SpringApplicationShutdownHook] INFO   o.s.b.w.e.tomcat.GracefulShutdown [operation=, endpoint=, matchId=, teamName=, score=] - Commencing graceful shutdown. Waiting for active requests to complete
+2025-11-04 00:11:40.429 [tomcat-shutdown] INFO   o.s.b.w.e.tomcat.GracefulShutdown [operation=, endpoint=, matchId=, teamName=, score=] - Graceful shutdown complete
+2025-11-04 00:11:40.440 [SpringApplicationShutdownHook] INFO   o.s.o.j.LocalContainerEntityManagerFactoryBean [operation=, endpoint=, matchId=, teamName=, score=] - Closing JPA EntityManagerFactory for persistence unit 'default'
+2025-11-04 00:11:40.446 [SpringApplicationShutdownHook] INFO   com.zaxxer.hikari.HikariDataSource [operation=, endpoint=, matchId=, teamName=, score=] - HikariPool-1 - Shutdown initiated...
+2025-11-04 00:11:40.449 [SpringApplicationShutdownHook] INFO   com.zaxxer.hikari.HikariDataSource [operation=, endpoint=, matchId=, teamName=, score=] - HikariPool-1 - Shutdown completed.

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="CUSTOM" class="com.football.ua.logging.CustomAppender">
+        <fileName>logs/football-custom.log</fileName>
+        <layout class="com.football.ua.logging.CustomLayout"/>
+    </appender>
+
+    <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/football-standard.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/archived/football-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %marker %logger{36} [operation=%X{operation}, endpoint=%X{endpoint}, matchId=%X{matchId}, teamName=%X{teamName}, score=%X{score}] - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <logger name="com.football.ua" level="INFO" additivity="false">
+        <appender-ref ref="CUSTOM"/>
+        <appender-ref ref="FILE"/>
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="FILE"/>
+    </root>
+
+</configuration>
+

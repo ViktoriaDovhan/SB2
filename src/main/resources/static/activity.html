@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>📊 Журнал активності - Football Hub</title>
+    <link href="/css/style.css" rel="stylesheet">
+    <style>
+        .activity-feed {
+            background: var(--white);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+        
+        .activity-item {
+            padding: 20px 30px;
+            border-bottom: 1px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-item:hover {
+            background: #f0f9f4;
+        }
+        
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+        
+        .activity-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+        }
+        
+        .activity-icon.matches {
+            background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 100%);
+        }
+        
+        .activity-icon.forum {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .activity-icon.news {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .activity-content {
+            flex: 1;
+        }
+        
+        .activity-action {
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 5px;
+            font-size: 16px;
+        }
+        
+        .activity-details {
+            color: var(--gray);
+            font-size: 14px;
+        }
+        
+        .activity-time {
+            color: var(--gray);
+            font-size: 13px;
+            white-space: nowrap;
+            font-weight: 600;
+        }
+        
+        .empty-state-custom {
+            padding: 80px 30px;
+            text-align: center;
+            color: var(--gray);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+<header class="site-header">
+    <div class="top-bar">
+        <div class="wrap">
+            <div class="top-bar-content">
+                <div class="site-logo">
+                    <span class="logo-icon">⚽</span>
+                    <span class="logo-text">FOOTBALL HUB</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="/moderator.html" class="nav-link">НАЗАД</a>
+                </nav>
+                <div id="userInfo" class="user-info">
+                    <span class="user-name"><span id="username"></span></span>
+                    <button onclick="logout()" class="btn-logout">Вийти</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<div class="hero-section">
+    <div class="wrap">
+        <h1 class="hero-title">📊 Журнал активності</h1>
+        <p class="hero-subtitle">Останні події на платформі в реальному часі</p>
+    </div>
+</div>
+
+<main class="site-main">
+    <div class="wrap">
+        <div class="leagues-tabs" style="margin-bottom: 32px;">
+            <button class="league-tab active" onclick="filterActivities('ALL', this)">🌐 Всі події</button>
+            <button class="league-tab" onclick="filterActivities('MATCHES', this)">⚽ Матчі</button>
+            <button class="league-tab" onclick="filterActivities('FORUM', this)">💬 Форум</button>
+            <button class="league-tab" onclick="filterActivities('NEWS', this)">📰 Новини</button>
+        </div>
+        
+        <div class="activity-feed" id="activityFeed">
+            <div class="empty-state-custom">
+                <div class="empty-state-icon">⏳</div>
+                <p style="font-size: 18px; font-weight: 600;">Завантаження активності...</p>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script src="/js/auth.js"></script>
+<script>
+    // Перевірка ролі модератора
+    if (!isAuthenticated() || getRole() !== 'MODERATOR') {
+        window.location.href = '/login.html';
+    }
+    
+    // Відображення імені користувача
+    document.getElementById('username').textContent = getUsername();
+    
+    let currentFilter = 'ALL';
+    
+    function getIconForCategory(category) {
+        const icons = {
+            'MATCHES': '⚽',
+            'FORUM': '💬',
+            'NEWS': '📰'
+        };
+        return icons[category] || '📌';
+    }
+    
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        const now = new Date();
+        const diff = Math.floor((now - date) / 1000);
+        
+        if (diff < 60) return 'щойно';
+        if (diff < 3600) return `${Math.floor(diff / 60)} хв тому`;
+        if (diff < 86400) return `${Math.floor(diff / 3600)} год тому`;
+        return date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+    }
+    
+    function renderActivities(activities) {
+        const feed = document.getElementById('activityFeed');
+        
+        if (!activities || activities.length === 0) {
+            feed.innerHTML = `
+                <div class="empty-state-custom">
+                    <div class="empty-state-icon">📭</div>
+                    <p style="font-size: 18px; font-weight: 600; color: var(--gray);">Поки що немає активності</p>
+                    <p style="margin-top: 8px; color: var(--gray);">Створіть матч або тему на форумі, щоб побачити події тут</p>
+                </div>
+            `;
+            return;
+        }
+        
+        feed.innerHTML = activities.map(activity => `
+            <div class="activity-item">
+                <div class="activity-icon ${activity.category.toLowerCase()}">
+                    ${getIconForCategory(activity.category)}
+                </div>
+                <div class="activity-content">
+                    <div class="activity-action">${activity.action}</div>
+                    <div class="activity-details">${activity.details}</div>
+                </div>
+                <div class="activity-time">${formatTime(activity.timestamp)}</div>
+            </div>
+        `).join('');
+    }
+    
+    async function loadActivities() {
+        try {
+            const url = currentFilter === 'ALL' 
+                ? '/api/activity?limit=50'
+                : `/api/activity/category/${currentFilter}?limit=50`;
+                
+            const response = await fetchWithAuth(url);
+            const activities = await response.json();
+            renderActivities(activities);
+        } catch (error) {
+            console.error('Помилка завантаження активності:', error);
+            document.getElementById('activityFeed').innerHTML = `
+                <div class="empty-state-custom">
+                    <div class="empty-state-icon">⚠️</div>
+                    <p style="font-size: 18px; font-weight: 600; color: var(--danger);">Помилка завантаження</p>
+                    <p style="margin-top: 8px; color: var(--gray);">${error.message}</p>
+                </div>
+            `;
+        }
+    }
+    
+    function filterActivities(category, element) {
+        currentFilter = category;
+        
+        document.querySelectorAll('.league-tab').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        element.classList.add('active');
+        
+        loadActivities();
+    }
+    
+    loadActivities();
+    setInterval(loadActivities, 5000);
+</script>
+</body>
+</html>
+

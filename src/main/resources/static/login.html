@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вхід - Football Platform</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h1 {
+            color: #2c5282;
+            margin-bottom: 10px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        .form-group input:focus {
+            outline: none;
+            border-color: #4299e1;
+        }
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: #4299e1;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .btn-login:hover {
+            background: #3182ce;
+        }
+        .btn-login:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+        }
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .success-message {
+            background: #c6f6d5;
+            color: #2f855a;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        .links {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .links a {
+            color: #4299e1;
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>⚽ Вхід</h1>
+            <p>Увійдіть до Football Platform</p>
+        </div>
+
+        <div id="errorMessage" class="error-message"></div>
+        <div id="successMessage" class="success-message"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username">Ім'я користувача</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Пароль</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">Увійти</button>
+        </form>
+
+        <div class="links">
+            <p>Немає облікового запису? <a href="/register.html">Зареєструватись</a></p>
+            <p><a href="/index.html">Повернутись на головну</a></p>
+        </div>
+    </div>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        // Перевірка чи користувач вже авторизований
+        if (isAuthenticated()) {
+            const role = getRole();
+            switch(role) {
+                case 'MODERATOR':
+                    window.location.href = '/moderator.html';
+                    break;
+                case 'EDITOR':
+                    window.location.href = '/editor.html';
+                    break;
+                case 'USER':
+                default:
+                    window.location.href = '/user.html';
+                    break;
+            }
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const errorMsg = document.getElementById('errorMessage');
+            const successMsg = document.getElementById('successMessage');
+
+            // Приховати повідомлення
+            errorMsg.style.display = 'none';
+            successMsg.style.display = 'none';
+            
+            // Вимкнути кнопку
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Вхід...';
+
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    // Зберегти токен та інформацію про користувача
+                    localStorage.setItem('jwtToken', data.token);
+                    localStorage.setItem('username', data.username);
+                    localStorage.setItem('role', data.role);
+                    document.cookie = `jwtToken=${data.token}; Path=/; SameSite=Lax`;
+
+                    successMsg.textContent = 'Успішний вхід! Перенаправлення...';
+                    successMsg.style.display = 'block';
+
+                    // Перенаправлення залежно від ролі
+                    setTimeout(() => {
+                        switch(data.role) {
+                            case 'MODERATOR':
+                                window.location.href = '/moderator.html';
+                                break;
+                            case 'EDITOR':
+                                window.location.href = '/editor.html';
+                                break;
+                            case 'USER':
+                            default:
+                                window.location.href = '/user.html';
+                                break;
+                        }
+                    }, 1000);
+                } else {
+                    errorMsg.textContent = data.error || 'Невірне ім\'я користувача або пароль';
+                    errorMsg.style.display = 'block';
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Увійти';
+                }
+            } catch (error) {
+                console.error('Помилка входу:', error);
+                errorMsg.textContent = 'Помилка з\'єднання з сервером';
+                errorMsg.style.display = 'block';
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Увійти';
+            }
+        });
+    </script>
+</body>
+</html>
+

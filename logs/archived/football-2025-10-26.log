@@ -1,0 +1,1 @@
+2025-10-26 00:04:05.875 [HikariPool-1:housekeeper] WARN   com.zaxxer.hikari.pool.HikariPool [operation=, endpoint=, matchId=, teamName=, score=] - HikariPool-1 - Thread starvation or clock leap detected (housekeeper delta=3m55s943ms706µs700ns).

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Відгук про Football UA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="top-bar">
+        <div class="wrap">
+            <div class="top-bar-content">
+                <div class="site-logo">
+                    <span class="logo-icon">⚽</span>
+                    <span class="logo-text">FOOTBALL HUB</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="/index.html" class="nav-link">Головна SPA</a>
+                    <a th:href="@{/ui/home}" class="nav-link">UI демо</a>
+                    <a th:href="@{/ui/feedback}" class="nav-link active">Відгук</a>
+                    <a th:href="@{/ui/roles}" class="nav-link">Ролі</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="site-main">
+    <div class="wrap">
+        <div class="content-layout">
+            <div class="main-content">
+                <section class="panel active">
+                    <div class="section-title">
+                        <h2>Залишити відгук</h2>
+                    </div>
+
+                    <div class="card">
+                        <form th:action="@{/ui/feedback}" th:object="${feedbackForm}" method="post" class="form">
+                            <div class="form-row">
+                                <label for="name">Ім'я</label>
+                                <input id="name" type="text" th:field="*{name}" placeholder="Ваше ім'я">
+                            </div>
+
+                            <div class="form-row">
+                                <label for="email">Email</label>
+                                <input id="email" type="email" th:field="*{email}" placeholder="you@example.com">
+                            </div>
+
+                            <div class="form-row">
+                                <label for="message">Повідомлення</label>
+                                <textarea id="message" th:field="*{message}" rows="4"
+                                          placeholder="Ваш відгук про Football UA"></textarea>
+                            </div>
+
+                            <div class="form-row">
+                                <button type="submit" class="btn-action">Надіслати</button>
+                            </div>
+                        </form>
+
+                        <div th:if="${successMessage}" style="margin-top: 16px; font-weight: 600; color: #00a859;">
+                            <span th:text="${successMessage}">Дякуємо за відгук!</span>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

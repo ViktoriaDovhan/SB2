@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>Ролі в Football UA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="top-bar">
+        <div class="wrap">
+            <div class="top-bar-content">
+                <div class="site-logo">
+                    <span class="logo-icon">⚽</span>
+                    <span class="logo-text">FOOTBALL HUB</span>
+                </div>
+                <nav class="main-nav">
+                    <a href="/index.html" class="nav-link">Головна SPA</a>
+                    <a th:href="@{/ui/home}" class="nav-link">UI демо</a>
+                    <a th:href="@{/ui/feedback}" class="nav-link">Відгук</a>
+                    <a th:href="@{/ui/roles}" class="nav-link active">Ролі</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="site-main">
+    <div class="wrap">
+        <div class="content-layout">
+            <div class="main-content">
+                <section class="panel active">
+                    <div class="section-title">
+                        <h2>Ролі та доступ</h2>
+                    </div>
+
+                    <!-- Гість -->
+                    <section sec:authorize="isAnonymous()">
+                        <div class="card">
+                            <h3>Гість</h3>
+                            <p>Бачить публічні новини та розклад матчів.</p>
+                            <p><a href="/login.html">Увійдіть</a>, щоб писати на форумі та залишати відгуки.</p>
+                        </div>
+                    </section>
+
+                    <!-- Будь-який зареєстрований користувач -->
+                    <section sec:authorize="hasRole('USER')">
+                        <div class="card">
+                            <h3>Користувач</h3>
+                            <ul>
+                                <li> пише повідомлення на форумі;</li>
+                                <li> ставить лайки новинам;</li>
+                                <li> підписується на матчі.</li>
+                            </ul>
+                        </div>
+                    </section>
+
+
+                    <!-- Модератор -->
+                    <section sec:authorize="hasRole('MODERATOR')">
+                        <div class="card">
+                            <h3>Модератор</h3>
+                            <ul>
+                                <li> стежить за форумом;</li>
+                                <li> видаляє теми та повідомлення з порушеннями;</li>
+                                <li> має доступ до журналу активності
+                                    (<a href="/activity.html">/activity.html</a>).
+                                </li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Редактор -->
+                    <section sec:authorize="hasRole('EDITOR')">
+                        <div class="card">
+                            <h3>Редактор</h3>
+                            <ul>
+                                <li> створює, змінює й видаляє новини;</li>
+                                <li> оновлює матчі та команди;</li>
+                                <li> формує контент головної сторінки.</li>
+                            </ul>
+                        </div>
+                    </section>
+                </section>
+            </div>
+        </div>
+    </div>
+</main>
+
+</body>
+</html>

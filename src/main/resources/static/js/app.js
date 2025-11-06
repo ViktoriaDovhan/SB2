@@ -80,20 +80,25 @@ function renderNewsList(newsList, containerId = 'news-list') {
     `).join('');
 }
 
-function renderMatchesList(matchesList, containerId = 'matches-list') {
+function renderMatchesList(matchesList, containerId = 'matches-list', showScores = true) {
     const container = document.querySelector(`#${containerId}`);
     if (!container) return;
-    
+
     if (!matchesList || matchesList.length === 0) {
         container.innerHTML = '<div class="empty-state"><h3>⚽ Немає матчів</h3><p>Створіть перший матч!</p></div>';
         return;
     }
-    
+
     container.innerHTML = matchesList.map(match => {
+        console.log(`renderMatchesList матчу ${match.id}: ${match.homeTeam} vs ${match.awayTeam}, showScores=${showScores}`);
         const kickoff = new Date(match.kickoffAt);
         const dateStr = kickoff.toLocaleDateString('uk-UA', {day: 'numeric', month: 'long', year: 'numeric'});
         const timeStr = kickoff.toLocaleTimeString('uk-UA', {hour: '2-digit', minute: '2-digit'});
-        
+
+        const homeScore = match.homeScore ?? '?';
+        const awayScore = match.awayScore ?? '?';
+        const scoreDisplay = showScores ? `${homeScore} : ${awayScore}` : '? : ?';
+
         return `
         <div class="match-card" onclick="viewMatchDetail(${match.id})">
             <div class="match-header">
@@ -101,7 +106,7 @@ function renderMatchesList(matchesList, containerId = 'matches-list') {
             </div>
             <div class="match-teams">
                 <div class="team-name team-home">${escapeHtml(match.homeTeam)}</div>
-                <div class="match-score">${match.homeScore || 0} : ${match.awayScore || 0}</div>
+                <div class="match-score">${scoreDisplay}</div>
                 <div class="team-name team-away">${escapeHtml(match.awayTeam)}</div>
             </div>
             <div class="match-info">
@@ -579,7 +584,6 @@ window.addEventListener('hashchange', () => {
     }
 });
 
-// ==================== СПОВІЩЕННЯ ПРО МАЙБУТНІ МАТЧІ ====================
 
 async function loadUpcomingMatchesNotifications() {
     try {
@@ -657,8 +661,6 @@ function displayUpcomingMatchesNotifications(matches) {
     
     container.style.display = 'block';
 }
-
-// Ініціалізація datetime поля для матчів
 function initMatchDateTimeInput() {
     const dateTimeInput = document.getElementById('matchDateTime');
     if (dateTimeInput) {
@@ -673,8 +675,6 @@ function initMatchDateTimeInput() {
         dateTimeInput.value = tomorrow.toISOString().slice(0, 16);
     }
 }
-
-// Завантаження команд для автозаповнення
 let allTeamsCache = [];
 
 async function loadTeamsDatalist() {
@@ -697,8 +697,6 @@ async function loadTeamsDatalist() {
         console.error('Помилка завантаження команд:', error);
     }
 }
-
-// Функція для показу випадаючого списку
 function showAutocomplete(input, dropdown, teams) {
     const query = input.value.trim().toLowerCase();
     
@@ -731,8 +729,6 @@ function showAutocomplete(input, dropdown, teams) {
         });
     });
 }
-
-// Валідація вибору команд
 function validateTeamSelection(input) {
     const value = input.value.trim();
     if (!value) return true;
@@ -747,8 +743,6 @@ function validateTeamSelection(input) {
     
     return isValid;
 }
-
-// Перевірка що команди різні
 function validateDifferentTeams() {
     const homeTeam = document.getElementById('homeTeamInput');
     const awayTeam = document.getElementById('awayTeamInput');
@@ -766,8 +760,6 @@ function validateDifferentTeams() {
         return true;
     }
 }
-
-// Ініціалізація autocomplete для команд
 function initTeamAutocomplete() {
     const homeTeamInput = document.getElementById('homeTeamInput');
     const homeTeamDropdown = document.getElementById('homeTeamDropdown');
@@ -816,8 +808,6 @@ function initTeamAutocomplete() {
         });
     }
 }
-
-// Завантажувати сповіщення при першому завантаженні
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         loadUpcomingMatchesNotifications();
@@ -833,8 +823,6 @@ if (document.readyState === 'loading') {
         initTeamAutocomplete();
     });
 }
-
-// Оновлювати сповіщення кожні 5 хвилин
 setInterval(loadUpcomingMatchesNotifications, 5 * 60 * 1000);
 
 

@@ -8,7 +8,6 @@ import com.football.ua.service.MatchDbService;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -39,7 +38,8 @@ public class MatchDbServiceImpl implements MatchDbService {
         match.setKickoffAt(kickoffAt);
         match.setHomeScore(0);
         match.setAwayScore(0);
-        match.setTeams(new HashSet<>(List.of(home, away)));
+        match.setHomeTeam(home);
+        match.setAwayTeam(away);
         return matchRepository.save(match);
     }
 

@@ -2,7 +2,7 @@ package com.football.ua.model.entity;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 @Entity
@@ -21,11 +21,13 @@ public class MatchEntity {
     @Column(nullable = false)
     private Integer awayScore = 0;
 
-    @ManyToMany
-    @JoinTable(name = "match_teams",
-            joinColumns = @JoinColumn(name = "match_id"),
-            inverseJoinColumns = @JoinColumn(name = "team_id"))
-    private Set<TeamEntity> teams = new HashSet<>();
+    @ManyToOne
+    @JoinColumn(name = "home_team_id")
+    private TeamEntity homeTeam;
+
+    @ManyToOne
+    @JoinColumn(name = "away_team_id")
+    private TeamEntity awayTeam;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -39,8 +41,11 @@ public class MatchEntity {
     public Integer getAwayScore() { return awayScore; }
     public void setAwayScore(Integer awayScore) { this.awayScore = awayScore; }
 
-    public Set<TeamEntity> getTeams() { return teams; }
-    public void setTeams(Set<TeamEntity> teams) { this.teams = teams; }
+    public TeamEntity getHomeTeam() { return homeTeam; }
+    public void setHomeTeam(TeamEntity homeTeam) { this.homeTeam = homeTeam; }
+
+    public TeamEntity getAwayTeam() { return awayTeam; }
+    public void setAwayTeam(TeamEntity awayTeam) { this.awayTeam = awayTeam; }
 }
 
 

@@ -2,6 +2,7 @@ package com.football.ua.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
@@ -28,5 +29,11 @@ public class GlobalExceptionHandler {
                 .collect(Collectors.toMap(f -> f.getField(), f -> f.getDefaultMessage(), (a,b)->a));
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(Map.of("error","VALIDATION_FAILED","fields", fields));
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<Map<String,Object>> accessDenied(AccessDeniedException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error","ACCESS_DENIED","message",ex.getMessage()));
     }
 }

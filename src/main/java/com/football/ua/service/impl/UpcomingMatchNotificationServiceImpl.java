@@ -86,17 +86,11 @@ public class UpcomingMatchNotificationServiceImpl implements UpcomingMatchNotifi
         String awayTeam = "Команда 2";
         
         try {
-            if (match.getTeams() != null) {
-                int teamCount = match.getTeams().size();
-                if (teamCount > 0) {
-                    List<String> teamNames = match.getTeams().stream()
-                        .map(team -> team.getName())
-                        .limit(2)
-                        .toList();
-                    
-                    if (teamNames.size() > 0) homeTeam = teamNames.get(0);
-                    if (teamNames.size() > 1) awayTeam = teamNames.get(1);
-                }
+            if (match.getHomeTeam() != null) {
+                homeTeam = match.getHomeTeam().getName();
+            }
+            if (match.getAwayTeam() != null) {
+                awayTeam = match.getAwayTeam().getName();
             }
         } catch (Exception e) {
             System.out.println("⚠️ Помилка отримання команд для матчу ID=" + match.getId() + ": " + e.getMessage());

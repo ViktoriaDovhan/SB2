@@ -12,6 +12,7 @@ public interface ForumDbService {
     List<TopicEntity> listTopics();
     PostEntity addPost(Long topicId, String author, String text);
     List<PostEntity> listPosts(Long topicId);
+    void deletePost(Long postId);
 }
 
 

@@ -3,11 +3,17 @@ package com.football.ua.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.football.ua.model.entity.PostEntity;
 import com.football.ua.model.entity.TopicEntity;
+import com.football.ua.model.entity.UserEntity;
+import com.football.ua.repo.UserRepository;
 import com.football.ua.service.ForumDbService;
 import com.football.ua.service.ModerationService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.beans.factory.ObjectProvider;
@@ -17,21 +23,29 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api/moderator")
+@PreAuthorize("hasRole('MODERATOR')")
+@Tag(name = "👮 Moderation", description = "API для модерації (MODERATOR)")
 public class ModeratorController {
 
     private final ObjectMapper objectMapper;
     private final Path resourcesPath;
     private final ForumDbService forum;
     private final ObjectProvider<ModerationService> moderationProvider;
+    private final UserRepository userRepository;
 
-    public ModeratorController(ObjectMapper objectMapper, ForumDbService forum, ObjectProvider<ModerationService> moderationProvider) throws IOException {
+    public ModeratorController(ObjectMapper objectMapper, 
+                              ForumDbService forum, 
+                              ObjectProvider<ModerationService> moderationProvider,
+                              UserRepository userRepository) throws IOException {
         this.objectMapper = objectMapper;
         this.forum = forum;
         this.moderationProvider = moderationProvider;
+        this.userRepository = userRepository;
         this.resourcesPath = getPathToResources();
             System.out.println("✅ Шлях для запису файлу гравця тижня: " + resourcesPath);
     }
@@ -88,6 +102,45 @@ public class ModeratorController {
                return forum.addPost(topicId, dto.author(), dto.text());
             }
 
+
+    @PostMapping("/users/{username}/ban")
+    @Operation(summary = "Заблокувати користувача", 
+               description = "👮 MODERATOR - блокування користувача",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> banUser(@PathVariable String username) {
+        UserEntity user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Користувача не знайдено"));
+        
+        if (user.getRole() == UserEntity.Role.MODERATOR || user.getRole() == UserEntity.Role.EDITOR) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(Map.of("error", "Не можна заблокувати модератора або редактора"));
+        }
+        
+        user.setEnabled(false);
+        userRepository.save(user);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Користувача заблоковано");
+        response.put("username", username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/users/{username}/unban")
+    @Operation(summary = "Розблокувати користувача", 
+               description = "👮 MODERATOR - розблокування користувача",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<?> unbanUser(@PathVariable String username) {
+        UserEntity user = userRepository.findByUsername(username)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Користувача не знайдено"));
+        
+        user.setEnabled(true);
+        userRepository.save(user);
+        
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Користувача розблоковано");
+        response.put("username", username);
+        return ResponseEntity.ok(response);
+    }
 
     private Path getPathToResources() throws IOException {
         Path projectRoot = Paths.get(new File(".").getAbsolutePath()).getParent();

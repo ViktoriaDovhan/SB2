@@ -21,8 +21,12 @@
                     <a href="#matches" class="nav-link" data-tab="matches">МАТЧІ</a>
                     <a href="#teams" class="nav-link" data-tab="teams">КОМАНДИ</a>
                     <a href="#forum" class="nav-link" data-tab="forum">ФОРУМ</a>
-                    <a href="/activity" class="nav-link">АКТИВНІСТЬ</a>
+                    <a href="/ui/home" class="nav-link">Thymeleaf</a>
                 </nav>
+                <div id="userInfo" class="user-info">
+                    <a href="/login.html" class="btn-login-link">Увійти</a>
+                    <a href="/register.html" class="btn-register-link">Реєстрація</a>
+                </div>
             </div>
         </div>
     </div>
@@ -35,7 +39,6 @@
     </div>
 </div>
 
-<!-- Сповіщення про майбутні матчі -->
 <div id="upcoming-matches-notifications" class="notifications-container" style="display: none;"></div>
 
 <main class="site-main">
@@ -310,13 +313,6 @@
                     </div>
                 </div>
 
-                <div class="widget">
-                    <h3 class="widget-title">🔧 Налаштування</h3>
-                    <div class="widget-content">
-                        <a href="#moderator" class="nav-link btn full" data-tab="moderator" style="text-align: center;">Керування сайтом</a>
-                        <a href="/h2-console" target="_blank" class="btn full">H2 Console</a>
-                    </div>
-                </div>
             </aside>
         </div>
     </div>
@@ -357,6 +353,24 @@
     <option>FC_Oleksandriya</option><option>FC_Kryvbas_Kryvyi_Rih</option>
 </datalist>
 
+<script src="/js/auth.js"></script>
+<script src="/js/guest.js"></script>
 <script defer src="/js/app.js"></script>
+<script>
+    // Приховати форми редагування для гостей
+    document.addEventListener('DOMContentLoaded', () => {
+        // Приховати кнопки додавання для незареєстрованих
+        document.querySelectorAll('.btn-action').forEach(btn => {
+            if (btn.textContent.includes('Додати') || btn.textContent.includes('➕')) {
+                btn.style.display = 'none';
+            }
+        });
+        
+        // Приховати форми
+        document.querySelectorAll('.forms-container').forEach(form => {
+            form.style.display = 'none';
+        });
+    });
+</script>
 </body>
 </html>

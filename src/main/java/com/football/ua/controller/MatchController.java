@@ -14,6 +14,7 @@ import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import jakarta.validation.Valid;
@@ -77,9 +78,8 @@ public class MatchController {
                 .filter(m -> m.getId().equals(id))
                 .findFirst()
                 .orElseThrow(() -> new NotFoundException("Match not found"));
-            List<TeamEntity> teamsList = new ArrayList<>(entity.getTeams());
-            String homeTeam = !teamsList.isEmpty() ? teamsList.get(0).getName() : "TBD";
-            String awayTeam = teamsList.size() > 1 ? teamsList.get(1).getName() : "TBD";
+            String homeTeam = entity.getHomeTeam() != null ? entity.getHomeTeam().getName() : "TBD";
+            String awayTeam = entity.getAwayTeam() != null ? entity.getAwayTeam().getName() : "TBD";
             log.info(DB_OPERATION, "Матч знайдено: {} vs {}", homeTeam, awayTeam);
             return toDto(entity);
         } finally {
@@ -89,6 +89,7 @@ public class MatchController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @PreAuthorize("hasRole('EDITOR')")
     @Operation(summary = "Створити новий матч", description = "Створює новий футбольний матч")
     public Match create(@Valid @RequestBody Match body) {
         MDC.put("operation", "create");
@@ -118,6 +119,7 @@ public class MatchController {
     }
 
     @PatchMapping("/{id}/score")
+    @PreAuthorize("hasRole('EDITOR')")
     public Match updateScore(@PathVariable Long id, @RequestBody Map<String,Integer> body) {
         MDC.put("operation", "updateScore");
         MDC.put("matchId", String.valueOf(id));
@@ -144,6 +146,7 @@ public class MatchController {
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasRole('EDITOR')")
     public void delete(@PathVariable Long id) {
         MDC.put("operation", "delete");
         MDC.put("matchId", String.valueOf(id));
@@ -169,14 +172,12 @@ public class MatchController {
         dto.kickoffAt = entity.getKickoffAt();
         dto.homeScore = entity.getHomeScore();
         dto.awayScore = entity.getAwayScore();
+
+        dto.homeTeam = entity.getHomeTeam() != null ? entity.getHomeTeam().getName() : "TBD";
+        dto.awayTeam = entity.getAwayTeam() != null ? entity.getAwayTeam().getName() : "TBD";
         
-        List<String> teamNames = entity.getTeams().stream()
-            .map(TeamEntity::getName)
-            .collect(Collectors.toList());
-        
-        dto.homeTeam = teamNames.size() > 0 ? teamNames.get(0) : "Команда 1";
-        dto.awayTeam = teamNames.size() > 1 ? teamNames.get(1) : "Команда 2";
-        
+        log.debug("Матч {}: home={}, away={}", entity.getId(), dto.homeTeam, dto.awayTeam);
+
         return dto;
     }
 

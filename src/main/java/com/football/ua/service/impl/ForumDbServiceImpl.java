@@ -77,6 +77,12 @@ public class ForumDbServiceImpl implements ForumDbService {
     public boolean topicExists(Long id) {
         return topicRepository.existsById(id);
     }
+
+    @Override
+    @Transactional
+    public void deletePost(Long postId) {
+        postRepository.deleteById(postId);
+    }
 }
 
 

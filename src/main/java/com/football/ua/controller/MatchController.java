@@ -95,20 +95,22 @@ public class MatchController {
         MDC.put("operation", "create");
         MDC.put("homeTeam", body.homeTeam);
         MDC.put("awayTeam", body.awayTeam);
+        MDC.put("league", body.league);
         MDC.put("endpoint", "/api/matches");
         try {
-            log.info(CRUD_CREATE, "Створення нового матчу: {} vs {}", body.homeTeam, body.awayTeam);
+            log.info(CRUD_CREATE, "Створення нового матчу: {} vs {} (Ліга: {})", body.homeTeam, body.awayTeam, body.league);
             MatchEntity entity = matchDbService.create(
                 body.homeTeam,
                 body.awayTeam,
-                body.kickoffAt
+                body.kickoffAt,
+                body.league
             );
             MDC.put("matchId", String.valueOf(entity.getId()));
             log.info(CRUD_CREATE, "Матч успішно створено з ID: {}", entity.getId());
             
             activityLogService.logActivity(
                 "Додано новий матч",
-                String.format("%s vs %s", body.homeTeam, body.awayTeam),
+                String.format("%s vs %s (%s)", body.homeTeam, body.awayTeam, body.league),
                 "MATCHES"
             );
             
@@ -172,11 +174,12 @@ public class MatchController {
         dto.kickoffAt = entity.getKickoffAt();
         dto.homeScore = entity.getHomeScore();
         dto.awayScore = entity.getAwayScore();
+        dto.league = entity.getLeague();
 
         dto.homeTeam = entity.getHomeTeam() != null ? entity.getHomeTeam().getName() : "TBD";
         dto.awayTeam = entity.getAwayTeam() != null ? entity.getAwayTeam().getName() : "TBD";
         
-        log.debug("Матч {}: home={}, away={}", entity.getId(), dto.homeTeam, dto.awayTeam);
+        log.debug("Матч {}: home={}, away={} (Ліга: {})", entity.getId(), dto.homeTeam, dto.awayTeam, dto.league);
 
         return dto;
     }

@@ -91,10 +91,44 @@
                     </div>
                     <div class="leagues-tabs">
                         <button class="league-tab active" data-league="UPL">🇺🇦 УПЛ</button>
-                        <button class="league-tab" data-league="UCL">⭐ Ліга Чемпіонів</button>
-                        <button class="league-tab" data-league="EPL">🏴 Прем'єр-ліга</button>
+                        <button class="league-tab" data-league="UCL">⭐ ЛЧ</button>
+                        <button class="league-tab" data-league="EPL">🏴 АПЛ</button>
+                        <button class="league-tab" data-league="LaLiga">🇪🇸 Ла Ліга</button>
+                        <button class="league-tab" data-league="Bundesliga">🇩🇪 Бундесліга</button>
+                        <button class="league-tab" data-league="SerieA">🇮🇹 Серія А</button>
+                        <button class="league-tab" data-league="Ligue1">🇫🇷 Ліга 1</button>
                     </div>
-                    <div id="teams-list" class="teams-grid"></div>
+
+                    <div class="league-options">
+                        <label class="option-toggle">
+                            <input type="checkbox" id="show-past-matches">
+                            <span class="option-icon">⚽</span>
+                            <span class="option-label">Минулі матчі</span>
+                        </label>
+                        <label class="option-toggle">
+                            <input type="checkbox" id="show-upcoming-matches">
+                            <span class="option-icon">📅</span>
+                            <span class="option-label">Майбутні</span>
+                        </label>
+                        <label class="option-toggle">
+                            <input type="checkbox" id="show-table">
+                            <span class="option-icon">📊</span>
+                            <span class="option-label">Таблиця</span>
+                        </label>
+                        <label class="option-toggle">
+                            <input type="checkbox" id="show-stats">
+                            <span class="option-icon">📈</span>
+                            <span class="option-label">Статистика</span>
+                        </label>
+                    </div>
+
+                    <div id="league-content-container">
+                        <div id="past-matches" class="matches-container" style="display: none;"></div>
+                        <div id="upcoming-matches" class="matches-container" style="display: none;"></div>
+                        <div id="league-table" class="league-table-container" style="display: none;"></div>
+                        <div id="league-stats" class="stats-container" style="display: none;"></div>
+                        <div id="teams-list" class="teams-grid"></div>
+                    </div>
                 </section>
 
                 <section id="forum" class="panel">
@@ -211,13 +245,18 @@
                                 <div class="card-content">
                                     <form onsubmit="createMatch(event)">
                                         <div class="form-group">
-                                            <label>Ліга (не обов'язково)</label>
-                                            <select id="match-create-league" class="league-filter">
-                                                <option value="">Всі ліги</option>
+                                            <label><strong>Ліга</strong> <span style="color: #dc3545;">*</span></label>
+                                            <select id="match-create-league" class="league-filter" required>
+                                                <option value="">-- Оберіть лігу --</option>
                                                 <option value="UPL">🇺🇦 УПЛ</option>
                                                 <option value="UCL">⭐ Ліга Чемпіонів</option>
                                                 <option value="EPL">🏴 Прем'єр-ліга</option>
+                                                <option value="LaLiga">🇪🇸 Ла Ліга</option>
+                                                <option value="Bundesliga">🇩🇪 Бундесліга</option>
+                                                <option value="SerieA">🇮🇹 Серія А</option>
+                                                <option value="Ligue1">🇫🇷 Ліга 1</option>
                                             </select>
+                                            <small style="color: #6c757d; font-size: 12px;">⚠️ Обов'язкове поле - матч буде прив'язаний до ліги</small>
                                         </div>
                                         <div class="form-group">
                                             <label>Домашня команда</label>
@@ -349,6 +388,7 @@
 
 <script src="/js/auth.js"></script>
 <script src="/js/app.js"></script>
+<script src="/js/upcoming-matches.js"></script>
 <script src="/js/editor.js"></script>
 </body>
 </html>

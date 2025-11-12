@@ -6,7 +6,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MatchDbService {
-    MatchEntity create(String homeTeam, String awayTeam, LocalDateTime kickoffAt);
+    MatchEntity create(String homeTeam, String awayTeam, LocalDateTime kickoffAt, String league);
     MatchEntity updateScore(Long id, Integer homeScore, Integer awayScore);
     void delete(Long id);
     List<MatchEntity> list();

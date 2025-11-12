@@ -17,6 +17,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateUserInfo();
     loadNews();
     loadMatches();
+    // Завантажуємо майбутні та минулі матчі
+    loadUpcomingMatchesFromApi();
+    loadPreviousMatchesFromApi();
     if (typeof loadTeamsByLeague === 'function') {
         loadTeamsByLeague('UPL');
     } else {
@@ -34,6 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
     setupTeamAutocomplete().catch(error => {
         console.error('Помилка ініціалізації autocomplete:', error);
     });
+
+    // Ініціалізація обробника чекбоксу майбутніх матчів
+    if (typeof initUpcomingMatchesCheckbox === 'function') {
+        initUpcomingMatchesCheckbox();
+    }
+
+    // Ініціалізація чекбоксів матчів
+    initMatchesCheckboxes();
+
+    // Ініціалізація опцій перегляду ліги
+    if (typeof initLeagueOptions === 'function') {
+        initLeagueOptions();
+    }
 });
 
 function updateUserInfo() {
@@ -570,12 +586,17 @@ async function deleteNews(event) {
 async function createMatch(event) {
     event.preventDefault();
 
+    const league = document.getElementById('match-create-league').value;
     const homeId = document.getElementById('match-create-home-id').value;
     const awayId = document.getElementById('match-create-away-id').value;
     const kickoffAt = document.getElementById('match-create-kickoff').value;
 
-    console.log('Створення матчу:', { homeId, awayId, kickoffAt });
+    console.log('Створення матчу:', { league, homeId, awayId, kickoffAt });
 
+    if (!league) {
+        showMessage('Будь ласка, оберіть лігу', 'error');
+        return;
+    }
     if (!homeId) {
         showMessage('Будь ласка, виберіть домашню команду зі списку', 'error');
         return;
@@ -594,6 +615,7 @@ async function createMatch(event) {
     }
 
     console.log('Створення матчу:', {
+        league: league,
         homeTeam: homeTeam.name,
         awayTeam: awayTeam.name,
         kickoffAt: kickoffAt
@@ -606,6 +628,7 @@ async function createMatch(event) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
+                league: league,
                 homeTeam: homeTeam.name,
                 awayTeam: awayTeam.name,
                 kickoffAt: kickoffAt
@@ -617,7 +640,8 @@ async function createMatch(event) {
             throw new Error(error);
         }
         
-        showMessage('Матч створено успішно!', 'success');
+        showMessage(`Матч створено успішно для ліги ${league}!`, 'success');
+        document.getElementById('match-create-league').value = '';
         document.getElementById('match-create-home-id').value = '';
         document.getElementById('match-create-away-id').value = '';
         document.getElementById('match-create-kickoff').value = '';
@@ -877,7 +901,7 @@ async function loadTeamsForAutocomplete() {
                 window.teamsCache.push({
                     id: team.id,
                     name: team.name,
-                    league: team.league
+                    league: league  // Використовуємо ключ з об'єкта, а не team.league
                 });
             });
         }
@@ -886,6 +910,39 @@ async function loadTeamsForAutocomplete() {
 
     } catch (error) {
         console.error('Помилка завантаження команд для autocomplete:', error);
+    }
+}
+
+// Ініціалізація чекбоксів для матчів
+function initMatchesCheckboxes() {
+    // Чекбокс для майбутніх матчів
+    const upcomingCheckbox = document.getElementById('show-upcoming-matches');
+    if (upcomingCheckbox) {
+        upcomingCheckbox.addEventListener('change', () => {
+            const container = document.getElementById('upcoming-matches');
+            if (container) {
+                if (upcomingCheckbox.checked) {
+                    loadUpcomingMatchesFromApi();
+                } else {
+                    container.innerHTML = '<div class="empty-state">📅 Майбутні матчі вимкнено</div>';
+                }
+            }
+        });
+    }
+
+    // Чекбокс для минулих матчів
+    const pastCheckbox = document.getElementById('show-past-matches');
+    if (pastCheckbox) {
+        pastCheckbox.addEventListener('change', () => {
+            const container = document.getElementById('past-matches');
+            if (container) {
+                if (pastCheckbox.checked) {
+                    loadPreviousMatchesFromApi();
+                } else {
+                    container.innerHTML = '<div class="empty-state">📅 Минулі матчі вимкнено</div>';
+                }
+            }
+        });
     }
 }
 

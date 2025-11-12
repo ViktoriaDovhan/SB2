@@ -15,4 +15,6 @@ public class Match {
     @Min(0) public Integer awayScore;
 
     @NotNull public LocalDateTime kickoffAt;
+    
+    @NotBlank public String league;
 }

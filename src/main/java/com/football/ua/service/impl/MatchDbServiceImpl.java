@@ -22,7 +22,7 @@ public class MatchDbServiceImpl implements MatchDbService {
     }
 
     @Override
-    public MatchEntity create(String homeTeam, String awayTeam, LocalDateTime kickoffAt) {
+    public MatchEntity create(String homeTeam, String awayTeam, LocalDateTime kickoffAt, String league) {
         TeamEntity home = teamRepository.findByName(homeTeam).orElseGet(() -> {
             TeamEntity t = new TeamEntity();
             t.setName(homeTeam);
@@ -36,10 +36,9 @@ public class MatchDbServiceImpl implements MatchDbService {
 
         MatchEntity match = new MatchEntity();
         match.setKickoffAt(kickoffAt);
-        match.setHomeScore(0);
-        match.setAwayScore(0);
         match.setHomeTeam(home);
         match.setAwayTeam(away);
+        match.setLeague(league);
         return matchRepository.save(match);
     }
 

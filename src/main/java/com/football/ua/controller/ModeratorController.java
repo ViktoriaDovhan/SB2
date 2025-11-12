@@ -88,7 +88,7 @@ public class ModeratorController {
     }
 
     @PostMapping(value = "/topics", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ResponseStatus(HttpStatus.CREATED) // зберігаємо твою семантику CREATED
+    @ResponseStatus(HttpStatus.CREATED)
     public TopicEntity createTopicViaModerator(@RequestBody CreateTopicDto dto) {
         return forum.createTopic(dto.title(), dto.author());
     }

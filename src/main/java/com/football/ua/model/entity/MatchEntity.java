@@ -15,11 +15,11 @@ public class MatchEntity {
     @Column(nullable = false)
     private LocalDateTime kickoffAt;
 
-    @Column(nullable = false)
-    private Integer homeScore = 0;
+    @Column(nullable = true)
+    private Integer homeScore;
 
-    @Column(nullable = false)
-    private Integer awayScore = 0;
+    @Column(nullable = true)
+    private Integer awayScore;
 
     @ManyToOne
     @JoinColumn(name = "home_team_id")
@@ -28,6 +28,9 @@ public class MatchEntity {
     @ManyToOne
     @JoinColumn(name = "away_team_id")
     private TeamEntity awayTeam;
+    
+    @Column(nullable = false)
+    private String league;
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -46,6 +49,9 @@ public class MatchEntity {
 
     public TeamEntity getAwayTeam() { return awayTeam; }
     public void setAwayTeam(TeamEntity awayTeam) { this.awayTeam = awayTeam; }
+    
+    public String getLeague() { return league; }
+    public void setLeague(String league) { this.league = league; }
 }
 
 

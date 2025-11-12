@@ -1,0 +1,677 @@
+{
+  "duration" : 30,
+  "data" : [ {
+    "date" : "2025-11-01",
+    "score" : {
+      "away" : 0,
+      "home" : 3
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Leeds United FC",
+      "id" : 341,
+      "shortName" : "Leeds United",
+      "crest" : "https://crests.football-data.org/341.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Brighton & Hove Albion FC",
+      "id" : 397,
+      "shortName" : "Brighton Hove",
+      "crest" : "https://crests.football-data.org/397.png"
+    },
+    "id" : 537876,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-01T15:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-01",
+    "score" : {
+      "away" : 0,
+      "home" : 2
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Brentford FC",
+      "id" : 402,
+      "shortName" : "Brentford",
+      "crest" : "https://crests.football-data.org/402.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Crystal Palace FC",
+      "id" : 354,
+      "shortName" : "Crystal Palace",
+      "crest" : "https://crests.football-data.org/354.png"
+    },
+    "id" : 537877,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-01T15:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-01",
+    "score" : {
+      "away" : 2,
+      "home" : 0
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Arsenal FC",
+      "id" : 57,
+      "shortName" : "Arsenal",
+      "crest" : "https://crests.football-data.org/57.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Burnley FC",
+      "id" : 328,
+      "shortName" : "Burnley",
+      "crest" : "https://crests.football-data.org/328.png"
+    },
+    "id" : 537878,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-01T15:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-01",
+    "score" : {
+      "away" : 0,
+      "home" : 3
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Wolverhampton Wanderers FC",
+      "id" : 76,
+      "shortName" : "Wolverhampton",
+      "crest" : "https://crests.football-data.org/76.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Fulham FC",
+      "id" : 63,
+      "shortName" : "Fulham",
+      "crest" : "https://crests.football-data.org/63.png"
+    },
+    "id" : 537879,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-01T15:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-01",
+    "score" : {
+      "away" : 2,
+      "home" : 2
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Manchester United FC",
+      "id" : 66,
+      "shortName" : "Man United",
+      "crest" : "https://crests.football-data.org/66.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Nottingham Forest FC",
+      "id" : 351,
+      "shortName" : "Nottingham",
+      "crest" : "https://crests.football-data.org/351.png"
+    },
+    "id" : 537882,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-01T15:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-01",
+    "score" : {
+      "away" : 1,
+      "home" : 0
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Chelsea FC",
+      "id" : 61,
+      "shortName" : "Chelsea",
+      "crest" : "https://crests.football-data.org/61.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Tottenham Hotspur FC",
+      "id" : 73,
+      "shortName" : "Tottenham",
+      "crest" : "https://crests.football-data.org/73.png"
+    },
+    "id" : 537883,
+    "time" : "17:30",
+    "kickoffAt" : "2025-11-01T17:30:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-01",
+    "score" : {
+      "away" : 0,
+      "home" : 2
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Aston Villa FC",
+      "id" : 58,
+      "shortName" : "Aston Villa",
+      "crest" : "https://crests.football-data.org/58.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Liverpool FC",
+      "id" : 64,
+      "shortName" : "Liverpool",
+      "crest" : "https://crests.football-data.org/64.png"
+    },
+    "id" : 537880,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-01T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-02",
+    "score" : {
+      "away" : 1,
+      "home" : 3
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Newcastle United FC",
+      "id" : 67,
+      "shortName" : "Newcastle",
+      "crest" : "https://crests.football-data.org/67.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "West Ham United FC",
+      "id" : 563,
+      "shortName" : "West Ham",
+      "crest" : "https://crests.football-data.org/563.png"
+    },
+    "id" : 537884,
+    "time" : "14:00",
+    "kickoffAt" : "2025-11-02T14:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-02",
+    "score" : {
+      "away" : 1,
+      "home" : 3
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "AFC Bournemouth",
+      "id" : 1044,
+      "shortName" : "Bournemouth",
+      "crest" : "https://crests.football-data.org/bournemouth.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Manchester City FC",
+      "id" : 65,
+      "shortName" : "Man City",
+      "crest" : "https://crests.football-data.org/65.png"
+    },
+    "id" : 537881,
+    "time" : "16:30",
+    "kickoffAt" : "2025-11-02T16:30:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-03",
+    "score" : {
+      "away" : 1,
+      "home" : 1
+    },
+    "matchday" : 10,
+    "awayTeam" : {
+      "name" : "Everton FC",
+      "id" : 62,
+      "shortName" : "Everton",
+      "crest" : "https://crests.football-data.org/62.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Sunderland AFC",
+      "id" : 71,
+      "shortName" : "Sunderland",
+      "crest" : "https://crests.football-data.org/71.png"
+    },
+    "id" : 537875,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-03T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 3,
+      "home" : 0
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Arsenal FC",
+      "id" : 57,
+      "shortName" : "Arsenal",
+      "crest" : "https://crests.football-data.org/57.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "SK Slavia Praha",
+      "id" : 930,
+      "shortName" : "Slavia Praha",
+      "crest" : "https://crests.football-data.org/930.png"
+    },
+    "id" : 551979,
+    "time" : "17:45",
+    "kickoffAt" : "2025-11-04T17:45:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 0,
+      "home" : 0
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Eintracht Frankfurt",
+      "id" : 19,
+      "shortName" : "Frankfurt",
+      "crest" : "https://crests.football-data.org/19.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "SSC Napoli",
+      "id" : 113,
+      "shortName" : "Napoli",
+      "crest" : "https://crests.football-data.org/113.png"
+    },
+    "id" : 551999,
+    "time" : "17:45",
+    "kickoffAt" : "2025-11-04T17:45:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 1,
+      "home" : 1
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Sporting Clube de Portugal",
+      "id" : 498,
+      "shortName" : "Sporting CP",
+      "crest" : "https://crests.football-data.org/498.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Juventus FC",
+      "id" : 109,
+      "shortName" : "Juventus",
+      "crest" : "https://crests.football-data.org/109.png"
+    },
+    "id" : 552003,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-04T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 1,
+      "home" : 3
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Royale Union Saint-Gilloise",
+      "id" : 3929,
+      "shortName" : "Union SG",
+      "crest" : "https://crests.football-data.org/3929.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Club Atlético de Madrid",
+      "id" : 78,
+      "shortName" : "Atleti",
+      "crest" : "https://crests.football-data.org/78.png"
+    },
+    "id" : 552009,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-04T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 0,
+      "home" : 4
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "FC København",
+      "id" : 1876,
+      "shortName" : "København",
+      "crest" : "https://crests.football-data.org/1876.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Tottenham Hotspur FC",
+      "id" : 73,
+      "shortName" : "Tottenham",
+      "crest" : "https://crests.football-data.org/73.png"
+    },
+    "id" : 552021,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-04T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 1,
+      "home" : 0
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "AS Monaco FC",
+      "id" : 548,
+      "shortName" : "Monaco",
+      "crest" : "https://crests.football-data.org/548.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "FK Bodø/Glimt",
+      "id" : 5721,
+      "shortName" : "Bodø/Glimt",
+      "crest" : "https://crests.football-data.org/5721.png"
+    },
+    "id" : 552024,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-04T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 1,
+      "home" : 1
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "PSV",
+      "id" : 674,
+      "shortName" : "PSV",
+      "crest" : "https://crests.football-data.org/674.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "PAE Olympiakos SFP",
+      "id" : 654,
+      "shortName" : "Olympiakos",
+      "crest" : "https://crests.football-data.org/654.png"
+    },
+    "id" : 552029,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-04T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 2,
+      "home" : 1
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "FC Bayern München",
+      "id" : 5,
+      "shortName" : "Bayern",
+      "crest" : "https://crests.football-data.org/5.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Paris Saint-Germain FC",
+      "id" : 524,
+      "shortName" : "PSG",
+      "crest" : "https://crests.football-data.org/524.png"
+    },
+    "id" : 551909,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-04T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-04",
+    "score" : {
+      "away" : 0,
+      "home" : 1
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Real Madrid CF",
+      "id" : 86,
+      "shortName" : "Real Madrid",
+      "crest" : "https://crests.football-data.org/86.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Liverpool FC",
+      "id" : 64,
+      "shortName" : "Liverpool",
+      "crest" : "https://crests.football-data.org/64.png"
+    },
+    "id" : 551924,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-04T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 0,
+      "home" : 1
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Villarreal CF",
+      "id" : 94,
+      "shortName" : "Villarreal",
+      "crest" : "https://crests.football-data.org/94.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Paphos FC",
+      "id" : 11034,
+      "shortName" : "Paphos FC",
+      "crest" : "https://crests.football-data.org/11034.png"
+    },
+    "id" : 552014,
+    "time" : "17:45",
+    "kickoffAt" : "2025-11-05T17:45:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 2,
+      "home" : 2
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Chelsea FC",
+      "id" : 61,
+      "shortName" : "Chelsea",
+      "crest" : "https://crests.football-data.org/61.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Qarabağ Ağdam FK",
+      "id" : 611,
+      "shortName" : "Qarabağ Ağdam",
+      "crest" : "https://crests.football-data.org/611.png"
+    },
+    "id" : 551922,
+    "time" : "17:45",
+    "kickoffAt" : "2025-11-05T17:45:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 1,
+      "home" : 2
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "FK Kairat",
+      "id" : 10601,
+      "shortName" : "FK Kairat",
+      "crest" : "https://crests.football-data.org/10601.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "FC Internazionale Milano",
+      "id" : 108,
+      "shortName" : "Inter",
+      "crest" : "https://crests.football-data.org/108.png"
+    },
+    "id" : 551937,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-05T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 1,
+      "home" : 4
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Borussia Dortmund",
+      "id" : 4,
+      "shortName" : "Dortmund",
+      "crest" : "https://crests.football-data.org/4.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Manchester City FC",
+      "id" : 65,
+      "shortName" : "Man City",
+      "crest" : "https://crests.football-data.org/65.png"
+    },
+    "id" : 551939,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-05T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 3,
+      "home" : 3
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "FC Barcelona",
+      "id" : 81,
+      "shortName" : "Barça",
+      "crest" : "https://crests.football-data.org/81.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Club Brugge KV",
+      "id" : 851,
+      "shortName" : "Club Brugge",
+      "crest" : "https://crests.football-data.org/851.png"
+    },
+    "id" : 551954,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-05T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 1,
+      "home" : 0
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Bayer 04 Leverkusen",
+      "id" : 3,
+      "shortName" : "Leverkusen",
+      "crest" : "https://crests.football-data.org/3.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Sport Lisboa e Benfica",
+      "id" : 1903,
+      "shortName" : "SL Benfica",
+      "crest" : "https://crests.football-data.org/1903.png"
+    },
+    "id" : 551971,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-05T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 1,
+      "home" : 0
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Atalanta BC",
+      "id" : 102,
+      "shortName" : "Atalanta",
+      "crest" : "https://crests.football-data.org/102.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Olympique de Marseille",
+      "id" : 516,
+      "shortName" : "Marseille",
+      "crest" : "https://crests.football-data.org/516.png"
+    },
+    "id" : 551985,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-05T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 3,
+      "home" : 0
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Galatasaray SK",
+      "id" : 610,
+      "shortName" : "Galatasaray",
+      "crest" : "https://crests.football-data.org/610.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "AFC Ajax",
+      "id" : 678,
+      "shortName" : "Ajax",
+      "crest" : "https://crests.football-data.org/678.png"
+    },
+    "id" : 552033,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-05T20:00:00",
+    "status" : "FINISHED"
+  }, {
+    "date" : "2025-11-05",
+    "score" : {
+      "away" : 0,
+      "home" : 2
+    },
+    "matchday" : 4,
+    "awayTeam" : {
+      "name" : "Athletic Club",
+      "id" : 77,
+      "shortName" : "Athletic",
+      "crest" : "https://crests.football-data.org/77.png"
+    },
+    "league" : "UCL",
+    "homeTeam" : {
+      "name" : "Newcastle United FC",
+      "id" : 67,
+      "shortName" : "Newcastle",
+      "crest" : "https://crests.football-data.org/67.png"
+    },
+    "id" : 552047,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-05T20:00:00",
+    "status" : "FINISHED"
+  } ],
+  "timestamp" : "2025-11-12T00:21:59.513000600"
+}

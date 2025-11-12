@@ -1,0 +1,10 @@
+{
+  "duration" : 5,
+  "data" : {
+    "league" : "LaLiga",
+    "source" : "error",
+    "error" : "Failed to resolve 'api.football-data.org' [A(1)]",
+    "standings" : [ ]
+  },
+  "timestamp" : "2025-11-11T23:18:36.876453600"
+}

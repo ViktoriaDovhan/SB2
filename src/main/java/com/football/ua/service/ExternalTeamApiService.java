@@ -32,8 +32,8 @@ public class ExternalTeamApiService {
     private boolean apiEnabled;
 
     private Map<String, List<Team>> cachedTeams = null;
-    private long lastUpdateTime = 0;
     private static final long CACHE_DURATION = 5 * 60 * 1000;
+    private static final String ALL_TEAMS_CACHE_KEY = "all_teams";
     private static final Map<String, String> LEAGUE_CODES = Map.of(
             "EPL", "PL",
             "UCL", "CL",
@@ -48,6 +48,7 @@ public class ExternalTeamApiService {
 
     private List<Map<String, Object>> cachedUpcomingMatches = null;
     private long upcomingMatchesUpdateTime = 0;
+    private final Map<String, Long> leagueUpdateTimestamps = new HashMap<>();
 
     private static final Map<String, String> LEAGUE_COLORS = Map.of(
             "UPL", "🔵🟡",
@@ -60,81 +61,42 @@ public class ExternalTeamApiService {
     );
 
     public synchronized Map<String, List<Team>> getTeamsFromApi() {
-        // Спочатку перевіряємо файловий кеш
-        String cacheKey = "all_teams";
-        log.debug("🔍 Перевірка кешу команд: {}/{}", "teams", cacheKey);
-
-        boolean cacheValid = fileCacheService.isCacheValid("teams", cacheKey);
-        log.info("🔍 Результат перевірки кешу команд: {}", cacheValid);
-
-        if (cacheValid) {
-            try {
-                Object cached = fileCacheService.loadFromCache("teams", cacheKey, Map.class);
-                if (cached != null) {
-                    log.info("📦 Повертаємо закешовані команди з файлу");
-                    return (Map<String, List<Team>>) cached;
-                } else {
-                    log.warn("⚠️ Кеш файл існує але дані порожні");
-                }
-            } catch (Exception e) {
-                log.warn("⚠️ Помилка завантаження команд з кешу: {}", e.getMessage());
-            }
-        } else {
-            log.info("⏰ Кеш команд застарілий або не існує (cacheValid={})", cacheValid);
-        }
-
         if (!apiEnabled) {
-            log.info("API вимкнено, використовуємо локальні дані");
+            log.info("API disabled, serving fallback teams for every league");
             Map<String, List<Team>> fallbackTeams = getFallbackTeams();
-            fileCacheService.saveToCache("teams", cacheKey, fallbackTeams);
+            cacheAggregatedResult(fallbackTeams, true);
             return fallbackTeams;
         }
 
-        log.info("⚡ Завантажуємо свіжі дані команд з API...");
+        if (cachedTeams == null) {
+            cachedTeams = new LinkedHashMap<>();
+        }
 
-        try {
-            Map<String, List<Team>> allLeagues = new LinkedHashMap<>();
+        Map<String, List<Team>> allLeagues = new LinkedHashMap<>();
+        List<Team> uplTeams = getFallbackTeamsForLeague("UPL");
+        updateInMemoryLeagueCache("UPL", uplTeams, true);
+        allLeagues.put("UPL", uplTeams);
 
-            allLeagues.put("UPL", getFallbackTeamsForLeague("UPL"));
-            log.info("✅ UPL: 16 команд (локально)");
+        List<String> apiLeagues = Arrays.asList("UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
 
-            List<String> apiLeagues = Arrays.asList("UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
-
-            for (int i = 0; i < apiLeagues.size(); i++) {
-                String leagueCode = apiLeagues.get(i);
-                try {
-                    if (i > 0) {
-                        Thread.sleep(3000 + (i * 1000)); // Затримка 3-8 секунд між запитами
-                    }
-
-                    List<Team> teams = fetchTeamsForLeague(leagueCode);
-                    if (!teams.isEmpty()) {
-                        allLeagues.put(leagueCode, teams);
-                        log.info("✅ {}: {} команд (з API)", leagueCode, teams.size());
-                    } else {
-                        log.warn("⚠️ {}: порожня відповідь, використовуємо локальні дані", leagueCode);
-                        allLeagues.put(leagueCode, getFallbackTeamsForLeague(leagueCode));
-                    }
-                } catch (Exception e) {
-                    log.error("❌ {}: помилка API - {}. Використовуємо локальні дані",
-                             leagueCode, e.getMessage());
-                    allLeagues.put(leagueCode, getFallbackTeamsForLeague(leagueCode));
-                }
+        for (int i = 0; i < apiLeagues.size(); i++) {
+            String leagueCode = apiLeagues.get(i);
+            try {
+                List<Team> leagueTeams = loadOrRefreshLeague(leagueCode, i);
+                allLeagues.put(leagueCode, leagueTeams);
+            } catch (Exception exception) {
+                log.error("League {} failed to refresh: {}. Using bundled fallback data", leagueCode, exception.getMessage());
+                List<Team> fallback = getFallbackTeamsForLeague(leagueCode);
+                updateInMemoryLeagueCache(leagueCode, fallback, false);
+                allLeagues.put(leagueCode, fallback);
             }
-
-            // Зберігаємо в файловий кеш
-            fileCacheService.saveToCache("teams", cacheKey, allLeagues);
-
-            int totalTeams = allLeagues.values().stream().mapToInt(List::size).sum();
-            log.info("🎯 Завантажено {} ліг, {} команд. Закешовано", allLeagues.size(), totalTeams);
-            return allLeagues;
-
-        } catch (Exception e) {
-            log.error("❌ Критична помилка: {}. Використовуємо локальні дані", e.getMessage());
-            Map<String, List<Team>> fallbackTeams = getFallbackTeams();
-            fileCacheService.saveToCache("teams", "all_teams", fallbackTeams);
-            return fallbackTeams;
         }
+
+        cacheAggregatedResult(allLeagues, false);
+
+        int totalTeams = allLeagues.values().stream().mapToInt(List::size).sum();
+        log.info("Delivered {} leagues with {} teams (per-league refresh)", allLeagues.size(), totalTeams);
+        return allLeagues;
     }
 
     private List<Team> fetchTeamsForLeague(String leagueCode) {
@@ -180,6 +142,116 @@ public class ExternalTeamApiService {
             }
             throw e;
         }
+    }
+    private List<Team> loadOrRefreshLeague(String leagueCode, int requestIndex) {
+        if (isLeagueFreshInMemory(leagueCode)) {
+            return cachedTeams.get(leagueCode);
+        }
+
+        String leagueCacheKey = buildLeagueCacheKey(leagueCode);
+        List<Team> cachedBackup = cachedTeams != null ? cachedTeams.get(leagueCode) : null;
+        boolean cacheValid = fileCacheService.isCacheValid("teams", leagueCacheKey);
+        if (cacheValid) {
+            cachedBackup = loadLeagueFromCache(leagueCode);
+            if (cachedBackup != null && !cachedBackup.isEmpty()) {
+                log.info("League {} served from valid file cache", leagueCode);
+                updateInMemoryLeagueCache(leagueCode, cachedBackup, true);
+                return cachedBackup;
+            }
+        } else {
+            List<Team> fileCopy = loadLeagueFromCache(leagueCode);
+            if (fileCopy != null) {
+                cachedBackup = fileCopy;
+            }
+        }
+
+        throttleLeagueRequest(requestIndex);
+
+        List<Team> apiTeams = fetchTeamsForLeague(leagueCode);
+        if (!apiTeams.isEmpty()) {
+            saveLeagueToCache(leagueCode, apiTeams);
+            updateInMemoryLeagueCache(leagueCode, apiTeams, true);
+            log.info("League {} refreshed via API with {} teams", leagueCode, apiTeams.size());
+            return apiTeams;
+        }
+
+        if (cachedBackup != null && !cachedBackup.isEmpty()) {
+            log.warn("League {} fallback to cached data after API failure", leagueCode);
+            updateInMemoryLeagueCache(leagueCode, cachedBackup, false);
+            return cachedBackup;
+        }
+
+        return useBundledLeagueFallback(leagueCode);
+    }
+
+    private void throttleLeagueRequest(int requestIndex) {
+        if (requestIndex <= 0) {
+            return;
+        }
+        long delay = 3000L + (requestIndex * 1000L);
+        try {
+            Thread.sleep(delay);
+        } catch (InterruptedException interruptedException) {
+            Thread.currentThread().interrupt();
+            log.warn("League request throttling interrupted");
+        }
+    }
+
+    private boolean isLeagueFreshInMemory(String leagueCode) {
+        if (cachedTeams == null || !cachedTeams.containsKey(leagueCode)) {
+            return false;
+        }
+        Long lastUpdate = leagueUpdateTimestamps.get(leagueCode);
+        return lastUpdate != null && (System.currentTimeMillis() - lastUpdate) < CACHE_DURATION;
+    }
+
+    private void updateInMemoryLeagueCache(String leagueCode, List<Team> teams, boolean markFresh) {
+        if (cachedTeams == null) {
+            cachedTeams = new LinkedHashMap<>();
+        }
+        cachedTeams.put(leagueCode, teams);
+        if (markFresh) {
+            leagueUpdateTimestamps.put(leagueCode, System.currentTimeMillis());
+        } else {
+            leagueUpdateTimestamps.remove(leagueCode);
+        }
+    }
+
+    private void cacheAggregatedResult(Map<String, List<Team>> data, boolean markFresh) {
+        cachedTeams = new LinkedHashMap<>(data);
+        if (markFresh) {
+            long now = System.currentTimeMillis();
+            data.keySet().forEach(code -> leagueUpdateTimestamps.put(code, now));
+        }
+        fileCacheService.saveToCache("teams", ALL_TEAMS_CACHE_KEY, data);
+    }
+
+    private String buildLeagueCacheKey(String leagueCode) {
+        return "league_" + leagueCode.toLowerCase(Locale.ROOT);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Team> loadLeagueFromCache(String leagueCode) {
+        try {
+            Object cached = fileCacheService.loadFromCache("teams", buildLeagueCacheKey(leagueCode), List.class);
+            if (cached instanceof List) {
+                return (List<Team>) cached;
+            }
+        } catch (Exception exception) {
+            log.warn("Unable to load league {} from file cache: {}", leagueCode, exception.getMessage());
+        }
+        return null;
+    }
+
+    private void saveLeagueToCache(String leagueCode, List<Team> teams) {
+        fileCacheService.saveToCache("teams", buildLeagueCacheKey(leagueCode), teams);
+    }
+
+    private List<Team> useBundledLeagueFallback(String leagueCode) {
+        log.warn("League {} served from bundled fallback data", leagueCode);
+        List<Team> fallback = getFallbackTeamsForLeague(leagueCode);
+        updateInMemoryLeagueCache(leagueCode, fallback, false);
+        return fallback;
     }
 
     private Team convertToTeam(FootballDataResponse.TeamData teamData, String leagueCode) {
@@ -668,4 +740,6 @@ public class ExternalTeamApiService {
         return match;
     }
 }
+
+
 

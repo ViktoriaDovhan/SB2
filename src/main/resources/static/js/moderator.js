@@ -18,8 +18,6 @@ document.addEventListener('DOMContentLoaded', () => {
     loadNews();
     loadMatches();
     // Завантажуємо майбутні та минулі матчі
-    loadUpcomingMatchesFromApi();
-    loadPreviousMatchesFromApi();
     if (typeof loadTeamsByLeague === 'function') {
         loadTeamsByLeague('UPL');
     } else {
@@ -737,4 +735,3 @@ function initMatchesCheckboxes() {
         });
     }
 }
-

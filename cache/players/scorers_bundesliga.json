@@ -1,0 +1,115 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "teamName" : "FC Bayern München",
+    "teamCrest" : "https://crests.football-data.org/5.png",
+    "nationality" : "England",
+    "penalties" : 4,
+    "assists" : 2,
+    "teamId" : 5,
+    "name" : "Harry Kane",
+    "id" : 8004,
+    "position" : null,
+    "goals" : 13
+  }, {
+    "teamName" : "FC Bayern München",
+    "teamCrest" : "https://crests.football-data.org/5.png",
+    "nationality" : "Colombia",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 5,
+    "name" : "Luis Díaz",
+    "id" : 22396,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Eintracht Frankfurt",
+    "teamCrest" : "https://crests.football-data.org/19.png",
+    "nationality" : "Germany",
+    "penalties" : 1,
+    "assists" : 0,
+    "teamId" : 19,
+    "name" : "Jonathan Burkardt",
+    "id" : 82404,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Borussia Mönchengladbach",
+    "teamCrest" : "https://crests.football-data.org/18.png",
+    "nationality" : "Bosnia-Herzegovina",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 18,
+    "name" : "Haris Tabaković",
+    "id" : 63218,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Eintracht Frankfurt",
+    "teamCrest" : "https://crests.football-data.org/19.png",
+    "nationality" : "Turkey",
+    "penalties" : 0,
+    "assists" : 3,
+    "teamId" : 19,
+    "name" : "Can Uzun",
+    "id" : 193605,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "TSG 1899 Hoffenheim",
+    "teamCrest" : "https://crests.football-data.org/2.png",
+    "nationality" : "Kosovo",
+    "penalties" : 0,
+    "assists" : 1,
+    "teamId" : 2,
+    "name" : "Fisnik Asllani",
+    "id" : 145562,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Borussia Dortmund",
+    "teamCrest" : "https://crests.football-data.org/4.png",
+    "nationality" : "Guinea",
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 4,
+    "name" : "Sehrou Guirassy",
+    "id" : 211,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "RB Leipzig",
+    "teamCrest" : "https://crests.football-data.org/721.png",
+    "nationality" : "Austria",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 721,
+    "name" : "Christoph Baumgartner",
+    "id" : 56829,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Bayer 04 Leverkusen",
+    "teamCrest" : "https://crests.football-data.org/3.png",
+    "nationality" : "Czech Republic",
+    "penalties" : 2,
+    "assists" : 0,
+    "teamId" : 3,
+    "name" : "Patrik Schick",
+    "id" : 1826,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "FC Bayern München",
+    "teamCrest" : "https://crests.football-data.org/5.png",
+    "nationality" : "France",
+    "penalties" : 0,
+    "assists" : 3,
+    "teamId" : 5,
+    "name" : "Michael Olise",
+    "id" : 113765,
+    "position" : null,
+    "goals" : 4
+  } ],
+  "timestamp" : "2025-11-13T16:35:53.836765700"
+}

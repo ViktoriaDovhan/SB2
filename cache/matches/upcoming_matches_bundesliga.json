@@ -1,0 +1,221 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "date" : "2025-11-21",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "TSG 1899 Hoffenheim",
+      "id" : 2,
+      "shortName" : "Hoffenheim",
+      "crest" : "https://crests.football-data.org/2.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "1. FSV Mainz 05",
+      "id" : 15,
+      "shortName" : "Mainz",
+      "crest" : "https://crests.football-data.org/15.png"
+    },
+    "id" : 540498,
+    "time" : "19:30",
+    "kickoffAt" : "2025-11-21T19:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "SC Freiburg",
+      "id" : 17,
+      "shortName" : "Freiburg",
+      "crest" : "https://crests.football-data.org/17.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "FC Bayern München",
+      "id" : 5,
+      "shortName" : "Bayern",
+      "crest" : "https://crests.football-data.org/5.png"
+    },
+    "id" : 540496,
+    "time" : "14:30",
+    "kickoffAt" : "2025-11-22T14:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "VfB Stuttgart",
+      "id" : 10,
+      "shortName" : "Stuttgart",
+      "crest" : "https://crests.football-data.org/10.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "Borussia Dortmund",
+      "id" : 4,
+      "shortName" : "Dortmund",
+      "crest" : "https://crests.football-data.org/4.png"
+    },
+    "id" : 540497,
+    "time" : "14:30",
+    "kickoffAt" : "2025-11-22T14:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "Bayer 04 Leverkusen",
+      "id" : 3,
+      "shortName" : "Leverkusen",
+      "crest" : "https://crests.football-data.org/3.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "VfL Wolfsburg",
+      "id" : 11,
+      "shortName" : "Wolfsburg",
+      "crest" : "https://crests.football-data.org/11.png"
+    },
+    "id" : 540500,
+    "time" : "14:30",
+    "kickoffAt" : "2025-11-22T14:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "Hamburger SV",
+      "id" : 7,
+      "shortName" : "HSV",
+      "crest" : "https://crests.football-data.org/7.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "FC Augsburg",
+      "id" : 16,
+      "shortName" : "Augsburg",
+      "crest" : "https://crests.football-data.org/16.png"
+    },
+    "id" : 540501,
+    "time" : "14:30",
+    "kickoffAt" : "2025-11-22T14:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "Borussia Mönchengladbach",
+      "id" : 18,
+      "shortName" : "M'gladbach",
+      "crest" : "https://crests.football-data.org/18.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "1. FC Heidenheim 1846",
+      "id" : 44,
+      "shortName" : "Heidenheim",
+      "crest" : "https://crests.football-data.org/44.png"
+    },
+    "id" : 540503,
+    "time" : "14:30",
+    "kickoffAt" : "2025-11-22T14:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "Eintracht Frankfurt",
+      "id" : 19,
+      "shortName" : "Frankfurt",
+      "crest" : "https://crests.football-data.org/19.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "1. FC Köln",
+      "id" : 1,
+      "shortName" : "1. FC Köln",
+      "crest" : "https://crests.football-data.org/1.png"
+    },
+    "id" : 540504,
+    "time" : "17:30",
+    "kickoffAt" : "2025-11-22T17:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-23",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "SV Werder Bremen",
+      "id" : 12,
+      "shortName" : "Bremen",
+      "crest" : "https://crests.football-data.org/12.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "RB Leipzig",
+      "id" : 721,
+      "shortName" : "RB Leipzig",
+      "crest" : "https://crests.football-data.org/721.png"
+    },
+    "id" : 540499,
+    "time" : "14:30",
+    "kickoffAt" : "2025-11-23T14:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-23",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 11,
+    "awayTeam" : {
+      "name" : "1. FC Union Berlin",
+      "id" : 28,
+      "shortName" : "Union Berlin",
+      "crest" : "https://crests.football-data.org/28.png"
+    },
+    "league" : "Bundesliga",
+    "homeTeam" : {
+      "name" : "FC St. Pauli 1910",
+      "id" : 20,
+      "shortName" : "St. Pauli",
+      "crest" : "https://crests.football-data.org/20.png"
+    },
+    "id" : 540502,
+    "time" : "16:30",
+    "kickoffAt" : "2025-11-23T16:30:00",
+    "status" : "TIMED"
+  } ],
+  "timestamp" : "2025-11-13T15:50:02.411079800"
+}

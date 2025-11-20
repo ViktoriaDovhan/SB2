@@ -1,0 +1,115 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "teamName" : "Galatasaray SK",
+    "teamCrest" : "https://crests.football-data.org/610.png",
+    "nationality" : "Nigeria",
+    "penalties" : 3,
+    "assists" : 0,
+    "teamId" : 610,
+    "name" : "Victor Osimhen",
+    "id" : 9434,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Real Madrid CF",
+    "teamCrest" : "https://crests.football-data.org/86.png",
+    "nationality" : "France",
+    "penalties" : 3,
+    "assists" : 0,
+    "teamId" : 86,
+    "name" : "Kylian Mbappé",
+    "id" : 3374,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "FC Bayern München",
+    "teamCrest" : "https://crests.football-data.org/5.png",
+    "nationality" : "England",
+    "penalties" : 1,
+    "assists" : 0,
+    "teamId" : 5,
+    "name" : "Harry Kane",
+    "id" : 8004,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Manchester City FC",
+    "teamCrest" : "https://crests.football-data.org/65.png",
+    "nationality" : "Norway",
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 65,
+    "name" : "Erling Haaland",
+    "id" : 38101,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "FC Barcelona",
+    "teamCrest" : "https://crests.football-data.org/81.png",
+    "nationality" : "England",
+    "penalties" : 0,
+    "assists" : 1,
+    "teamId" : 81,
+    "name" : "Marcus Rashford",
+    "id" : 3331,
+    "position" : null,
+    "goals" : 4
+  }, {
+    "teamName" : "Newcastle United FC",
+    "teamCrest" : "https://crests.football-data.org/67.png",
+    "nationality" : "England",
+    "penalties" : 2,
+    "assists" : 1,
+    "teamId" : 67,
+    "name" : "Anthony Gordon",
+    "id" : 7848,
+    "position" : null,
+    "goals" : 4
+  }, {
+    "teamName" : "FC Internazionale Milano",
+    "teamCrest" : "https://crests.football-data.org/108.png",
+    "nationality" : "Argentina",
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 108,
+    "name" : "Lautaro Martínez",
+    "id" : 3220,
+    "position" : null,
+    "goals" : 4
+  }, {
+    "teamName" : "Arsenal FC",
+    "teamCrest" : "https://crests.football-data.org/57.png",
+    "nationality" : "Brazil",
+    "penalties" : 0,
+    "assists" : 1,
+    "teamId" : 57,
+    "name" : "Martinelli",
+    "id" : 61450,
+    "position" : null,
+    "goals" : 3
+  }, {
+    "teamName" : "Borussia Dortmund",
+    "teamCrest" : "https://crests.football-data.org/4.png",
+    "nationality" : "Germany",
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 4,
+    "name" : "Felix Kalu Nmecha",
+    "id" : 101074,
+    "position" : null,
+    "goals" : 3
+  }, {
+    "teamName" : "Juventus FC",
+    "teamCrest" : "https://crests.football-data.org/109.png",
+    "nationality" : "Serbia",
+    "penalties" : 0,
+    "assists" : 1,
+    "teamId" : 109,
+    "name" : "Dušan Vlahović",
+    "id" : 82002,
+    "position" : null,
+    "goals" : 3
+  } ],
+  "timestamp" : "2025-11-13T00:32:14.298236300"
+}

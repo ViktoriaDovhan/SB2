@@ -26,7 +26,7 @@ public class FileCacheService {
     // Різні інтервали кешування для різних типів даних (у хвилинах)
     private static final long TEAMS_CACHE_DURATION = 60; // 1 година - команди змінюються рідко
     private static final long STANDINGS_CACHE_DURATION = 15; // 15 хвилин - турнірні таблиці оновлюються частіше
-    private static final long MATCHES_CACHE_DURATION = 30; // 30 хвилин - матчі оновлюються помірно
+    private static final long MATCHES_CACHE_DURATION = 60; // 60 хвилин - матчі оновлюються помірно (збільшено для стабільності)
 
     private final ObjectMapper objectMapper;
 
@@ -145,6 +145,61 @@ public class FileCacheService {
     @SuppressWarnings("unchecked")
     public <T> T loadFromCache(String key, Class<T> clazz) {
         return loadFromCache("general", key, clazz);
+    }
+
+    // Метод для завантаження з кешу без перевірки терміну дії (використовується як fallback)
+    @SuppressWarnings("unchecked")
+    public <T> T loadFromCacheIgnoringExpiration(String category, String key, Class<T> clazz) {
+        try {
+            File cacheFile = new File(Paths.get(CACHE_DIR, category, key + ".json").toString());
+
+            if (!cacheFile.exists()) {
+                log.debug("📦 Кеш файл не існує: {}/{}", category, key);
+                return null;
+            }
+
+            Map<String, Object> cacheData = objectMapper.readValue(cacheFile, Map.class);
+
+            // Перевіряємо, чи є всі необхідні поля
+            if (!cacheData.containsKey("timestamp") || !cacheData.containsKey("data")) {
+                log.warn("⚠️ Кеш файл пошкоджений (відсутні поля): {}/{}", category, key);
+                return null;
+            }
+
+            String timestampStr = (String) cacheData.get("timestamp");
+            LocalDateTime timestamp = LocalDateTime.parse(timestampStr);
+
+            // Отримуємо тривалість кешування для логування
+            Object durationObj = cacheData.get("duration");
+            Long durationMinutes;
+            if (durationObj instanceof Long) {
+                durationMinutes = (Long) durationObj;
+            } else if (durationObj instanceof Integer) {
+                durationMinutes = ((Integer) durationObj).longValue();
+            } else if (durationObj instanceof String) {
+                durationMinutes = Long.parseLong((String) durationObj);
+            } else {
+                durationMinutes = getCacheDuration(category);
+            }
+
+            LocalDateTime now = LocalDateTime.now();
+            long minutesOld = java.time.Duration.between(timestamp, now).toMinutes();
+
+            Object data = cacheData.get("data");
+            if (data == null) {
+                log.warn("⚠️ Дані в кеші {}/{} порожні", category, key);
+                return null;
+            }
+
+            T result = objectMapper.convertValue(data, clazz);
+            log.info("📦 Завантажено з кешу (ігноруючи термін дії): {}/{} (вік: {} хв, тип: {})", 
+                    category, key, minutesOld, clazz.getSimpleName());
+            return result;
+
+        } catch (Exception e) {
+            log.error("❌ Помилка читання з кешу {}/{}: {}", category, key, e.getMessage());
+            return null;
+        }
     }
 
     // Метод для перевірки валідності кешу за категорією

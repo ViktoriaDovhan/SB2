@@ -1,0 +1,245 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Chelsea FC",
+      "id" : 61,
+      "shortName" : "Chelsea",
+      "crest" : "https://crests.football-data.org/61.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Burnley FC",
+      "id" : 328,
+      "shortName" : "Burnley",
+      "crest" : "https://crests.football-data.org/328.png"
+    },
+    "id" : 537898,
+    "time" : "12:30",
+    "kickoffAt" : "2025-11-22T12:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "West Ham United FC",
+      "id" : 563,
+      "shortName" : "West Ham",
+      "crest" : "https://crests.football-data.org/563.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "AFC Bournemouth",
+      "id" : 1044,
+      "shortName" : "Bournemouth",
+      "crest" : "https://crests.football-data.org/bournemouth.png"
+    },
+    "id" : 537895,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-22T15:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Brentford FC",
+      "id" : 402,
+      "shortName" : "Brentford",
+      "crest" : "https://crests.football-data.org/402.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Brighton & Hove Albion FC",
+      "id" : 397,
+      "shortName" : "Brighton Hove",
+      "crest" : "https://crests.football-data.org/397.png"
+    },
+    "id" : 537896,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-22T15:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Sunderland AFC",
+      "id" : 71,
+      "shortName" : "Sunderland",
+      "crest" : "https://crests.football-data.org/71.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Fulham FC",
+      "id" : 63,
+      "shortName" : "Fulham",
+      "crest" : "https://crests.football-data.org/63.png"
+    },
+    "id" : 537899,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-22T15:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Nottingham Forest FC",
+      "id" : 351,
+      "shortName" : "Nottingham",
+      "crest" : "https://crests.football-data.org/351.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Liverpool FC",
+      "id" : 64,
+      "shortName" : "Liverpool",
+      "crest" : "https://crests.football-data.org/64.png"
+    },
+    "id" : 537900,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-22T15:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Crystal Palace FC",
+      "id" : 354,
+      "shortName" : "Crystal Palace",
+      "crest" : "https://crests.football-data.org/354.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Wolverhampton Wanderers FC",
+      "id" : 76,
+      "shortName" : "Wolverhampton",
+      "crest" : "https://crests.football-data.org/76.png"
+    },
+    "id" : 537904,
+    "time" : "15:00",
+    "kickoffAt" : "2025-11-22T15:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-22",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Manchester City FC",
+      "id" : 65,
+      "shortName" : "Man City",
+      "crest" : "https://crests.football-data.org/65.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Newcastle United FC",
+      "id" : 67,
+      "shortName" : "Newcastle",
+      "crest" : "https://crests.football-data.org/67.png"
+    },
+    "id" : 537903,
+    "time" : "17:30",
+    "kickoffAt" : "2025-11-22T17:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-23",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Aston Villa FC",
+      "id" : 58,
+      "shortName" : "Aston Villa",
+      "crest" : "https://crests.football-data.org/58.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Leeds United FC",
+      "id" : 341,
+      "shortName" : "Leeds United",
+      "crest" : "https://crests.football-data.org/341.png"
+    },
+    "id" : 537901,
+    "time" : "14:00",
+    "kickoffAt" : "2025-11-23T14:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-23",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Tottenham Hotspur FC",
+      "id" : 73,
+      "shortName" : "Tottenham",
+      "crest" : "https://crests.football-data.org/73.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Arsenal FC",
+      "id" : 57,
+      "shortName" : "Arsenal",
+      "crest" : "https://crests.football-data.org/57.png"
+    },
+    "id" : 537897,
+    "time" : "16:30",
+    "kickoffAt" : "2025-11-23T16:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-24",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 12,
+    "awayTeam" : {
+      "name" : "Everton FC",
+      "id" : 62,
+      "shortName" : "Everton",
+      "crest" : "https://crests.football-data.org/62.png"
+    },
+    "league" : "EPL",
+    "homeTeam" : {
+      "name" : "Manchester United FC",
+      "id" : 66,
+      "shortName" : "Man United",
+      "crest" : "https://crests.football-data.org/66.png"
+    },
+    "id" : 537902,
+    "time" : "20:00",
+    "kickoffAt" : "2025-11-24T20:00:00",
+    "status" : "TIMED"
+  } ],
+  "timestamp" : "2025-11-13T16:34:51.469304300"
+}

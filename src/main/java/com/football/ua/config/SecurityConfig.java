@@ -63,7 +63,7 @@ public class SecurityConfig {
                 .requestMatchers("/api/access/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/news", "/api/news/*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/matches", "/api/matches/*", "/api/matches/teams/info").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/teams", "/api/teams/*", "/api/teams/actual", "/api/teams/standings/*", "/api/teams/leagues", "/api/teams/matches/**", "/api/teams/cache/info").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/teams", "/api/teams/*", "/api/teams/actual", "/api/teams/standings/*", "/api/teams/scorers/**", "/api/teams/leagues", "/api/teams/matches/**", "/api/teams/cache/info").permitAll()
                 .requestMatchers(HttpMethod.DELETE, "/api/teams/cache/**").authenticated()
                 .requestMatchers(HttpMethod.GET, "/api/forum/topics", "/api/forum/topics/*/posts").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/upcoming-matches/**").permitAll()

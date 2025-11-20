@@ -51,12 +51,21 @@ public class MatchController {
 
     @GetMapping
     @Operation(summary = "Отримати всі матчі", description = "Повертає список всіх футбольних матчів")
-    public List<Match> list() {
+    public List<Match> list(@RequestParam(value = "league", required = false) String league) {
         MDC.put("operation", "list");
         MDC.put("endpoint", "/api/matches");
         try {
             log.info(DB_OPERATION, "Запит на отримання списку матчів");
-            List<Match> matches = matchDbService.list().stream()
+            var stream = matchDbService.list().stream();
+            if (league != null && !league.trim().isEmpty()) {
+                String filter = league.trim();
+                stream = stream.filter(match -> {
+                    String entityLeague = match.getLeague();
+                    return entityLeague != null && entityLeague.trim().equalsIgnoreCase(filter);
+                });
+            }
+
+            List<Match> matches = stream
                 .map(this::toDto)
                 .collect(Collectors.toList());
             log.info(DB_OPERATION, "Повернуто {} матчів", matches.size());

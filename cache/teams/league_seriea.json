@@ -1,0 +1,145 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "id" : 98,
+    "name" : "AC Milan",
+    "league" : "SerieA",
+    "city" : "Via Filippo Turati 3 Milano 20121",
+    "colors" : "\uD83D\uDD34⚫",
+    "emblemUrl" : "https://crests.football-data.org/98.png"
+  }, {
+    "id" : 99,
+    "name" : "ACF Fiorentina",
+    "league" : "SerieA",
+    "city" : "Viale Manfredo Fanti 4 Firenze 50137",
+    "colors" : "⚪\uD83D\uDFE3",
+    "emblemUrl" : "https://crests.football-data.org/99.png"
+  }, {
+    "id" : 100,
+    "name" : "AS Roma",
+    "league" : "SerieA",
+    "city" : "600 Roma 00128",
+    "colors" : "⚪\uD83D\uDFE0",
+    "emblemUrl" : "https://crests.football-data.org/100.png"
+  }, {
+    "id" : 102,
+    "name" : "Atalanta BC",
+    "league" : "SerieA",
+    "city" : "Zingonia Ciserano 24040",
+    "colors" : "\uD83D\uDD35⚫",
+    "emblemUrl" : "https://crests.football-data.org/102.png"
+  }, {
+    "id" : 103,
+    "name" : "Bologna FC 1909",
+    "league" : "SerieA",
+    "city" : "Via Casteldebole 10 Bologna 40132",
+    "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+    "emblemUrl" : "https://crests.football-data.org/103.png"
+  }, {
+    "id" : 104,
+    "name" : "Cagliari Calcio",
+    "league" : "SerieA",
+    "city" : "Viale la Plaia 15 Cagliari 09123",
+    "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+    "emblemUrl" : "https://crests.football-data.org/104.png"
+  }, {
+    "id" : 107,
+    "name" : "Genoa CFC",
+    "league" : "SerieA",
+    "city" : "67 Genova 16155",
+    "colors" : "\uD83D\uDD34\uD83D\uDD35",
+    "emblemUrl" : "https://crests.football-data.org/107.png"
+  }, {
+    "id" : 108,
+    "name" : "FC Internazionale Milano",
+    "league" : "SerieA",
+    "city" : "Corso Vittorio Emanuele II 9 Milano 20122",
+    "colors" : "\uD83D\uDD35⚫",
+    "emblemUrl" : "https://crests.football-data.org/108.png"
+  }, {
+    "id" : 109,
+    "name" : "Juventus FC",
+    "league" : "SerieA",
+    "city" : "32 Torino 10128",
+    "colors" : "⚪⚫",
+    "emblemUrl" : "https://crests.football-data.org/109.png"
+  }, {
+    "id" : 110,
+    "name" : "SS Lazio",
+    "league" : "SerieA",
+    "city" : "1000 Formello 00060",
+    "colors" : "\uD83D\uDD35⚪",
+    "emblemUrl" : "https://crests.football-data.org/110.png"
+  }, {
+    "id" : 112,
+    "name" : "Parma Calcio 1913",
+    "league" : "SerieA",
+    "city" : "4 Parma 43121",
+    "colors" : "⚪⚫",
+    "emblemUrl" : "https://crests.football-data.org/112.png"
+  }, {
+    "id" : 113,
+    "name" : "SSC Napoli",
+    "league" : "SerieA",
+    "city" : "Km 35 Castel Volturno 81030",
+    "colors" : "\uD83D\uDD35⚪",
+    "emblemUrl" : "https://crests.football-data.org/113.png"
+  }, {
+    "id" : 115,
+    "name" : "Udinese Calcio",
+    "league" : "SerieA",
+    "city" : "Via Agostino e Angelo Candolini 2 Udine 33100",
+    "colors" : "⚪⚫",
+    "emblemUrl" : "https://crests.football-data.org/115.png"
+  }, {
+    "id" : 450,
+    "name" : "Hellas Verona FC",
+    "league" : "SerieA",
+    "city" : "37 Verona 37136",
+    "colors" : "\uD83D\uDD35\uD83D\uDFE1",
+    "emblemUrl" : "https://crests.football-data.org/450.png"
+  }, {
+    "id" : 457,
+    "name" : "US Cremonese",
+    "league" : "SerieA",
+    "city" : "19 Cremona 26100",
+    "colors" : "\uD83D\uDD34",
+    "emblemUrl" : "https://crests.football-data.org/457.png"
+  }, {
+    "id" : 471,
+    "name" : "US Sassuolo Calcio",
+    "league" : "SerieA",
+    "city" : "47 Sassuolo 41049",
+    "colors" : "\uD83D\uDFE2⚫",
+    "emblemUrl" : "https://crests.football-data.org/471.png"
+  }, {
+    "id" : 487,
+    "name" : "AC Pisa 1909",
+    "league" : "SerieA",
+    "city" : "Piazza della Stazione 22 (scala A) Pisa null",
+    "colors" : "\uD83D\uDD35⚫",
+    "emblemUrl" : "https://crests.football-data.org/487.png"
+  }, {
+    "id" : 586,
+    "name" : "Torino FC",
+    "league" : "SerieA",
+    "city" : "Via Arcivescovado 1 Torino 10122",
+    "colors" : "⚪",
+    "emblemUrl" : "https://crests.football-data.org/586.png"
+  }, {
+    "id" : 5890,
+    "name" : "US Lecce",
+    "league" : "SerieA",
+    "city" : "Via Templari 11 Lecce 73100",
+    "colors" : "\uD83D\uDD34\uD83D\uDD35\uD83D\uDFE1",
+    "emblemUrl" : "https://crests.football-data.org/5890.png"
+  }, {
+    "id" : 7397,
+    "name" : "Como 1907",
+    "league" : "SerieA",
+    "city" : "Viale Sinigaglia 2 Como 22100",
+    "colors" : "\uD83D\uDD35⚪",
+    "emblemUrl" : "https://crests.football-data.org/7397.png"
+  } ],
+  "timestamp" : "2025-11-13T16:35:09.109474100"
+}

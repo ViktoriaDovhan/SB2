@@ -15,7 +15,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.Collections;
 
 import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -57,7 +56,6 @@ public class SecurityConfigTest {
                 """;
 
         mockMvc.perform(post("/api/matches")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))
                 .andExpect(status().isForbidden());
@@ -97,7 +95,6 @@ public class SecurityConfigTest {
                 """;
 
         mockMvc.perform(post("/api/matches")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(jsonBody))
                 .andExpect(status().isCreated());

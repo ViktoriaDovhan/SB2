@@ -104,6 +104,69 @@ public class TeamController {
         return response;
     }
 
+    @GetMapping("/matches/upcoming/{league}")
+    @Operation(summary = "Отримати майбутні матчі для ліги", description = "Повертає список майбутніх матчів для конкретної ліги")
+    public Map<String, Object> getUpcomingMatchesForLeague(@PathVariable String league) {
+        log.info("Отримано запит на майбутні матчі для ліги: {}", league);
+        List<Map<String, Object>> matches = externalTeamApiService.getUpcomingMatchesForLeague(league);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("total", matches.size());
+        response.put("matches", matches);
+        response.put("type", "upcoming");
+        response.put("league", league);
+        
+        log.info("Повернуто {} майбутніх матчів для ліги {}", matches.size(), league);
+        return response;
+    }
+
+    @GetMapping("/matches/previous/{league}")
+    @Operation(summary = "Отримати минулі матчі для ліги", description = "Повертає список минулих матчів для конкретної ліги")
+    public Map<String, Object> getPreviousMatchesForLeague(@PathVariable String league) {
+        log.info("Отримано запит на минулі матчі для ліги: {}", league);
+        List<Map<String, Object>> matches = externalTeamApiService.getPreviousMatchesForLeague(league);
+        
+        Map<String, Object> response = new HashMap<>();
+        response.put("total", matches.size());
+        response.put("matches", matches);
+        response.put("type", "previous");
+        response.put("league", league);
+        
+        log.info("Повернуто {} минулих матчів для ліги {}", matches.size(), league);
+        return response;
+    }
+
+    @GetMapping("/scorers/{league}")
+    @Operation(summary = "Отримати топ бомбардирів ліги", description = "Повертає список топ бомбардирів для конкретної ліги")
+    public Map<String, Object> getTopScorersForLeague(@PathVariable String league) {
+        log.info("Отримано запит на топ бомбардирів для ліги: {}", league);
+        List<Map<String, Object>> scorers = externalTeamApiService.getTopScorersForLeague(league);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("total", scorers.size());
+        response.put("scorers", scorers);
+        response.put("league", league);
+
+        log.info("Повернуто {} бомбардирів для ліги {}", scorers.size(), league);
+        return response;
+    }
+
+    @GetMapping("/matches/all/{league}")
+    @Operation(summary = "Отримати всі матчі сезону для ліги", description = "Повертає список всіх матчів сезону для конкретної ліги")
+    public Map<String, Object> getAllMatchesForLeague(@PathVariable String league) {
+        log.info("Отримано запит на всі матчі сезону для ліги: {}", league);
+        List<Map<String, Object>> matches = externalTeamApiService.getAllMatchesForLeague(league);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("total", matches.size());
+        response.put("matches", matches);
+        response.put("league", league);
+        response.put("type", "all_season");
+
+        log.info("Повернуто {} матчів сезону для ліги {}", matches.size(), league);
+        return response;
+    }
+
     @GetMapping("/cache/info")
     @Operation(summary = "Отримати інформацію про кеш", description = "Повертає статистику файлового кешу")
     public Map<String, Object> getCacheInfo() {

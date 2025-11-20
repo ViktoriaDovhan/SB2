@@ -43,6 +43,8 @@ function formDataJSON(form) {
 }
 
 let currentTopicId = null;
+const MATCHES_CACHE_TTL = 60 * 1000;
+const leagueMatchesCache = new Map();
 
 function extractErrorMessage(p){return (p&&(p.detail||p.message||p.error||p.raw))||'Не вдалося виконати операцію';}
 
@@ -331,40 +333,97 @@ function renderTeamsList(teamsList) {
 let currentLeague = 'UPL';
 
 async function loadTeamsByLeague(league) {
+    // Очищаємо активні запити для старих ліг
+    activeRequests.clear();
+    renderingContainers.clear();
+    
     currentLeague = league;
     
     document.querySelectorAll('.league-tab').forEach(tab => {
         tab.classList.toggle('active', tab.dataset.league === league);
     });
     
-    const r = await apiFetch('GET', '/api/teams/actual');
-    if (r.ok && r.json) {
-        const teamsData = r.json;
-        const leagueTeams = teamsData[league] || [];
-        
-        const userTeamsR = await apiFetch('GET', '/api/teams');
-        if (userTeamsR.ok && Array.isArray(userTeamsR.json)) {
-            const userLeagueTeams = userTeamsR.json.filter(t => t.league === league);
-            const combined = [...leagueTeams, ...userLeagueTeams];
-            renderTeamsList(combined);
-        } else {
-            renderTeamsList(leagueTeams);
-        }
-        
-        const teamsEl = document.getElementById('stat-teams');
-        if (teamsEl) {
-            const totalTeams = Object.values(teamsData).reduce((sum, teams) => sum + teams.length, 0);
-            const userTeamsCount = userTeamsR.ok ? userTeamsR.json.length : 0;
-            teamsEl.textContent = totalTeams + userTeamsCount;
-        }
+    // Підготовка контейнерів матчів (показуємо індикатор завантаження одразу)
+    const pastMatchesContainer = document.getElementById('past-matches');
+    const upcomingMatchesContainer = document.getElementById('upcoming-matches');
+    const pastCheckbox = document.getElementById('show-past-matches');
+    const upcomingCheckbox = document.getElementById('show-upcoming-matches');
+    
+    // Показуємо індикатор завантаження тільки якщо чекбокси активні
+    if (pastMatchesContainer && pastCheckbox && pastCheckbox.checked) {
+        pastMatchesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Завантаження...</div>';
+        pastMatchesContainer.style.opacity = '0.7';
     }
+    if (upcomingMatchesContainer && upcomingCheckbox && upcomingCheckbox.checked) {
+        upcomingMatchesContainer.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Завантаження...</div>';
+        upcomingMatchesContainer.style.opacity = '0.7';
+    }
+    
+    // Завантажуємо команди та матчі паралельно
+    const [teamsResult] = await Promise.allSettled([
+        (async () => {
+            let r = await apiFetch('GET', '/api/teams/actual');
+            
+            // Якщо API не відповідає, спробуємо повторний запит (може бути кеш)
+            if (!r.ok) {
+                console.warn('API не відповідає для команд, спробуємо повторний запит...');
+                r = await apiFetch('GET', '/api/teams/actual');
+            }
+            
+            if (r.ok && r.json) {
+                const teamsData = r.json;
+                const leagueTeams = teamsData[league] || [];
+                
+                let userTeamsR = await apiFetch('GET', '/api/teams');
+                if (!userTeamsR.ok) {
+                    userTeamsR = await apiFetch('GET', '/api/teams');
+                }
+                
+                if (userTeamsR.ok && Array.isArray(userTeamsR.json)) {
+                    const userLeagueTeams = userTeamsR.json.filter(t => t.league === league);
+                    const combined = [...leagueTeams, ...userLeagueTeams];
+                    renderTeamsList(combined);
+                } else {
+                    renderTeamsList(leagueTeams);
+                }
+                
+                const teamsEl = document.getElementById('stat-teams');
+                if (teamsEl) {
+                    const totalTeams = Object.values(teamsData).reduce((sum, teams) => sum + teams.length, 0);
+                    const userTeamsCount = userTeamsR.ok ? userTeamsR.json.length : 0;
+                    teamsEl.textContent = totalTeams + userTeamsCount;
+                }
+            } else {
+                // Якщо не вдалося завантажити, показуємо порожній список
+                console.warn('Не вдалося завантажити команди, показуємо порожній список');
+                renderTeamsList([]);
+            }
+        })()
+    ]);
     
     // Перезавантаження активних опцій для нової ліги
     reloadActiveLeagueOptions();
     
     // Перезавантаження матчів з фільтрацією по новій лізі
-    if (typeof reloadMatchesForLeague === 'function') {
-        reloadMatchesForLeague(league);
+    // Використовуємо loadLeagueContent для завантаження матчів конкретної ліги
+    // Але не очищаємо контейнери знову, бо вони вже показують індикатор завантаження
+    if (pastCheckbox && pastCheckbox.checked) {
+        // Не очищаємо контейнер, бо він вже показує індикатор
+        loadLeagueContentWithoutClearing('past-matches', league);
+    }
+    if (upcomingCheckbox && upcomingCheckbox.checked) {
+        // Не очищаємо контейнер, бо він вже показує індикатор
+        loadLeagueContentWithoutClearing('upcoming-matches', league);
+    }
+
+    // Також перезавантажуємо інші активні опції
+    const tableCheckbox = document.getElementById('show-table');
+    const scorersCheckbox = document.getElementById('show-scorers');
+    if (tableCheckbox && tableCheckbox.checked) {
+        loadLeagueContentWithoutClearing('league-table', league);
+    }
+    if (scorersCheckbox && scorersCheckbox.checked) {
+        loadLeagueContentWithoutClearing('top-scorers', league);
     }
 }
 
@@ -856,6 +915,7 @@ if (document.readyState === 'loading') {
         loadTeamsDatalist().then(() => {
             initTeamAutocomplete();
         });
+        initLeagueOptions();
     });
 } else {
     loadUpcomingMatchesNotifications();
@@ -873,7 +933,7 @@ function initLeagueOptions() {
         'show-past-matches': 'past-matches',
         'show-upcoming-matches': 'upcoming-matches',
         'show-table': 'league-table',
-        'show-stats': 'league-stats'
+        'show-scorers': 'top-scorers'
     };
 
     Object.entries(checkboxes).forEach(([checkboxId, containerId]) => {
@@ -881,68 +941,172 @@ function initLeagueOptions() {
         const container = document.getElementById(containerId);
 
         if (checkbox && container) {
-            checkbox.addEventListener('change', function() {
+            // Видаляємо попередні обробники, якщо вони є
+            const newCheckbox = checkbox.cloneNode(true);
+            checkbox.parentNode.replaceChild(newCheckbox, checkbox);
+            const freshCheckbox = document.getElementById(checkboxId);
+            
+            freshCheckbox.addEventListener('change', function() {
                 if (this.checked) {
                     container.style.display = 'block';
+                    // Показуємо заголовок для таблиці
+                    if (containerId === 'league-table') {
+                        const header = document.getElementById('league-table-header');
+                        if (header) header.style.display = 'block';
+                    }
                     loadLeagueContent(containerId);
                 } else {
                     container.style.display = 'none';
+                    container.innerHTML = '';
+                    // Приховуємо заголовок для таблиці
+                    if (containerId === 'league-table') {
+                        const header = document.getElementById('league-table-header');
+                        if (header) header.style.display = 'none';
+                    }
                 }
+                
+                // Видаляємо старий обробник для show-scores-checkbox, якщо він був
             });
 
             // Початковий стан
-            if (checkbox.checked) {
+            if (freshCheckbox.checked) {
                 container.style.display = 'block';
+                // Показуємо заголовок для таблиці
+                if (containerId === 'league-table') {
+                    const header = document.getElementById('league-table-header');
+                    if (header) header.style.display = 'block';
+                }
                 loadLeagueContent(containerId);
             }
         }
     });
+    
+    // Створюємо глобальний чекбокс для синхронізації (якщо його немає в HTML)
+    if (!document.getElementById('show-scores-checkbox')) {
+        const hiddenCheckbox = document.createElement('input');
+        hiddenCheckbox.type = 'checkbox';
+        hiddenCheckbox.id = 'show-scores-checkbox';
+        hiddenCheckbox.style.display = 'none';
+        document.body.appendChild(hiddenCheckbox);
+    }
 }
 
 // Перезавантаження активних опцій
 function reloadActiveLeagueOptions() {
-    const checkboxes = [
-        'show-past-matches',
-        'show-upcoming-matches',
-        'show-table',
-        'show-stats'
+    // Завантажуємо в правильному порядку: матчі -> таблиця -> бомбардири -> статистика
+    const loadOrder = [
+        { checkboxId: 'show-past-matches', containerId: 'past-matches' },
+        { checkboxId: 'show-upcoming-matches', containerId: 'upcoming-matches' },
+        { checkboxId: 'show-table', containerId: 'league-table' },
+        { checkboxId: 'show-scorers', containerId: 'top-scorers' }
     ];
     
-    const containers = {
-        'show-past-matches': 'past-matches',
-        'show-upcoming-matches': 'upcoming-matches',
-        'show-table': 'league-table',
-        'show-stats': 'league-stats'
-    };
-    
-    checkboxes.forEach(checkboxId => {
+    loadOrder.forEach(({ checkboxId, containerId }) => {
         const checkbox = document.getElementById(checkboxId);
         if (checkbox && checkbox.checked) {
-            const containerId = containers[checkboxId];
+            // Показуємо заголовок для таблиці
+            if (containerId === 'league-table') {
+                const header = document.getElementById('league-table-header');
+                if (header) header.style.display = 'block';
+            }
             loadLeagueContent(containerId);
         }
     });
 }
 
-// Завантаження контенту для секції
+// Debounce для швидкого перемикання
+let loadLeagueContentTimeout = null;
+
+// Завантаження контенту для секції (з очищенням контейнера)
 function loadLeagueContent(containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
 
     const league = currentLeague;
+    
+    // Очищаємо попередній таймер
+    if (loadLeagueContentTimeout) {
+        clearTimeout(loadLeagueContentTimeout);
+    }
+    
+    // Додаємо невелику затримку для debounce (100ms)
+    loadLeagueContentTimeout = setTimeout(() => {
+        // Перевіряємо, чи ліга не змінилася під час затримки
+        if (currentLeague !== league) {
+            return;
+        }
+        
+        switch(containerId) {
+            case 'past-matches':
+                {
+                    const checkbox = document.getElementById('show-past-matches');
+                    if (checkbox && !checkbox.checked) {
+                        return;
+                    }
+                }
+                // Очищаємо контейнер перед новим рендерингом (негайно)
+                container.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Завантаження...</div>';
+                container.style.opacity = '0.7';
+                renderPastMatches(container, league);
+                break;
+            case 'upcoming-matches':
+                {
+                    const checkbox = document.getElementById('show-upcoming-matches');
+                    if (checkbox && !checkbox.checked) {
+                        return;
+                    }
+                }
+                // Очищаємо контейнер перед новим рендерингом (негайно)
+                container.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Завантаження...</div>';
+                container.style.opacity = '0.7';
+                renderUpcomingMatches(container, league);
+                break;
+            case 'league-table':
+                renderLeagueTable(container, league);
+                break;
+            case 'top-scorers':
+                renderTopScorers(container, league);
+                break;
+        }
+    }, 100);
+}
 
+// Завантаження контенту без очищення контейнера (використовується при зміні ліги)
+function loadLeagueContentWithoutClearing(containerId, league) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // Перевіряємо, чи ліга не змінилася
+    if (currentLeague !== league) {
+        return;
+    }
+    
     switch(containerId) {
         case 'past-matches':
+            {
+                const checkbox = document.getElementById('show-past-matches');
+                if (checkbox && !checkbox.checked) {
+                    return;
+                }
+            }
+            // Контейнер вже показує індикатор завантаження, просто рендеримо
             renderPastMatches(container, league);
             break;
         case 'upcoming-matches':
+            {
+                const checkbox = document.getElementById('show-upcoming-matches');
+                if (checkbox && !checkbox.checked) {
+                    return;
+                }
+            }
+            // Контейнер вже показує індикатор завантаження, просто рендеримо
             renderUpcomingMatches(container, league);
             break;
         case 'league-table':
             renderLeagueTable(container, league);
             break;
-        case 'league-stats':
-            renderLeagueStats(container, league);
+        case 'top-scorers':
+            renderTopScorers(container, league);
             break;
     }
 }
@@ -953,95 +1117,141 @@ async function renderLeagueTable(container, league) {
     
     try {
         // Спочатку отримуємо реальну турнірну таблицю з API
-        const standingsResp = await apiFetch('GET', `/api/teams/standings/${league}`);
+        let standingsResp = await apiFetch('GET', `/api/teams/standings/${league}`);
         let table = [];
         
-        if (standingsResp.ok && standingsResp.json && standingsResp.json.standings) {
-            // Є реальні дані з API
-            table = standingsResp.json.standings.map(entry => ({
-                position: entry.position,
-                name: entry.teamName,
-                emblemUrl: entry.teamCrest,
-                played: entry.playedGames,
-                won: entry.won,
-                draw: entry.draw,
-                lost: entry.lost,
-                goalsFor: entry.goalsFor,
-                goalsAgainst: entry.goalsAgainst,
-                points: entry.points,
-                source: 'api'
-            }));
+        // Якщо API не відповідає, спробуємо завантажити з кешу через повторний запит
+        if (!standingsResp.ok) {
+            console.warn('API не відповідає, спробуємо завантажити з кешу...');
+            standingsResp = await apiFetch('GET', `/api/teams/standings/${league}`);
+        }
+        
+        if (standingsResp.ok && standingsResp.json) {
+            const standings = standingsResp.json.standings;
             
-            // Тепер додаємо очки з локальних матчів
-            const teamsResp = await apiFetch('GET', '/api/teams/actual');
-            const matchesResp = await apiFetch('GET', '/api/matches');
+            console.log(`[renderLeagueTable] Отримано дані для ${league}:`, {
+                hasStandings: !!standings,
+                isArray: Array.isArray(standings),
+                length: standings?.length,
+                source: standingsResp.json.source,
+                fullResponse: standingsResp.json
+            });
             
-            if (teamsResp.ok && matchesResp.ok) {
-                const leagueTeams = teamsResp.json[league] || [];
-                const allMatches = Array.isArray(matchesResp.json) ? matchesResp.json : [];
-                const now = new Date();
+            // Перевіряємо, чи є дані і чи це не порожній масив
+            if (standings && Array.isArray(standings) && standings.length > 0) {
+                // Є реальні дані з API
+                table = standings.map(entry => ({
+                    position: entry.position,
+                    name: entry.teamName,
+                    emblemUrl: entry.teamCrest,
+                    played: entry.playedGames,
+                    won: entry.won,
+                    draw: entry.draw,
+                    lost: entry.lost,
+                    goalsFor: entry.goalsFor,
+                    goalsAgainst: entry.goalsAgainst,
+                    points: entry.points,
+                    source: 'api'
+                }));
                 
-                // Фільтруємо минулі матчі ліги з рахунком
-                const leagueMatches = allMatches.filter(m => {
-                    if (!m.score || !m.date) return false;
-                    const matchDate = new Date(m.date);
-                    if (matchDate >= now) return false;
-                    
-                    const homeTeam = leagueTeams.find(t => t.name === m.homeTeam);
-                    const awayTeam = leagueTeams.find(t => t.name === m.awayTeam);
-                    return homeTeam && awayTeam;
-                });
+                // Тепер додаємо очки з локальних матчів
+                const teamsResp = await apiFetch('GET', '/api/teams/actual');
+                const matchesResp = await apiFetch('GET', '/api/matches');
                 
-                // Додаємо очки з локальних матчів до таблиці
-                leagueMatches.forEach(match => {
-                    const [homeScore, awayScore] = match.score.split(':').map(s => parseInt(s.trim()));
-                    if (isNaN(homeScore) || isNaN(awayScore)) return;
+                if (teamsResp.ok && matchesResp.ok) {
+                    const leagueTeams = teamsResp.json[league] || [];
+                    const allMatches = Array.isArray(matchesResp.json) ? matchesResp.json : [];
+                    const now = new Date();
                     
-                    const homeEntry = table.find(t => t.name === match.homeTeam);
-                    const awayEntry = table.find(t => t.name === match.awayTeam);
+                    // Фільтруємо минулі матчі ліги з рахунком
+                    const leagueMatches = allMatches.filter(m => {
+                        if (!m.score || !m.date) return false;
+                        const matchDate = new Date(m.date);
+                        if (matchDate >= now) return false;
+                        
+                        const homeTeam = leagueTeams.find(t => t.name === m.homeTeam);
+                        const awayTeam = leagueTeams.find(t => t.name === m.awayTeam);
+                        return homeTeam && awayTeam;
+                    });
                     
-                    if (homeEntry) {
-                        homeEntry.played++;
-                        homeEntry.goalsFor += homeScore;
-                        homeEntry.goalsAgainst += awayScore;
-                        if (homeScore > awayScore) {
-                            homeEntry.won++;
-                            homeEntry.points += 3;
-                        } else if (homeScore < awayScore) {
-                            homeEntry.lost++;
-                        } else {
-                            homeEntry.draw++;
-                            homeEntry.points++;
+                    // Додаємо очки з локальних матчів до таблиці
+                    leagueMatches.forEach(match => {
+                        const [homeScore, awayScore] = match.score.split(':').map(s => parseInt(s.trim()));
+                        if (isNaN(homeScore) || isNaN(awayScore)) return;
+                        
+                        const homeEntry = table.find(t => t.name === match.homeTeam);
+                        const awayEntry = table.find(t => t.name === match.awayTeam);
+                        
+                        if (homeEntry) {
+                            homeEntry.played++;
+                            homeEntry.goalsFor += homeScore;
+                            homeEntry.goalsAgainst += awayScore;
+                            if (homeScore > awayScore) {
+                                homeEntry.won++;
+                                homeEntry.points += 3;
+                            } else if (homeScore < awayScore) {
+                                homeEntry.lost++;
+                            } else {
+                                homeEntry.draw++;
+                                homeEntry.points++;
+                            }
                         }
-                    }
-                    
-                    if (awayEntry) {
-                        awayEntry.played++;
-                        awayEntry.goalsFor += awayScore;
-                        awayEntry.goalsAgainst += homeScore;
-                        if (awayScore > homeScore) {
-                            awayEntry.won++;
-                            awayEntry.points += 3;
-                        } else if (awayScore < homeScore) {
-                            awayEntry.lost++;
-                        } else {
-                            awayEntry.draw++;
-                            awayEntry.points++;
+                        
+                        if (awayEntry) {
+                            awayEntry.played++;
+                            awayEntry.goalsFor += awayScore;
+                            awayEntry.goalsAgainst += homeScore;
+                            if (awayScore > homeScore) {
+                                awayEntry.won++;
+                                awayEntry.points += 3;
+                            } else if (awayScore < homeScore) {
+                                awayEntry.lost++;
+                            } else {
+                                awayEntry.draw++;
+                                awayEntry.points++;
+                            }
                         }
-                    }
-                });
+                    });
+                    
+                    // Сортуємо за очками
+                    table.sort((a, b) => {
+                        if (b.points !== a.points) return b.points - a.points;
+                        const diffA = a.goalsFor - a.goalsAgainst;
+                        const diffB = b.goalsFor - b.goalsAgainst;
+                        if (diffB !== diffA) return diffB - diffA;
+                        return b.goalsFor - a.goalsFor;
+                    });
+                }
+            } else {
+                // Standings є, але порожній або відсутній - генеруємо з локальних матчів
+                console.log(`[renderLeagueTable] Standings порожній або відсутній для ${league} (source: ${standingsResp.json.source || 'unknown'}), генеруємо з локальних матчів`);
+                const teamsResp = await apiFetch('GET', '/api/teams/actual');
+                const matchesResp = await apiFetch('GET', '/api/matches');
                 
-                // Сортуємо за очками
-                table.sort((a, b) => {
-                    if (b.points !== a.points) return b.points - a.points;
-                    const diffA = a.goalsFor - a.goalsAgainst;
-                    const diffB = b.goalsFor - b.goalsAgainst;
-                    if (diffB !== diffA) return diffB - diffA;
-                    return b.goalsFor - a.goalsFor;
-                });
+                if (teamsResp.ok && matchesResp.ok) {
+                    const leagueTeams = teamsResp.json[league] || [];
+                    const allMatches = Array.isArray(matchesResp.json) ? matchesResp.json : [];
+                    const now = new Date();
+                    
+                    const leagueMatches = allMatches.filter(m => {
+                        if (!m.score || !m.date) return false;
+                        const matchDate = new Date(m.date);
+                        if (matchDate >= now) return false;
+                        
+                        const homeTeam = leagueTeams.find(t => t.name === m.homeTeam);
+                        const awayTeam = leagueTeams.find(t => t.name === m.awayTeam);
+                        return homeTeam && awayTeam;
+                    });
+                    
+                    table = generateLeagueTable(leagueTeams, leagueMatches);
+                    console.log(`[renderLeagueTable] Згенеровано таблицю з локальних матчів для ${league}:`, table.length, 'команд');
+                } else {
+                    console.warn(`[renderLeagueTable] Не вдалося завантажити команди або матчі для ${league}`);
+                }
             }
         } else {
             // Немає реальних даних, генеруємо з локальних матчів
+            console.log(`[renderLeagueTable] Немає даних з API для ${league}, генеруємо з локальних матчів`);
             const teamsResp = await apiFetch('GET', '/api/teams/actual');
             const matchesResp = await apiFetch('GET', '/api/matches');
             
@@ -1066,8 +1276,15 @@ async function renderLeagueTable(container, league) {
             table = generateLeagueTable(leagueTeams, leagueMatches);
         }
         
+        console.log(`[renderLeagueTable] Фінальна таблиця для ${league}:`, table.length, 'команд');
+        
+        // Оновлюємо заголовок поза контейнером
+        const tableHeader = document.getElementById('league-table-header');
+        if (tableHeader) {
+            tableHeader.innerHTML = `<h3>📊 Таблиця ${league}</h3>`;
+        }
+        
         container.innerHTML = `
-            <h3>📊 Турнірна таблиця ${league}</h3>
             ${table.length > 0 ? `
                 <div class="league-table">
                     <table>
@@ -1114,8 +1331,13 @@ async function renderLeagueTable(container, league) {
             `}
         `;
     } catch (error) {
+        // Оновлюємо заголовок поза контейнером
+        const tableHeader = document.getElementById('league-table-header');
+        if (tableHeader) {
+            tableHeader.innerHTML = `<h3>📊 Таблиця ${league}</h3>`;
+        }
+        
         container.innerHTML = `
-            <h3>📊 Турнірна таблиця ${league}</h3>
             <div class="empty-content">
                 <p>❌ Помилка завантаження: ${error.message}</p>
             </div>
@@ -1127,7 +1349,7 @@ async function renderLeagueTable(container, league) {
 function generateLeagueTable(teams, matches) {
     const stats = {};
     
-    // Ініціалізація статистики
+    // Ініціалізація статистики для всіх команд
     teams.forEach(team => {
         stats[team.name] = {
             name: team.name,
@@ -1141,6 +1363,14 @@ function generateLeagueTable(teams, matches) {
             points: 0
         };
     });
+    
+    // Якщо немає матчів, повертаємо базову таблицю з командами
+    if (!matches || matches.length === 0) {
+        return Object.values(stats).map((team, index) => ({
+            ...team,
+            position: index + 1
+        }));
+    }
     
     // Обробка матчів
     matches.forEach(match => {
@@ -1184,69 +1414,447 @@ function generateLeagueTable(teams, matches) {
         });
 }
 
-// Рендер минулих матчів
-async function renderPastMatches(container, league) {
-    container.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Завантаження...</div>';
+async function fetchMatchesForLeague(league) {
+    if (!league) {
+        console.warn('fetchMatchesForLeague: league не вказано');
+        return [];
+    }
     
+    const cacheKey = league.toUpperCase();
+    const cached = leagueMatchesCache.get(cacheKey);
+    const now = Date.now();
+    if (cached && (now - cached.timestamp) < MATCHES_CACHE_TTL) {
+        console.log(`Використовуємо кешовані матчі для ${league}:`, cached.data.length);
+        return cached.data;
+    }
+
+    let matches = [];
+    
+    // Спочатку завантажуємо з локальної бази
     try {
-        const teamsResp = await apiFetch('GET', '/api/teams/actual');
-        const matchesResp = await apiFetch('GET', '/api/matches');
+        const response = await apiFetch('GET', `/api/matches?league=${encodeURIComponent(league)}`);
+        if (response.ok && Array.isArray(response.json)) {
+            matches = response.json;
+            console.log(`Завантажено локальних матчів для ${league}:`, matches.length);
+        }
+    } catch (error) {
+        console.warn(`Помилка завантаження локальних матчів для ${league}:`, error);
+    }
+    
+    // Завантажуємо майбутні та минулі матчі для конкретної ліги з API
+    try {
+        const [upcomingResp, previousResp] = await Promise.all([
+            apiFetch('GET', `/api/teams/matches/upcoming/${encodeURIComponent(league)}`),
+            apiFetch('GET', `/api/teams/matches/previous/${encodeURIComponent(league)}`)
+        ]);
         
-        if (!teamsResp.ok || !matchesResp.ok) {
-            throw new Error('Не вдалось завантажити дані');
+        const apiMatches = [];
+        
+        if (upcomingResp.ok && upcomingResp.json && upcomingResp.json.matches) {
+            const upcoming = Array.isArray(upcomingResp.json.matches) 
+                ? upcomingResp.json.matches 
+                : [];
+            apiMatches.push(...upcoming);
+            console.log(`Завантажено майбутніх матчів з API для ${league}:`, upcoming.length);
         }
         
-        const leagueTeams = teamsResp.json[league] || [];
-        const allMatches = Array.isArray(matchesResp.json) ? matchesResp.json : [];
-        const now = new Date();
+        if (previousResp.ok && previousResp.json && previousResp.json.matches) {
+            const previous = Array.isArray(previousResp.json.matches) 
+                ? previousResp.json.matches 
+                : [];
+            apiMatches.push(...previous);
+            console.log(`Завантажено минулих матчів з API для ${league}:`, previous.length);
+        }
         
-        // Фільтруємо минулі матчі ліги (дата < поточної дати + league співпадає)
-        const pastMatches = allMatches.filter(m => {
-            // Перевіряємо лігу
-            if (m.league !== league) return false;
-            
-            if (!m.kickoffAt) return false;
-            const matchDate = new Date(m.kickoffAt);
-            if (matchDate >= now) return false; // Не минулий матч
-            
-            return true;
-        }).sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
+        if (apiMatches.length > 0) {
+            // Об'єднуємо з локальними матчами (уникаємо дублікатів)
+            const existingIds = new Set(matches.map(m => m.id));
+            const newMatches = apiMatches.filter(m => !existingIds.has(m.id));
+            matches = [...matches, ...newMatches];
+            console.log(`Всього матчів для ${league} після об'єднання:`, matches.length);
+        }
+    } catch (error) {
+        console.warn(`Помилка завантаження матчів з API для ${league}:`, error);
+    }
+    
+    if (matches.length > 0) {
+        leagueMatchesCache.set(cacheKey, {data: matches, timestamp: now});
+    }
+    
+    return matches;
+}
+
+// Рендер минулих матчів
+async function renderPastMatches(container, league) {
+    return renderMatchesSection({
+        container,
+        league,
+        mode: 'past',
+        title: `⚽ Минулі матчі ${league}`,
+        emptyMessage: 'Немає зіграних матчів для обраної ліги.'
+    });
+}
+
+async function renderUpcomingMatches(container, league) {
+    return renderMatchesSection({
+        container,
+        league,
+        mode: 'upcoming',
+        title: `📅 Майбутні матчі ${league}`,
+        emptyMessage: 'Немає запланованих матчів для обраної ліги.'
+    });
+}
+
+// Захист від подвійного рендерингу та race conditions
+const renderingContainers = new Set();
+const activeRequests = new Map(); // Зберігаємо активні запити для скасування
+
+async function renderMatchesSection({container, league, mode, title, emptyMessage}) {
+    // Перевіряємо, чи не виконується вже рендеринг для цього контейнера
+    const containerKey = `${container.id}_${mode}`;
+    const requestKey = `${containerKey}_${league}`;
+    
+    // Скасовуємо попередній запит для цього контейнера, якщо він існує
+    if (activeRequests.has(containerKey)) {
+        const prevRequest = activeRequests.get(containerKey);
+        if (prevRequest.league !== league) {
+            console.log(`Скасовуємо попередній запит для ${containerKey} (ліга змінилася з ${prevRequest.league} на ${league})`);
+            activeRequests.delete(containerKey);
+        }
+    }
+    
+    if (renderingContainers.has(requestKey)) {
+        console.log(`Пропускаємо подвійний рендеринг для ${requestKey}`);
+        return;
+    }
+    
+    // Зберігаємо інформацію про поточний запит
+    activeRequests.set(containerKey, { league, timestamp: Date.now() });
+    renderingContainers.add(requestKey);
+    
+    // Перевіряємо, чи контейнер вже показує індикатор завантаження
+    // Якщо ні, то додаємо його
+    const hasLoadingIndicator = container.innerHTML.includes('⏳ Завантаження') || 
+                                 container.innerHTML.includes('Завантаження');
+    
+    if (!hasLoadingIndicator) {
+        // НЕГАЙНО очищаємо контейнер синхронно перед асинхронним завантаженням
+        // Це запобігає показу старого контенту
+        container.innerHTML = '';
+        container.style.opacity = '0.7';
+        
+        // Додаємо індикатор завантаження
+        const loadingDiv = document.createElement('div');
+        loadingDiv.style.cssText = 'text-align: center; padding: 20px;';
+        loadingDiv.textContent = '⏳ Завантаження...';
+        container.appendChild(loadingDiv);
+    } else {
+        // Якщо індикатор вже є, просто встановлюємо opacity
+        container.style.opacity = '0.7';
+    }
+
+    try {
+        const matches = await fetchMatchesForLeague(league);
+        
+        // Перевіряємо, чи ліга не змінилася під час завантаження
+        const currentRequest = activeRequests.get(containerKey);
+        if (!currentRequest || currentRequest.league !== league) {
+            console.log(`Ліга змінилася під час завантаження (було ${league}, стало ${currentRequest?.league || 'невизначено'}), пропускаємо рендеринг`);
+            renderingContainers.delete(requestKey);
+            return;
+        }
+        
+        // Перевіряємо, чи поточна ліга все ще актуальна
+        if (currentLeague !== league) {
+            console.log(`Поточна ліга (${currentLeague}) не відповідає лізі запиту (${league}), пропускаємо рендеринг`);
+            renderingContainers.delete(requestKey);
+            activeRequests.delete(containerKey);
+            return;
+        }
+        
+        if (!matches || matches.length === 0) {
+            container.style.opacity = '1';
+            container.innerHTML = `
+                <h3>${title}</h3>
+                <div class="empty-content">
+                    <p>${emptyMessage}</p>
+                </div>
+            `;
+            renderingContainers.delete(requestKey);
+            activeRequests.delete(containerKey);
+            return;
+        }
+        
+        const prepared = filterMatchesByMode(matches, league, mode);
+        
+        // Ще раз перевіряємо актуальність перед рендерингом
+        if (currentLeague !== league) {
+            console.log(`Ліга змінилася перед рендерингом, пропускаємо`);
+            renderingContainers.delete(requestKey);
+            activeRequests.delete(containerKey);
+            return;
+        }
+
+        // Відновлюємо повну прозорість перед рендерингом
+        container.style.opacity = '1';
+        
+        // Додаємо кнопку показу рахунку для минулих матчів
+        const showScoresButton = mode === 'past' ? `
+            <div class="matches-header-controls">
+                <label class="score-toggle-label">
+                    <input type="checkbox" id="show-scores-checkbox-inline" ${document.getElementById('show-scores-checkbox')?.checked ? 'checked' : ''}>
+                    <span>Показувати рахунок</span>
+                </label>
+            </div>
+        ` : '';
         
         container.innerHTML = `
-            <h3>⚽ Минулі матчі ${league}</h3>
-            ${pastMatches.length > 0 ? `
+            <div class="matches-section-header">
+                <h3>${title}</h3>
+                ${showScoresButton}
+            </div>
+            ${prepared.length > 0 ? `
                 <div class="matches-list">
-                    ${pastMatches.map(match => {
-                        const score = match.homeScore !== undefined && match.awayScore !== undefined 
-                            ? `${match.homeScore} : ${match.awayScore}` 
-                            : '-';
-                        return `
-                            <div class="match-card past">
-                                <div class="match-date">${formatMatchDate(match.kickoffAt)}</div>
-                                <div class="match-teams">
-                                    <div class="team home">${escapeHtml(match.homeTeam)}</div>
-                                    <div class="match-score">${score}</div>
-                                    <div class="team away">${escapeHtml(match.awayTeam)}</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
+                    ${prepared.map(match => buildMatchCard(match, mode)).join('')}
                 </div>
             ` : `
                 <div class="empty-content">
-                    <p>Немає зіграних матчів</p>
-                    <small>Матчі з'являться після створення матчів з минулою датою для ліги ${league}</small>
+                    <p>${emptyMessage}</p>
                 </div>
             `}
         `;
+        
+        // Додаємо обробник для inline чекбокса
+        if (mode === 'past') {
+            const inlineCheckbox = document.getElementById('show-scores-checkbox-inline');
+            if (inlineCheckbox) {
+                const label = inlineCheckbox.closest('.score-toggle-label');
+                
+                // Оновлюємо клас для активного стану
+                if (inlineCheckbox.checked && label) {
+                    label.classList.add('checked');
+                }
+                
+                inlineCheckbox.addEventListener('change', function() {
+                    // Оновлюємо клас для стилізації
+                    if (label) {
+                        if (this.checked) {
+                            label.classList.add('checked');
+                        } else {
+                            label.classList.remove('checked');
+                        }
+                    }
+                    
+                    // Синхронізуємо з основним чекбоксом
+                    const mainCheckbox = document.getElementById('show-scores-checkbox');
+                    if (mainCheckbox) {
+                        mainCheckbox.checked = this.checked;
+                    }
+                    // Перерендерюємо матчі
+                    loadLeagueContent('past-matches');
+                });
+            }
+        }
     } catch (error) {
-        container.innerHTML = `
-            <h3>⚽ Минулі матчі ${league}</h3>
-            <div class="empty-content">
-                <p>❌ Помилка завантаження: ${error.message}</p>
-            </div>
-        `;
+        // Перевіряємо актуальність навіть при помилці
+        if (currentLeague === league) {
+            console.error('Помилка завантаження матчів:', error);
+            container.style.opacity = '1';
+            container.innerHTML = `
+                <h3>${title}</h3>
+                <div class="empty-content">
+                    <p>❌ Помилка завантаження матчів: ${error.message}</p>
+                </div>
+            `;
+        } else {
+            // Якщо ліга змінилася, просто очищаємо контейнер
+            container.innerHTML = '';
+            container.style.opacity = '1';
+        }
+    } finally {
+        renderingContainers.delete(requestKey);
+        const currentRequest = activeRequests.get(containerKey);
+        if (currentRequest && currentRequest.league === league) {
+            activeRequests.delete(containerKey);
+        }
     }
+}
+
+function filterMatchesByMode(matches, league, mode) {
+    const now = new Date();
+    
+    console.log(`Фільтрація матчів: league=${league}, mode=${mode}, всього матчів=${matches.length}`);
+
+    const filtered = matches
+        .filter(match => {
+            // Перевіряємо лігу (може бути різний регістр)
+            const matchLeague = match.league ? match.league.trim() : '';
+            const targetLeague = league ? league.trim() : '';
+            
+            if (!matchLeague || !targetLeague) {
+                return false;
+            }
+            
+            const leagueMatch = matchLeague.toUpperCase() === targetLeague.toUpperCase();
+            
+            if (!leagueMatch) {
+                return false;
+            }
+            
+            // Обробляємо дату (може бути в різних форматах)
+            let kickoffDate = null;
+            if (match.kickoffAt) {
+                if (typeof match.kickoffAt === 'string') {
+                    kickoffDate = new Date(match.kickoffAt);
+                } else if (match.kickoffAt instanceof Date) {
+                    kickoffDate = match.kickoffAt;
+                } else if (match.date && match.time) {
+                    kickoffDate = new Date(`${match.date}T${match.time}`);
+                }
+            }
+            
+            if (!kickoffDate || isNaN(kickoffDate.getTime())) {
+                // Якщо немає дати, використовуємо рахунок для визначення минулого/майбутнього
+                if (mode === 'past') {
+                    // Для минулих матчів перевіряємо наявність рахунку
+                    const hasScore = (match.score && (match.score.home !== undefined || match.score.away !== undefined)) ||
+                                   (match.homeScore !== undefined && match.awayScore !== undefined);
+                    return hasScore;
+                } else {
+                    // Для майбутніх матчів перевіряємо відсутність рахунку
+                    const hasNoScore = (!match.score || (match.score.home === undefined && match.score.away === undefined)) &&
+                                      (match.homeScore === undefined || match.awayScore === undefined);
+                    return hasNoScore;
+                }
+            }
+            
+            return mode === 'past' ? kickoffDate < now : kickoffDate >= now;
+        })
+        .sort((a, b) => {
+            let dateA = null, dateB = null;
+            
+            if (a.kickoffAt) {
+                if (typeof a.kickoffAt === 'string') {
+                    dateA = new Date(a.kickoffAt);
+                } else if (a.kickoffAt instanceof Date) {
+                    dateA = a.kickoffAt;
+                } else if (a.date && a.time) {
+                    dateA = new Date(`${a.date}T${a.time}`);
+                }
+            }
+            
+            if (b.kickoffAt) {
+                if (typeof b.kickoffAt === 'string') {
+                    dateB = new Date(b.kickoffAt);
+                } else if (b.kickoffAt instanceof Date) {
+                    dateB = b.kickoffAt;
+                } else if (b.date && b.time) {
+                    dateB = new Date(`${b.date}T${b.time}`);
+                }
+            }
+            
+            if (!dateA || !dateB) return 0;
+            return mode === 'past' ? dateB - dateA : dateA - dateB;
+        });
+    
+    console.log(`Відфільтровано матчів для ${league} (${mode}):`, filtered.length);
+    return filtered;
+}
+
+function buildMatchCard(match, mode) {
+    // Обробляємо різні формати даних (з API та з БД)
+    const homeTeamName = typeof match.homeTeam === 'string' 
+        ? match.homeTeam 
+        : (match.homeTeam?.name || 'Господарі');
+    
+    const awayTeamName = typeof match.awayTeam === 'string' 
+        ? match.awayTeam 
+        : (match.awayTeam?.name || 'Гості');
+    
+    // Перевіряємо, чи показувати рахунок (для минулих матчів)
+    const showScoresCheckbox = document.getElementById('show-scores-checkbox');
+    const showScores = showScoresCheckbox ? showScoresCheckbox.checked : false;
+    
+    // Обробляємо рахунок (може бути в різних форматах)
+    let score = 'VS';
+    if (mode === 'past' && showScores) {
+        if (match.score && typeof match.score === 'object') {
+            // Формат з API: {home: 2, away: 1}
+            const homeScore = match.score.home ?? match.score.homeScore ?? '-';
+            const awayScore = match.score.away ?? match.score.awayScore ?? '-';
+            score = `${formatScoreValue(homeScore)} : ${formatScoreValue(awayScore)}`;
+        } else if (match.homeScore !== undefined && match.awayScore !== undefined) {
+            // Формат з БД: homeScore та awayScore як окремі поля
+            score = `${formatScoreValue(match.homeScore)} : ${formatScoreValue(match.awayScore)}`;
+        }
+    }
+    
+    // Обробляємо дату (може бути рядок або об'єкт LocalDateTime)
+    let kickoffDate = null;
+    if (match.kickoffAt) {
+        if (typeof match.kickoffAt === 'string') {
+            kickoffDate = new Date(match.kickoffAt);
+        } else if (match.kickoffAt instanceof Date) {
+            kickoffDate = match.kickoffAt;
+        } else if (match.date && match.time) {
+            // Якщо дата розділена на date та time
+            kickoffDate = new Date(`${match.date}T${match.time}`);
+        }
+    }
+
+    const matchdayBadge = match.matchday
+        ? `<span class="match-badge">Тур ${match.matchday}</span>`
+        : '';
+
+    // Отримуємо емблеми команд, якщо вони є
+    const homeTeamCrest = typeof match.homeTeam === 'object' && match.homeTeam?.crest ? match.homeTeam.crest : '';
+    const awayTeamCrest = typeof match.awayTeam === 'object' && match.awayTeam?.crest ? match.awayTeam.crest : '';
+    
+    // Отримуємо емодзі ліги
+    const leagueEmoji = getLeagueEmojiForMatch(match.league);
+    
+    const dateTime = kickoffDate && !isNaN(kickoffDate.getTime()) ? formatMatchDateTime(kickoffDate) : 'Дата не встановлена';
+    
+    return `
+        <div class="match-card ${mode}">
+            <div class="match-header">
+                ${match.league ? `<span class="match-league">${leagueEmoji} ${match.league}</span>` : ''}
+                <div class="match-info">
+                    <span class="match-date">${dateTime}</span>
+                    ${matchdayBadge}
+                </div>
+            </div>
+            <div class="match-content">
+                <div class="team team-home">
+                    ${homeTeamCrest ? `<img src="${homeTeamCrest}" alt="${homeTeamName}" class="team-crest">` : ''}
+                    <span class="team-name">${escapeHtml(homeTeamName)}</span>
+                </div>
+                <div class="match-score">${score}</div>
+                <div class="team team-away">
+                    <span class="team-name">${escapeHtml(awayTeamName)}</span>
+                    ${awayTeamCrest ? `<img src="${awayTeamCrest}" alt="${awayTeamName}" class="team-crest">` : ''}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function formatScoreValue(value) {
+    return typeof value === 'number' && value >= 0 ? value : '-';
+}
+
+function getLeagueEmojiForMatch(league) {
+    if (!league) return '⚽';
+    const emojis = {
+        'UPL': '🇺🇦',
+        'UCL': '⭐',
+        'EPL': '🏴',
+        'LaLiga': '🇪🇸',
+        'Bundesliga': '🇩🇪',
+        'SerieA': '🇮🇹',
+        'Ligue1': '🇫🇷'
+    };
+    return emojis[league.toUpperCase()] || '⚽';
 }
 
 function formatMatchDate(dateStr) {
@@ -1255,212 +1863,98 @@ function formatMatchDate(dateStr) {
     return date.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short', year: 'numeric' });
 }
 
-// Рендер майбутніх матчів
-async function renderUpcomingMatches(container, league) {
+function formatMatchDateTime(date) {
+    const datePart = date.toLocaleDateString('uk-UA', { day: '2-digit', month: 'short' });
+    const timePart = date.toLocaleTimeString('uk-UA', { hour: '2-digit', minute: '2-digit' });
+    return `${datePart} - ${timePart}`;
+}
+
+// Рендер топ бомбардирів
+async function renderTopScorers(container, league) {
     container.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Завантаження...</div>';
     
     try {
-        const teamsResp = await apiFetch('GET', '/api/teams/actual');
-        const matchesResp = await apiFetch('GET', '/api/matches');
+        let response = await apiFetch('GET', `/api/teams/scorers/${encodeURIComponent(league)}`);
         
-        if (!teamsResp.ok || !matchesResp.ok) {
+        // Якщо API не відповідає, спробуємо повторний запит (може бути кеш)
+        if (!response.ok) {
+            console.warn('API не відповідає для бомбардирів, спробуємо повторний запит...');
+            response = await apiFetch('GET', `/api/teams/scorers/${encodeURIComponent(league)}`);
+        }
+        
+        if (!response.ok || !response.json) {
             throw new Error('Не вдалось завантажити дані');
         }
         
-        const leagueTeams = teamsResp.json[league] || [];
-        const allMatches = Array.isArray(matchesResp.json) ? matchesResp.json : [];
-        const now = new Date();
+        console.log(`[renderTopScorers] Отримано дані для ${league}:`, response.json);
         
-        // Фільтруємо майбутні матчі (дата >= поточної дати + league співпадає)
-        const upcomingMatches = allMatches.filter(m => {
-            // Перевіряємо лігу
-            if (m.league !== league) return false;
-            
-            if (!m.kickoffAt) return false;
-            const matchDate = new Date(m.kickoffAt);
-            if (matchDate < now) return false; // Минулий матч
-            
-            return true;
-        }).sort((a, b) => new Date(a.kickoffAt) - new Date(b.kickoffAt));
+        const scorers = response.json.scorers || [];
         
-        container.innerHTML = `
-            <h3>📅 Майбутні матчі ${league}</h3>
-            ${upcomingMatches.length > 0 ? `
-                <div class="matches-list">
-                    ${upcomingMatches.map(match => `
-                        <div class="match-card upcoming">
-                            <div class="match-date">${formatMatchDate(match.kickoffAt)}</div>
-                            <div class="match-teams">
-                                <div class="team home">${escapeHtml(match.homeTeam)}</div>
-                                <div class="match-vs">VS</div>
-                                <div class="team away">${escapeHtml(match.awayTeam)}</div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            ` : `
+        console.log(`[renderTopScorers] Кількість бомбардирів: ${scorers.length}`);
+        
+        if (scorers.length === 0) {
+            container.innerHTML = `
+                <h3>⚽ Бомбардири ${league}</h3>
                 <div class="empty-content">
-                    <p>Немає запланованих матчів</p>
-                    <small>Додайте матчі для ліги ${league}</small>
+                    <p>Немає даних про бомбардирів для обраної ліги.</p>
                 </div>
-            `}
-        `;
-    } catch (error) {
-        container.innerHTML = `
-            <h3>📅 Майбутні матчі ${league}</h3>
-            <div class="empty-content">
-                <p>❌ Помилка завантаження: ${error.message}</p>
-            </div>
-        `;
-    }
-}
-
-// Рендер статистики
-async function renderLeagueStats(container, league) {
-    container.innerHTML = '<div style="text-align: center; padding: 20px;">⏳ Завантаження...</div>';
-    
-    try {
-        const teamsResp = await apiFetch('GET', '/api/teams/actual');
-        const matchesResp = await apiFetch('GET', '/api/matches');
-        
-        if (!teamsResp.ok || !matchesResp.ok) {
-            throw new Error('Не вдалось завантажити дані');
+            `;
+            return;
         }
         
-        const leagueTeams = teamsResp.json[league] || [];
-        const allMatches = Array.isArray(matchesResp.json) ? matchesResp.json : [];
-        
-        // Фільтруємо матчі ліги по league
-        const leagueMatches = allMatches.filter(m => m.league === league);
-        
-        // Зіграні матчі - це ті, що мають рахунок (не null) АБО дата вже минула і є рахунок
-        const playedMatches = leagueMatches.filter(m => {
-            return m.homeScore !== null && m.homeScore !== undefined && 
-                   m.awayScore !== null && m.awayScore !== undefined;
-        });
-        
-        // Майбутні матчі - ті що без рахунку
-        const upcomingMatches = leagueMatches.filter(m => {
-            return m.homeScore === null || m.homeScore === undefined || 
-                   m.awayScore === null || m.awayScore === undefined;
-        });
-        
-        let totalGoals = 0;
-        let homeWins = 0, awayWins = 0, draws = 0;
-        
-        playedMatches.forEach(m => {
-            const home = m.homeScore;
-            const away = m.awayScore;
-            if (!isNaN(home) && !isNaN(away)) {
-                totalGoals += home + away;
-                if (home > away) homeWins++;
-                else if (away > home) awayWins++;
-                else draws++;
-            }
-        });
-        
-        const avgGoals = playedMatches.length > 0 ? (totalGoals / playedMatches.length).toFixed(2) : 0;
-        
-        const winRate = playedMatches.length > 0 ? ((homeWins/playedMatches.length)*100).toFixed(1) : 0;
-        const drawRate = playedMatches.length > 0 ? ((draws/playedMatches.length)*100).toFixed(1) : 0;
-        const lossRate = playedMatches.length > 0 ? ((awayWins/playedMatches.length)*100).toFixed(1) : 0;
+        const scorersHtml = scorers.map((scorer, index) => {
+            const position = index + 1;
+            const name = scorer.name || 'Невідомий гравець';
+            const teamName = scorer.teamName || 'Невідома команда';
+            const teamCrest = scorer.teamCrest || '';
+            const goals = scorer.goals || 0;
+            const assists = scorer.assists || 0;
+            const penalties = scorer.penalties || 0;
+            const positionEmoji = position === 1 ? '🥇' : position === 2 ? '🥈' : position === 3 ? '🥉' : `${position}.`;
+            
+            return `
+                <div class="scorer-card">
+                    <div class="scorer-position">${positionEmoji}</div>
+                    <div class="scorer-info">
+                        <div class="scorer-name">${escapeHtml(name)}</div>
+                        <div class="scorer-team">
+                            ${teamCrest ? `<img src="${teamCrest}" alt="${teamName}" class="scorer-team-crest">` : ''}
+                            <span>${escapeHtml(teamName)}</span>
+                        </div>
+                    </div>
+                    <div class="scorer-stats">
+                        <div class="scorer-goals">
+                            <span class="stat-value">${goals}</span>
+                            <span class="stat-label">Голів</span>
+                        </div>
+                        ${assists > 0 ? `
+                            <div class="scorer-assists">
+                                <span class="stat-value">${assists}</span>
+                                <span class="stat-label">Асистів</span>
+                            </div>
+                        ` : ''}
+                        <div class="scorer-penalties">
+                            <span class="stat-value">${penalties}</span>
+                            <span class="stat-label">з пен.</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
         
         container.innerHTML = `
-            <h3>📈 Статистика ліги ${league}</h3>
-            
-            <div class="stats-overview">
-                <div class="stat-box stat-primary">
-                    <div class="stat-icon">🏆</div>
-                    <div class="stat-content">
-                        <div class="stat-number">${leagueTeams.length}</div>
-                        <div class="stat-text">Команд у лізі</div>
-                    </div>
-                </div>
-                
-                <div class="stat-box stat-success">
-                    <div class="stat-icon">⚽</div>
-                    <div class="stat-content">
-                        <div class="stat-number">${playedMatches.length}</div>
-                        <div class="stat-text">Зіграно матчів</div>
-                    </div>
-                </div>
-                
-                <div class="stat-box stat-warning">
-                    <div class="stat-icon">📅</div>
-                    <div class="stat-content">
-                        <div class="stat-number">${upcomingMatches.length}</div>
-                        <div class="stat-text">Заплановано</div>
-                    </div>
-                </div>
-                
-                <div class="stat-box stat-info">
-                    <div class="stat-icon">🎯</div>
-                    <div class="stat-content">
-                        <div class="stat-number">${totalGoals}</div>
-                        <div class="stat-text">Всього голів</div>
-                    </div>
-                </div>
-                
-                <div class="stat-box stat-danger">
-                    <div class="stat-icon">📊</div>
-                    <div class="stat-content">
-                        <div class="stat-number">${avgGoals}</div>
-                        <div class="stat-text">Голів за матч</div>
-                    </div>
-                </div>
+            <h3>⚽ Бомбардири ${league}</h3>
+            <div class="scorers-list">
+                ${scorersHtml}
             </div>
-            
-            ${playedMatches.length > 0 ? `
-                <div class="results-chart">
-                    <h4>📊 Розподіл результатів</h4>
-                    <div class="chart-items">
-                        <div class="chart-item">
-                            <div class="chart-header">
-                                <span class="chart-title">🏠 Перемоги господарів</span>
-                                <span class="chart-value">${homeWins} матчів (${winRate}%)</span>
-                            </div>
-                            <div class="chart-bar-wrapper">
-                                <div class="chart-bar-bg">
-                                    <div class="chart-bar-fill bar-wins" style="width: ${winRate}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="chart-item">
-                            <div class="chart-header">
-                                <span class="chart-title">⚖️ Нічиї</span>
-                                <span class="chart-value">${draws} матчів (${drawRate}%)</span>
-                            </div>
-                            <div class="chart-bar-wrapper">
-                                <div class="chart-bar-bg">
-                                    <div class="chart-bar-fill bar-draws" style="width: ${drawRate}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="chart-item">
-                            <div class="chart-header">
-                                <span class="chart-title">✈️ Перемоги гостей</span>
-                                <span class="chart-value">${awayWins} матчів (${lossRate}%)</span>
-                            </div>
-                            <div class="chart-bar-wrapper">
-                                <div class="chart-bar-bg">
-                                    <div class="chart-bar-fill bar-losses" style="width: ${lossRate}%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            ` : ''}
         `;
     } catch (error) {
+        console.error('Помилка завантаження бомбардирів:', error);
         container.innerHTML = `
-            <h3>📈 Статистика ліги ${league}</h3>
+            <h3>⚽ Бомбардири ${league}</h3>
             <div class="empty-content">
-                <p>❌ Помилка завантаження: ${error.message}</p>
+                <p>❌ Помилка завантаження бомбардирів: ${error.message}</p>
             </div>
         `;
     }
 }
-
-

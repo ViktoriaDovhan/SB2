@@ -14,6 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import com.football.ua.aspect.RateLimited;
 
 import java.util.List;
 
@@ -44,6 +45,7 @@ public class ForumController {
     @PostMapping(value = "/topics", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('USER', 'MODERATOR', 'EDITOR')")
+    @RateLimited(5)
     @Operation(summary = "Створити нову тему",
                description = "Потрібна роль: USER, MODERATOR або EDITOR",
                security = @SecurityRequirement(name = "bearerAuth"))
@@ -100,6 +102,7 @@ public class ForumController {
     @PostMapping(value = "/topics/{topicId}/posts", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('USER', 'MODERATOR', 'EDITOR')")
+    @RateLimited(7)
     public PostEntity addPost(@PathVariable Long topicId, @RequestBody PostCreateDto dto, Authentication auth) {
         if (!forum.topicExists(topicId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Topic not found");

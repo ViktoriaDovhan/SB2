@@ -1,0 +1,115 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "teamName" : "Real Madrid CF",
+    "teamCrest" : "https://crests.football-data.org/86.png",
+    "nationality" : "France",
+    "penalties" : 3,
+    "assists" : 2,
+    "teamId" : 86,
+    "name" : "Kylian Mbappé",
+    "id" : 3374,
+    "position" : null,
+    "goals" : 13
+  }, {
+    "teamName" : "Club Atlético de Madrid",
+    "teamCrest" : "https://crests.football-data.org/78.png",
+    "nationality" : "Argentina",
+    "penalties" : 2,
+    "assists" : 2,
+    "teamId" : 78,
+    "name" : "Julián Álvarez",
+    "id" : 98571,
+    "position" : null,
+    "goals" : 7
+  }, {
+    "teamName" : "FC Barcelona",
+    "teamCrest" : "https://crests.football-data.org/81.png",
+    "nationality" : "Poland",
+    "penalties" : 1,
+    "assists" : 0,
+    "teamId" : 81,
+    "name" : "Robert Lewandowski",
+    "id" : 371,
+    "position" : null,
+    "goals" : 7
+  }, {
+    "teamName" : "Levante UD",
+    "teamCrest" : "https://crests.football-data.org/88.png",
+    "nationality" : "Cameroon",
+    "penalties" : 0,
+    "assists" : 4,
+    "teamId" : 88,
+    "name" : "Karl Etta Eyong",
+    "id" : 203439,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "RCD Mallorca",
+    "teamCrest" : "https://crests.football-data.org/89.png",
+    "nationality" : "Kosovo",
+    "penalties" : 1,
+    "assists" : 0,
+    "teamId" : 89,
+    "name" : "Vedat Muriqi",
+    "id" : 30059,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "RC Celta de Vigo",
+    "teamCrest" : "https://crests.football-data.org/558.png",
+    "nationality" : "Spain",
+    "penalties" : 1,
+    "assists" : 1,
+    "teamId" : 558,
+    "name" : "Borja Iglesias",
+    "id" : 32056,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "FC Barcelona",
+    "teamCrest" : "https://crests.football-data.org/81.png",
+    "nationality" : "Spain",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 81,
+    "name" : "Ferrán Torres",
+    "id" : 33154,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Real Madrid CF",
+    "teamCrest" : "https://crests.football-data.org/86.png",
+    "nationality" : "Brazil",
+    "penalties" : 1,
+    "assists" : 4,
+    "teamId" : 86,
+    "name" : "Vinicius Junior",
+    "id" : 1556,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Real Sociedad de Fútbol",
+    "teamCrest" : "https://crests.football-data.org/92.png",
+    "nationality" : "Spain",
+    "penalties" : 3,
+    "assists" : 2,
+    "teamId" : 92,
+    "name" : "Mikel Oyarzabal",
+    "id" : 180137,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Real Betis Balompié",
+    "teamCrest" : "https://crests.football-data.org/90.png",
+    "nationality" : "Colombia",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 90,
+    "name" : "Cucho Hernández",
+    "id" : 32415,
+    "position" : null,
+    "goals" : 5
+  } ],
+  "timestamp" : "2025-11-13T15:45:53.269364900"
+}

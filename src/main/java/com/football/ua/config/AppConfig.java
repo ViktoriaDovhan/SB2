@@ -7,12 +7,14 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 
 import java.time.Clock;
 import java.util.Set;
 import java.util.List;
 
 @Configuration
+@EnableAspectJAutoProxy
 @EnableConfigurationProperties(AppConfig.ModerationProps.class)
 public class AppConfig {
 

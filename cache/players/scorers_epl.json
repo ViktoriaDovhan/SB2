@@ -1,0 +1,115 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "teamName" : "Manchester City FC",
+    "teamCrest" : "https://crests.football-data.org/65.png",
+    "nationality" : "Norway",
+    "penalties" : 0,
+    "assists" : 1,
+    "teamId" : 65,
+    "name" : "Erling Haaland",
+    "id" : 38101,
+    "position" : null,
+    "goals" : 14
+  }, {
+    "teamName" : "Brentford FC",
+    "teamCrest" : "https://crests.football-data.org/402.png",
+    "nationality" : "Brazil",
+    "penalties" : 3,
+    "assists" : 0,
+    "teamId" : 402,
+    "name" : "Thiago Rodrigues",
+    "id" : 175994,
+    "position" : null,
+    "goals" : 8
+  }, {
+    "teamName" : "AFC Bournemouth",
+    "teamCrest" : "https://crests.football-data.org/bournemouth.png",
+    "nationality" : "Ghana",
+    "penalties" : 1,
+    "assists" : 3,
+    "teamId" : 1044,
+    "name" : "Antoine Semenyo",
+    "id" : 4417,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Crystal Palace FC",
+    "teamCrest" : "https://crests.football-data.org/354.png",
+    "nationality" : "France",
+    "penalties" : 2,
+    "assists" : 0,
+    "teamId" : 354,
+    "name" : "Jean-Philippe Mateta",
+    "id" : 641,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Brighton & Hove Albion FC",
+    "teamCrest" : "https://crests.football-data.org/397.png",
+    "nationality" : "England",
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 397,
+    "name" : "Danny Welbeck",
+    "id" : 3328,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Manchester United FC",
+    "teamCrest" : "https://crests.football-data.org/66.png",
+    "nationality" : "Cameroon",
+    "penalties" : 0,
+    "assists" : 1,
+    "teamId" : 66,
+    "name" : "Bryan Mbeumo",
+    "id" : 8626,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Liverpool FC",
+    "teamCrest" : "https://crests.football-data.org/64.png",
+    "nationality" : "Egypt",
+    "penalties" : 1,
+    "assists" : 2,
+    "teamId" : 64,
+    "name" : "Mohamed Salah",
+    "id" : 3754,
+    "position" : null,
+    "goals" : 4
+  }, {
+    "teamName" : "Sunderland AFC",
+    "teamCrest" : "https://crests.football-data.org/71.png",
+    "nationality" : "France",
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 71,
+    "name" : "Wilson Isidor",
+    "id" : 83599,
+    "position" : null,
+    "goals" : 4
+  }, {
+    "teamName" : "Tottenham Hotspur FC",
+    "teamCrest" : "https://crests.football-data.org/73.png",
+    "nationality" : "Brazil",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 73,
+    "name" : "Richarlison",
+    "id" : 8133,
+    "position" : null,
+    "goals" : 4
+  }, {
+    "teamName" : "Chelsea FC",
+    "teamCrest" : "https://crests.football-data.org/61.png",
+    "nationality" : "Brazil",
+    "penalties" : 0,
+    "assists" : 3,
+    "teamId" : 61,
+    "name" : "João Pedro",
+    "id" : 103125,
+    "position" : null,
+    "goals" : 4
+  } ],
+  "timestamp" : "2025-11-13T16:35:46.886505700"
+}

@@ -1,0 +1,115 @@
+{
+  "duration" : 60,
+  "data" : [ {
+    "teamName" : "RC Strasbourg Alsace",
+    "teamCrest" : "https://crests.football-data.org/576.png",
+    "nationality" : "Argentina",
+    "penalties" : 2,
+    "assists" : 0,
+    "teamId" : 576,
+    "name" : "Joaquín Panichelli",
+    "id" : 203561,
+    "position" : null,
+    "goals" : 9
+  }, {
+    "teamName" : "Stade Rennais FC 1901",
+    "teamCrest" : "https://crests.football-data.org/529.png",
+    "nationality" : "France",
+    "penalties" : 0,
+    "assists" : 3,
+    "teamId" : 529,
+    "name" : "Esteban Lepaul",
+    "id" : 149850,
+    "position" : null,
+    "goals" : 8
+  }, {
+    "teamName" : "Olympique de Marseille",
+    "teamCrest" : "https://crests.football-data.org/516.png",
+    "nationality" : "England",
+    "penalties" : 4,
+    "assists" : 4,
+    "teamId" : 516,
+    "name" : "Mason Greenwood",
+    "id" : 101075,
+    "position" : null,
+    "goals" : 8
+  }, {
+    "teamName" : "OGC Nice",
+    "teamCrest" : "https://crests.football-data.org/522.png",
+    "nationality" : "France",
+    "penalties" : 2,
+    "assists" : 1,
+    "teamId" : 522,
+    "name" : "Sofiane Diop",
+    "id" : 76723,
+    "position" : null,
+    "goals" : 6
+  }, {
+    "teamName" : "Paris FC",
+    "teamCrest" : "https://crests.football-data.org/1045.png",
+    "nationality" : "France",
+    "penalties" : 1,
+    "assists" : 4,
+    "teamId" : 1045,
+    "name" : "Ilan Kebbal",
+    "id" : 108520,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Racing Club de Lens",
+    "teamCrest" : "https://crests.football-data.org/546.png",
+    "nationality" : "France",
+    "penalties" : 1,
+    "assists" : 2,
+    "teamId" : 546,
+    "name" : "Wesley Saïd",
+    "id" : 8575,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "AS Monaco FC",
+    "teamCrest" : "https://crests.football-data.org/548.png",
+    "nationality" : "Spain",
+    "penalties" : 3,
+    "assists" : 0,
+    "teamId" : 548,
+    "name" : "Ansu Fati",
+    "id" : 128040,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Racing Club de Lens",
+    "teamCrest" : "https://crests.football-data.org/546.png",
+    "nationality" : "France",
+    "penalties" : 1,
+    "assists" : 1,
+    "teamId" : 546,
+    "name" : "Odsonne Edouard",
+    "id" : 16077,
+    "position" : null,
+    "goals" : 5
+  }, {
+    "teamName" : "Lille OSC",
+    "teamCrest" : "https://crests.football-data.org/521.png",
+    "nationality" : "Iceland",
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 521,
+    "name" : "Hákon Haraldsson",
+    "id" : 213221,
+    "position" : null,
+    "goals" : 4
+  }, {
+    "teamName" : "Olympique de Marseille",
+    "teamCrest" : "https://crests.football-data.org/516.png",
+    "nationality" : "Gabon",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 516,
+    "name" : "Pierre-Emerick Aubameyang",
+    "id" : 7801,
+    "position" : null,
+    "goals" : 4
+  } ],
+  "timestamp" : "2025-11-13T16:35:56.034366300"
+}

@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.stream.Collectors;
+import com.football.ua.exception.ExternalApiLimitExceededException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
@@ -36,4 +37,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error","ACCESS_DENIED","message",ex.getMessage()));
     }
+
+    @ExceptionHandler(RateLimitExceededException.class)
+    public ResponseEntity<Map<String,Object>> rateLimit(RateLimitExceededException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of(
+                        "error", "RATE_LIMIT_EXCEEDED",
+                        "message", ex.getMessage()
+                ));
+    }
+
+    @ExceptionHandler(ExternalApiLimitExceededException.class)
+    public ResponseEntity<Map<String, Object>> externalApiLimit(ExternalApiLimitExceededException ex) {
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .body(Map.of(
+                        "error", "EXTERNAL_API_RATE_LIMIT",
+                        "message", ex.getMessage()
+                ));
+    }
+
 }

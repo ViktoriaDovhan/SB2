@@ -5,6 +5,7 @@ import com.football.ua.service.StatsCalculator;
 import com.football.ua.service.TeamService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -37,6 +38,7 @@ public class MatchServiceImpl implements MatchService {
     }
 
     @Override
+    @Cacheable(value = "predictions", key = "#homeTeam + '_' + #awayTeam + '_' + #isHomeAdvantageEnabled")
     public double predictHomeWin(String homeTeam, String awayTeam) {
         double baseProbability = (statsCalculator == null) ? 0.5
                 : statsCalculator.homeWinProbability(homeTeam, awayTeam);

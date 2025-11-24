@@ -5,6 +5,8 @@ import com.football.ua.model.entity.TeamEntity;
 import com.football.ua.repo.MatchRepository;
 import com.football.ua.repo.TeamRepository;
 import com.football.ua.service.MatchDbService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,6 +24,7 @@ public class MatchDbServiceImpl implements MatchDbService {
     }
 
     @Override
+    @CacheEvict(value = "matches", allEntries = true)
     public MatchEntity create(String homeTeam, String awayTeam, LocalDateTime kickoffAt, String league) {
         TeamEntity home = teamRepository.findByName(homeTeam).orElseGet(() -> {
             TeamEntity t = new TeamEntity();
@@ -43,6 +46,7 @@ public class MatchDbServiceImpl implements MatchDbService {
     }
 
     @Override
+    @CacheEvict(value = "matches", allEntries = true)
     public MatchEntity updateScore(Long id, Integer homeScore, Integer awayScore) {
         MatchEntity m = matchRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Match not found"));
@@ -52,11 +56,13 @@ public class MatchDbServiceImpl implements MatchDbService {
     }
 
     @Override
+    @CacheEvict(value = "matches", allEntries = true)
     public void delete(Long id) {
         matchRepository.deleteById(id);
     }
 
     @Override
+    @Cacheable(value = "matches")
     public List<MatchEntity> list() {
         return matchRepository.findAll();
     }

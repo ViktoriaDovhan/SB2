@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="uk" xmlns:th="http://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Управління кешами - Football UA</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/css/style.css" rel="stylesheet">
+    <link href="/css/cache.css" rel="stylesheet">
+</head>
+
+<body>
+
+    <header class="site-header">
+        <div class="top-bar">
+            <div class="wrap">
+                <div class="top-bar-content">
+                    <div class="site-logo">
+                        <span class="logo-icon">⚽</span>
+                        <span class="logo-text">FOOTBALL HUB</span>
+                    </div>
+                    <nav class="main-nav">
+                        <a href="/index.html" class="nav-link">Головна SPA</a>
+                        <a th:href="@{/ui/home}" class="nav-link">UI демо</a>
+                        <a th:href="@{/ui/feedback}" class="nav-link">Відгук</a>
+                        <a th:href="@{/ui/roles}" class="nav-link">Ролі</a>
+                        <a th:href="@{/ui/cache}" class="nav-link active">Кеш</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="site-main">
+        <div class="wrap">
+            <div class="content-layout">
+                <div class="main-content">
+                    <section class="panel active">
+                        <div class="section-title">
+                            <h2>Управління кешами системи</h2>
+                            <p>Моніторинг та очищення кешів додатку</p>
+                        </div>
+
+                        <!-- Loading Overlay -->
+                        <div id="loadingOverlay" class="loading-overlay">
+                            <div class="loading-spinner"></div>
+                        </div>
+
+                        <!-- Alert Messages -->
+                        <div id="alertSuccess" class="alert alert-success">
+                            <span id="alertSuccessText"></span>
+                        </div>
+                        <div id="alertError" class="alert alert-error">
+                            <span id="alertErrorText"></span>
+                        </div>
+
+                        <!-- Stats Overview -->
+                        <div id="statsOverview" class="cache-section">
+                            <!-- Загальна статистика -->
+                        </div>
+
+                        <!-- Toolbar -->
+                        <div class="cache-toolbar">
+                            <h3 class="toolbar-title">Список кешів</h3>
+                            <div class="toolbar-actions">
+                                <label class="toggle-switch">
+                                    <input type="checkbox" id="showEmptyCaches">
+                                    <span class="toggle-slider"></span>
+                                    <span class="toggle-label">Показати порожні</span>
+                                </label>
+                                <button id="btnRefreshAllStats" class="btn btn-primary">
+                                    🔄 Оновити
+                                </button>
+                                <button id="btnClearAllCaches" class="btn btn-danger">
+                                    🗑️ Очистити все
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Cache Table -->
+                        <div class="cache-table-container">
+                            <table class="cache-table">
+                                <thead>
+                                    <tr>
+                                        <th>Назва кешу</th>
+                                        <th>Запитів</th>
+                                        <th>Влучень</th>
+                                        <th>Промахів</th>
+                                        <th>Ефективність</th>
+                                        <th>Розмір</th>
+                                        <th>Дії</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cacheTableBody">
+                                    <!-- Rows will be inserted here -->
+                                </tbody>
+                            </table>
+                            <div id="emptyTableState" class="empty-state" style="display: none;">
+                                <div class="empty-icon">📦</div>
+                                <h3 class="empty-title">Активних кешів не знайдено</h3>
+                                <p class="empty-description">Увімкніть "Показати порожні", щоб побачити всі кеші.</p>
+                            </div>
+                        </div>
+
+                    </section>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // API базовий URL
+        const API_BASE = '/api/cache';
+
+        // DOM елементи
+        const alertSuccess = document.getElementById('alertSuccess');
+        const alertError = document.getElementById('alertError');
+        const alertSuccessText = document.getElementById('alertSuccessText');
+        const alertErrorText = document.getElementById('alertErrorText');
+        const cacheTableBody = document.getElementById('cacheTableBody');
+        const emptyTableState = document.getElementById('emptyTableState');
+        const statsOverview = document.getElementById('statsOverview');
+        const btnRefreshAllStats = document.getElementById('btnRefreshAllStats');
+        const btnClearAllCaches = document.getElementById('btnClearAllCaches');
+        const showEmptyCachesCheckbox = document.getElementById('showEmptyCaches');
+
+        // Global state for stats
+        let currentStats = {};
+        let currentCacheNames = [];
+
+        // Ініціалізація при завантаженні сторінки
+        document.addEventListener('DOMContentLoaded', function () {
+            loadAllCacheStats();
+        });
+
+        // Показати/сховати глобальний loading overlay
+        function showGlobalLoading(show = true) {
+            const overlay = document.getElementById('loadingOverlay');
+            if (overlay) {
+                overlay.style.display = show ? 'flex' : 'none';
+            }
+        }
+
+        // Додати клас loading до кнопок
+        function setButtonLoading(button, loading = true) {
+            if (!button) return;
+
+            if (loading) {
+                button.disabled = true;
+                const originalText = button.innerText;
+                button.dataset.originalText = originalText;
+                button.innerHTML = '⏳...';
+            } else {
+                button.disabled = false;
+                if (button.dataset.originalText) {
+                    button.innerText = button.dataset.originalText;
+                }
+            }
+        }
+
+        // Показати повідомлення
+        function showAlert(message, type = 'success') {
+            if (!alertSuccess || !alertError) return;
+
+            const alert = type === 'success' ? alertSuccess : alertError;
+            const alertText = type === 'success' ? alertSuccessText : alertErrorText;
+
+            alertSuccess.style.display = 'none';
+            alertError.style.display = 'none';
+
+            alertText.textContent = message;
+            alert.style.display = 'flex';
+
+            setTimeout(() => {
+                if (alert) alert.style.display = 'none';
+            }, 5000);
+        }
+
+        // Виклик API
+        async function callApi(endpoint, method = 'GET', body = null) {
+            const config = {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin'
+            };
+
+            if (body) config.body = JSON.stringify(body);
+
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, config);
+                if (!response.ok) throw new Error(`HTTP помилка ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                console.error('API Error:', error);
+                throw error;
+            }
+        }
+
+        // Завантажити статистику всіх кешів
+        async function loadAllCacheStats() {
+            try {
+                setButtonLoading(btnRefreshAllStats, true);
+
+                const [infoData, statsData] = await Promise.all([
+                    callApi('/info'),
+                    callApi('/stats')
+                ]);
+
+                currentCacheNames = infoData.cacheNames;
+                currentStats = statsData;
+
+                renderCacheTable();
+                renderOverviewStats(statsData);
+
+                showAlert('📊 Дані оновлено', 'success');
+
+            } catch (error) {
+                showAlert(`❌ Помилка завантаження: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(btnRefreshAllStats, false);
+            }
+        }
+
+        // Відобразити загальну статистику
+        function renderOverviewStats(stats) {
+            if (!statsOverview) return;
+
+            if (Object.keys(stats).length === 0) {
+                statsOverview.innerHTML = '';
+                return;
+            }
+
+            let totalRequests = 0;
+            let totalHits = 0;
+            let totalSize = 0;
+            let activeCaches = 0;
+
+            for (const cacheStats of Object.values(stats)) {
+                const requests = cacheStats.hitCount + cacheStats.missCount;
+                totalRequests += requests;
+                totalHits += cacheStats.hitCount;
+                totalSize += cacheStats.size;
+                if (requests > 0) activeCaches++;
+            }
+
+            const hitRate = totalRequests > 0 ? (totalHits / totalRequests) * 100 : 0;
+
+            statsOverview.innerHTML = `
+        <div class="cache-card">
+            <div class="cache-stats">
+                <div class="stat-item">
+                    <div class="stat-label">Активних кешів</div>
+                    <div class="stat-value">${activeCaches} / ${Object.keys(stats).length}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Всього запитів</div>
+                    <div class="stat-value" style="color: var(--primary);">${totalRequests.toLocaleString()}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Ефективність</div>
+                    <div class="stat-value" style="color: var(--secondary);">${hitRate.toFixed(1)}%</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Загальний розмір</div>
+                    <div class="stat-value">${totalSize.toLocaleString()}</div>
+                </div>
+            </div>
+        </div>
+    `;
+        }
+
+        // Відобразити таблицю кешів
+        function renderCacheTable() {
+            if (!cacheTableBody) return;
+
+            cacheTableBody.innerHTML = '';
+
+            const showEmpty = showEmptyCachesCheckbox ? showEmptyCachesCheckbox.checked : false;
+            let visibleCount = 0;
+
+            currentCacheNames.sort().forEach(cacheName => {
+                const cacheStats = currentStats[cacheName] || {
+                    hitCount: 0,
+                    missCount: 0,
+                    size: 0,
+                    hitRate: 0
+                };
+
+                const totalRequests = cacheStats.hitCount + cacheStats.missCount;
+
+                // Filter logic: Hide if no requests AND showEmpty is false
+                if (totalRequests === 0 && !showEmpty) {
+                    return;
+                }
+
+                visibleCount++;
+                const hitRate = cacheStats.hitRate * 100;
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+            <td class="cache-name-cell">
+                <span class="cache-icon">📦</span>
+                <span class="name-text">${cacheName}</span>
+            </td>
+            <td>${totalRequests.toLocaleString()}</td>
+            <td class="text-success">${cacheStats.hitCount.toLocaleString()}</td>
+            <td class="text-danger">${cacheStats.missCount.toLocaleString()}</td>
+            <td>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" style="width: ${hitRate}%"></div>
+                    <span class="progress-text">${hitRate.toFixed(1)}%</span>
+                </div>
+            </td>
+            <td>${cacheStats.size.toLocaleString()}</td>
+            <td>
+                <div class="row-actions">
+                    <button class="btn-icon btn-clear" onclick="clearCache('${cacheName}')" title="Очистити">
+                        🗑️
+                    </button>
+                </div>
+            </td>
+        `;
+                cacheTableBody.appendChild(row);
+            });
+
+            if (visibleCount === 0) {
+                cacheTableBody.parentElement.style.display = 'none';
+                emptyTableState.style.display = 'flex';
+            } else {
+                cacheTableBody.parentElement.style.display = 'table';
+                emptyTableState.style.display = 'none';
+            }
+        }
+
+        // Очистити всі кеші
+        async function clearAllCaches() {
+            if (!confirm('⚠️ Очистити ВСІ кеші?')) return;
+
+            try {
+                showGlobalLoading(true);
+                await callApi('/clear', 'DELETE');
+                showAlert('✅ Всі кеші очищено', 'success');
+                loadAllCacheStats();
+            } catch (error) {
+                showAlert(`❌ Помилка: ${error.message}`, 'error');
+            } finally {
+                showGlobalLoading(false);
+            }
+        }
+
+        // Очистити окремий кеш
+        async function clearCache(cacheName) {
+            if (!confirm(`🗑️ Очистити кеш "${cacheName}"?`)) return;
+
+            try {
+                showGlobalLoading(true);
+                const result = await callApi(`/clear/${cacheName}`, 'DELETE');
+                showAlert(`✅ Кеш "${cacheName}" очищено (${result.clearedElements} ел.)`, 'success');
+                loadAllCacheStats();
+            } catch (error) {
+                showAlert(`❌ Помилка: ${error.message}`, 'error');
+            } finally {
+                showGlobalLoading(false);
+            }
+        }
+
+        // Обробники подій
+        if (btnRefreshAllStats) btnRefreshAllStats.addEventListener('click', loadAllCacheStats);
+        if (btnClearAllCaches) btnClearAllCaches.addEventListener('click', clearAllCaches);
+        if (showEmptyCachesCheckbox) showEmptyCachesCheckbox.addEventListener('change', renderCacheTable);
+
+        // Експорт функцій для inline onclick
+        window.clearCache = clearCache;
+
+    </script>
+
+</body>
+
+</html>

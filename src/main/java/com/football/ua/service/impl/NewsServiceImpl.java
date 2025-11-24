@@ -5,6 +5,8 @@ import com.football.ua.repo.NewsRepository;
 import com.football.ua.service.ModerationService;
 import com.football.ua.service.NewsService;
 import com.football.ua.service.NotificationService;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 
@@ -30,6 +32,7 @@ public class NewsServiceImpl implements NewsService {
         return cleanBody;
     }
 
+    @Cacheable(value = "news", key = "#newsId")
     public News getNewsById(long newsId) {
         News news = newsRepository.findById(newsId).orElseThrow();
         return news;

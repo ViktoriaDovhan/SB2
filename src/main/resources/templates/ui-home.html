@@ -22,6 +22,7 @@
                     <a th:href="@{/ui/home}" class="nav-link active">UI демо</a>
                     <a th:href="@{/ui/feedback}" class="nav-link">Відгук</a>
                     <a th:href="@{/ui/roles}" class="nav-link">Ролі</a>
+                    <a th:href="@{/ui/cache}" class="nav-link" sec:authorize="hasRole('MODERATOR')">Кеш</a>
                 </nav>
             </div>
         </div>

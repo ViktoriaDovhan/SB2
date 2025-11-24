@@ -3,6 +3,7 @@ package com.football.ua.service;
 import com.football.ua.model.entity.UserEntity;
 import com.football.ua.repo.UserRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.cache.CacheManager;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -11,10 +12,12 @@ public class DataInitializer implements CommandLineRunner {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final CacheManager cacheManager;
 
-    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder, CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.cacheManager = cacheManager;
     }
 
     @Override
@@ -57,12 +60,40 @@ public class DataInitializer implements CommandLineRunner {
             } else {
                 System.out.println("ℹ️ Користувач 'editor' вже існує");
             }
-            
+
+            // Ініціалізація кешів
+            initializeCaches();
+
             System.out.println("✅ Ініціалізація користувачів завершена успішно!");
         } catch (Exception e) {
             System.err.println("❌ Помилка при ініціалізації користувачів: " + e.getMessage());
             e.printStackTrace();
             throw e;
+        }
+    }
+
+    /**
+     * Ініціалізує основні кеші системи
+     */
+    private void initializeCaches() {
+        System.out.println("🔄 Ініціалізація кешів системи...");
+
+        try {
+            // Ініціалізація основних кешів
+            String[] cacheNames = {"matches", "teams", "standings", "players", "statistics", "predictions"};
+
+            for (String cacheName : cacheNames) {
+                if (cacheManager.getCache(cacheName) != null) {
+                    System.out.println("✅ Кеш ініціалізовано: " + cacheName);
+                } else {
+                    System.err.println("⚠️ Не вдалося ініціалізувати кеш: " + cacheName);
+                }
+            }
+
+            System.out.println("✅ Ініціалізація кешів завершена успішно!");
+        } catch (Exception e) {
+            System.err.println("❌ Помилка при ініціалізації кешів: " + e.getMessage());
+            // Не кидаємо виключення, щоб не зупиняти ініціалізацію
         }
     }
 }

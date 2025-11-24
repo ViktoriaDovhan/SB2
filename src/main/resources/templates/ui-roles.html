@@ -22,6 +22,7 @@
                     <a th:href="@{/ui/home}" class="nav-link">UI демо</a>
                     <a th:href="@{/ui/feedback}" class="nav-link">Відгук</a>
                     <a th:href="@{/ui/roles}" class="nav-link active">Ролі</a>
+                    <a th:href="@{/ui/cache}" class="nav-link" sec:authorize="hasRole('MODERATOR')">Кеш</a>
                 </nav>
             </div>
         </div>
@@ -81,6 +82,22 @@
                                 <li> створює, змінює й видаляє новини;</li>
                                 <li> оновлює матчі та команди;</li>
                                 <li> формує контент головної сторінки.</li>
+                            </ul>
+                        </div>
+                    </section>
+
+                    <!-- Модератор з розширеними правами -->
+                    <section sec:authorize="hasRole('MODERATOR')">
+                        <div class="card">
+                            <h3>Модератор (розширені права)</h3>
+                            <ul>
+                                <li> стежить за форумом;</li>
+                                <li> видаляє теми та повідомлення з порушеннями;</li>
+                                <li> має доступ до журналу активності;</li>
+                                <li> <strong>керує кешами системи</strong>
+                                    (<a th:href="@{/ui/cache}">/ui/cache</a>);
+                                </li>
+                                <li> може переглядати системні логи.</li>
                             </ul>
                         </div>
                     </section>

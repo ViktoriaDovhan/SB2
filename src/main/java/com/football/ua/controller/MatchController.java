@@ -6,6 +6,7 @@ import com.football.ua.model.Match;
 import com.football.ua.model.entity.MatchEntity;
 import com.football.ua.model.entity.TeamEntity;
 import com.football.ua.service.MatchDbService;
+import com.football.ua.service.MatchService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -13,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -42,10 +44,12 @@ public class MatchController {
     private static final Marker CRUD_DELETE = MarkerFactory.getMarker("CRUD_DELETE");
     
     private final MatchDbService matchDbService;
+    private final MatchService matchService;
     private final com.football.ua.service.ActivityLogService activityLogService;
 
-    public MatchController(MatchDbService matchDbService, com.football.ua.service.ActivityLogService activityLogService) {
+    public MatchController(MatchDbService matchDbService, MatchService matchService, com.football.ua.service.ActivityLogService activityLogService) {
         this.matchDbService = matchDbService;
+        this.matchService = matchService;
         this.activityLogService = activityLogService;
     }
 
@@ -70,6 +74,38 @@ public class MatchController {
                 .collect(Collectors.toList());
             log.info(DB_OPERATION, "Повернуто {} матчів", matches.size());
             return matches;
+        } finally {
+            MDC.clear();
+        }
+    }
+
+    @GetMapping("/predict/{homeTeam}/{awayTeam}")
+    @Operation(summary = "Прогноз матчу", description = "Повертає прогноз ймовірності перемоги домашньої команди")
+    @Cacheable(value = "predictions", key = "#homeTeam + '_' + #awayTeam")
+    public ResponseEntity<Map<String, Object>> predictMatch(@PathVariable String homeTeam, @PathVariable String awayTeam) {
+        MDC.put("operation", "predict");
+        MDC.put("homeTeam", homeTeam);
+        MDC.put("awayTeam", awayTeam);
+        MDC.put("endpoint", "/api/matches/predict/" + homeTeam + "/" + awayTeam);
+
+        try {
+            log.info(API_CALL, "Запит на прогноз матчу: {} vs {}", homeTeam, awayTeam);
+
+            double probability = matchService.predictHomeWin(homeTeam, awayTeam);
+
+            Map<String, Object> response = Map.of(
+                "homeTeam", homeTeam,
+                "awayTeam", awayTeam,
+                "homeWinProbability", probability,
+                "prediction", probability > 0.5 ? "Перемога домашньої команди" : "Перемога гостьової команди або нічия"
+            );
+
+            log.info(API_CALL, "Повернуто прогноз: ймовірність перемоги {} = {:.2f}%", homeTeam, probability * 100);
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.error(API_CALL, "Помилка при прогнозуванні матчу {} vs {}: {}", homeTeam, awayTeam, e.getMessage());
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         } finally {
             MDC.clear();
         }

@@ -2,6 +2,7 @@ package com.football.ua.controller;
 
 import com.football.ua.model.FeedbackForm;
 import com.football.ua.service.FeedbackService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -53,6 +54,12 @@ public class UiPageController {
     @GetMapping("/roles")
     public String rolesDemo() {
         return "ui-roles";
+    }
+
+    @GetMapping("/cache")
+    @PreAuthorize("hasRole('MODERATOR')")
+    public String cacheManagement() {
+        return "ui-cache";
     }
 
     @PostMapping("/feedback/delete/{id}")

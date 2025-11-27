@@ -1,0 +1,1049 @@
+{
+  "duration" : 60,
+  "data" : {
+    "UPL" : [ {
+      "id" : 1,
+      "name" : "Динамо Київ",
+      "league" : "UPL",
+      "city" : "Київ",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/FC_Dynamo_Kyiv_logo.svg/100px-FC_Dynamo_Kyiv_logo.svg.png"
+    }, {
+      "id" : 2,
+      "name" : "Шахтар Донецьк",
+      "league" : "UPL",
+      "city" : "Донецьк",
+      "colors" : "\uD83D\uDFE0⚫",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/a/a1/FC_Shakhtar_Donetsk.svg/100px-FC_Shakhtar_Donetsk.svg.png"
+    }, {
+      "id" : 3,
+      "name" : "Дніпро-1",
+      "league" : "UPL",
+      "city" : "Дніпро",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/FC_Dnipro-1_logo.svg/100px-FC_Dnipro-1_logo.svg.png"
+    }, {
+      "id" : 4,
+      "name" : "Ворскла",
+      "league" : "UPL",
+      "city" : "Полтава",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/8/82/FC_Vorskla_Poltava_logo.svg/100px-FC_Vorskla_Poltava_logo.svg.png"
+    }, {
+      "id" : 5,
+      "name" : "Зоря",
+      "league" : "UPL",
+      "city" : "Луганськ",
+      "colors" : "⚫⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/4/4c/FC_Zorya_Luhansk_logo.svg/100px-FC_Zorya_Luhansk_logo.svg.png"
+    }, {
+      "id" : 6,
+      "name" : "Олександрія",
+      "league" : "UPL",
+      "city" : "Олександрія",
+      "colors" : "\uD83D\uDFE1\uD83D\uDD35",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/7/79/FC_Olexandriya_logo.svg/100px-FC_Olexandriya_logo.svg.png"
+    }, {
+      "id" : 7,
+      "name" : "Колос",
+      "league" : "UPL",
+      "city" : "Ковалівка",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/5/5a/FC_Kolos_Kovalivka_logo.svg/100px-FC_Kolos_Kovalivka_logo.svg.png"
+    }, {
+      "id" : 8,
+      "name" : "Рух",
+      "league" : "UPL",
+      "city" : "Львів",
+      "colors" : "\uD83D\uDFE1\uD83D\uDD35",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/4/4f/FC_Rukh_Lviv_logo.svg/100px-FC_Rukh_Lviv_logo.svg.png"
+    }, {
+      "id" : 9,
+      "name" : "Кривбас",
+      "league" : "UPL",
+      "city" : "Кривий Ріг",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/7/79/FC_Kryvbas_Kryvyi_Rih_logo.svg/100px-FC_Kryvbas_Kryvyi_Rih_logo.svg.png"
+    }, {
+      "id" : 10,
+      "name" : "Минай",
+      "league" : "UPL",
+      "city" : "Мінай",
+      "colors" : "\uD83D\uDD34\uD83D\uDFE1",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/c/c7/FC_Mynai_logo.svg/100px-FC_Mynai_logo.svg.png"
+    }, {
+      "id" : 11,
+      "name" : "Чорноморець",
+      "league" : "UPL",
+      "city" : "Одеса",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/6/60/FC_Chornomorets_Odesa_logo.svg/100px-FC_Chornomorets_Odesa_logo.svg.png"
+    }, {
+      "id" : 12,
+      "name" : "Металіст 1925",
+      "league" : "UPL",
+      "city" : "Харків",
+      "colors" : "\uD83D\uDFE1\uD83D\uDD35",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/8/8f/FC_Metalist_1925_Kharkiv_logo.svg/100px-FC_Metalist_1925_Kharkiv_logo.svg.png"
+    }, {
+      "id" : 13,
+      "name" : "Верес",
+      "league" : "UPL",
+      "city" : "Рівне",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/a/a7/FC_Veres_Rivne_logo.svg/100px-FC_Veres_Rivne_logo.svg.png"
+    }, {
+      "id" : 14,
+      "name" : "Інгулець",
+      "league" : "UPL",
+      "city" : "Петрове",
+      "colors" : "\uD83D\uDFE1⚫",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/6/6c/FC_Inhulets_Petrove_logo.svg/100px-FC_Inhulets_Petrove_logo.svg.png"
+    }, {
+      "id" : 15,
+      "name" : "ЛНЗ",
+      "league" : "UPL",
+      "city" : "Черкаси",
+      "colors" : "\uD83D\uDD35\uD83D\uDFE1",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/f/fd/FC_LNZ_Cherkasy_logo.svg/100px-FC_LNZ_Cherkasy_logo.svg.png"
+    }, {
+      "id" : 16,
+      "name" : "Полісся",
+      "league" : "UPL",
+      "city" : "Житомир",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://upload.wikimedia.org/wikipedia/en/thumb/0/0e/FC_Polissya_Zhytomyr_logo.svg/100px-FC_Polissya_Zhytomyr_logo.svg.png"
+    } ],
+    "UCL" : [ {
+      "id" : 3,
+      "name" : "Bayer 04 Leverkusen",
+      "league" : "UCL",
+      "city" : "Bismarckstr. 122-124 Leverkusen 51373",
+      "colors" : "\uD83D\uDD34⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/3.png"
+    }, {
+      "id" : 4,
+      "name" : "Borussia Dortmund",
+      "league" : "UCL",
+      "city" : "Rheinlanddamm 207-209 Dortmund 44137",
+      "colors" : "\uD83D\uDFE1⚫",
+      "emblemUrl" : "https://crests.football-data.org/4.png"
+    }, {
+      "id" : 5,
+      "name" : "FC Bayern München",
+      "league" : "UCL",
+      "city" : "Säbenerstr. 51 München 81547",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/5.png"
+    }, {
+      "id" : 19,
+      "name" : "Eintracht Frankfurt",
+      "league" : "UCL",
+      "city" : "Mörfelder Landstraße 362 Frankfurt am Main 60528",
+      "colors" : "\uD83D\uDD34⚫",
+      "emblemUrl" : "https://crests.football-data.org/19.png"
+    }, {
+      "id" : 57,
+      "name" : "Arsenal FC",
+      "league" : "UCL",
+      "city" : "75 Drayton Park London N5 1BU",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/57.png"
+    }, {
+      "id" : 61,
+      "name" : "Chelsea FC",
+      "league" : "UCL",
+      "city" : "Fulham Road London SW6 1HS",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/61.png"
+    }, {
+      "id" : 64,
+      "name" : "Liverpool FC",
+      "league" : "UCL",
+      "city" : "Anfield Road Liverpool L4 0TH",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/64.png"
+    }, {
+      "id" : 65,
+      "name" : "Manchester City FC",
+      "league" : "UCL",
+      "city" : "SportCity Manchester M11 3FF",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/65.png"
+    }, {
+      "id" : 67,
+      "name" : "Newcastle United FC",
+      "league" : "UCL",
+      "city" : "Sports Direct Arena Newcastle upon Tyne NE1 4ST",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/67.png"
+    }, {
+      "id" : 73,
+      "name" : "Tottenham Hotspur FC",
+      "league" : "UCL",
+      "city" : "748 High Road London N17 0AP",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/73.png"
+    }, {
+      "id" : 77,
+      "name" : "Athletic Club",
+      "league" : "UCL",
+      "city" : "23 Bilbao 48009",
+      "colors" : "\uD83D\uDD34⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/77.png"
+    }, {
+      "id" : 78,
+      "name" : "Club Atlético de Madrid",
+      "league" : "UCL",
+      "city" : "67 Madrid 28005",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/78.png"
+    }, {
+      "id" : 81,
+      "name" : "FC Barcelona",
+      "league" : "UCL",
+      "city" : "Avenida Arístides Maillol s/n Barcelona 08028",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35\uD83D\uDFE0",
+      "emblemUrl" : "https://crests.football-data.org/81.png"
+    }, {
+      "id" : 86,
+      "name" : "Real Madrid CF",
+      "league" : "UCL",
+      "city" : "1 Madrid 28036",
+      "colors" : "⚪\uD83D\uDFE3",
+      "emblemUrl" : "https://crests.football-data.org/86.png"
+    }, {
+      "id" : 94,
+      "name" : "Villarreal CF",
+      "league" : "UCL",
+      "city" : "s/n Villarreal 12540",
+      "colors" : "\uD83D\uDD35\uD83D\uDFE1",
+      "emblemUrl" : "https://crests.football-data.org/94.png"
+    }, {
+      "id" : 102,
+      "name" : "Atalanta BC",
+      "league" : "UCL",
+      "city" : "Zingonia Ciserano 24040",
+      "colors" : "\uD83D\uDD35⚫",
+      "emblemUrl" : "https://crests.football-data.org/102.png"
+    }, {
+      "id" : 108,
+      "name" : "FC Internazionale Milano",
+      "league" : "UCL",
+      "city" : "Corso Vittorio Emanuele II 9 Milano 20122",
+      "colors" : "\uD83D\uDD35⚫",
+      "emblemUrl" : "https://crests.football-data.org/108.png"
+    }, {
+      "id" : 109,
+      "name" : "Juventus FC",
+      "league" : "UCL",
+      "city" : "32 Torino 10128",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/109.png"
+    }, {
+      "id" : 113,
+      "name" : "SSC Napoli",
+      "league" : "UCL",
+      "city" : "Km 35 Castel Volturno 81030",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/113.png"
+    }, {
+      "id" : 498,
+      "name" : "Sporting Clube de Portugal",
+      "league" : "UCL",
+      "city" : "Apartado 42099 Lisboa 1601-801",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://crests.football-data.org/498.png"
+    }, {
+      "id" : 516,
+      "name" : "Olympique de Marseille",
+      "league" : "UCL",
+      "city" : "traverse de La Martine Marseille 13012",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/516.png"
+    }, {
+      "id" : 524,
+      "name" : "Paris Saint-Germain FC",
+      "league" : "UCL",
+      "city" : "rue de Commandant Guibaud Paris 7501",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/524.png"
+    }, {
+      "id" : 548,
+      "name" : "AS Monaco FC",
+      "league" : "UCL",
+      "city" : "Avenue des Castellans Monaco 98000",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/548.png"
+    }, {
+      "id" : 610,
+      "name" : "Galatasaray SK",
+      "league" : "UCL",
+      "city" : "Şişli İstanbul 34415",
+      "colors" : "\uD83D\uDD34\uD83D\uDFE1",
+      "emblemUrl" : "https://crests.football-data.org/610.png"
+    }, {
+      "id" : 611,
+      "name" : "Qarabağ Ağdam FK",
+      "league" : "UCL",
+      "city" : "qəsəbəsi Ağdam null",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/611.png"
+    }, {
+      "id" : 654,
+      "name" : "PAE Olympiakos SFP",
+      "league" : "UCL",
+      "city" : "Plateia Alexandras Piraeus 18534",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/654.png"
+    }, {
+      "id" : 674,
+      "name" : "PSV",
+      "league" : "UCL",
+      "city" : "Fredriklaan 10a Eindhoven 5616 NH",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/674.png"
+    }, {
+      "id" : 678,
+      "name" : "AFC Ajax",
+      "league" : "UCL",
+      "city" : "ArenA Boulevard 29 Amsterdam 1101 AX",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/678.png"
+    }, {
+      "id" : 851,
+      "name" : "Club Brugge KV",
+      "league" : "UCL",
+      "city" : "Olympialaan 74 Brugge 8200",
+      "colors" : "\uD83D\uDD35⚫",
+      "emblemUrl" : "https://crests.football-data.org/851.png"
+    }, {
+      "id" : 930,
+      "name" : "SK Slavia Praha",
+      "league" : "UCL",
+      "city" : "Vladivostocká 1460/2 Praha 10005",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/930.png"
+    }, {
+      "id" : 1876,
+      "name" : "FC København",
+      "league" : "UCL",
+      "city" : "Per Henrik Lings Allé 2 København 2100",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/1876.png"
+    }, {
+      "id" : 1903,
+      "name" : "Sport Lisboa e Benfica",
+      "league" : "UCL",
+      "city" : "Avenida General Norton de Matos 1500 Lissabon null",
+      "colors" : "⭐\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/1903.png"
+    }, {
+      "id" : 3929,
+      "name" : "Royale Union Saint-Gilloise",
+      "league" : "UCL",
+      "city" : "223 Forest 1190",
+      "colors" : "\uD83D\uDD35\uD83D\uDFE1",
+      "emblemUrl" : "https://crests.football-data.org/3929.png"
+    }, {
+      "id" : 5721,
+      "name" : "FK Bodø/Glimt",
+      "league" : "UCL",
+      "city" : "Postboks 179 Bodø 8001",
+      "colors" : "\uD83D\uDFE1⚫",
+      "emblemUrl" : "https://crests.football-data.org/5721.png"
+    }, {
+      "id" : 10601,
+      "name" : "FK Kairat",
+      "league" : "UCL",
+      "city" : "null null null",
+      "colors" : "⭐\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/10601.png"
+    }, {
+      "id" : 11034,
+      "name" : "Paphos FC",
+      "league" : "UCL",
+      "city" : "null null null",
+      "colors" : "⭐\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/11034.png"
+    } ],
+    "EPL" : [ {
+      "id" : 57,
+      "name" : "Arsenal FC",
+      "league" : "EPL",
+      "city" : "75 Drayton Park London N5 1BU",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/57.png"
+    }, {
+      "id" : 58,
+      "name" : "Aston Villa FC",
+      "league" : "EPL",
+      "city" : "Villa Park Birmingham B6 6HE",
+      "colors" : "\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/58.png"
+    }, {
+      "id" : 61,
+      "name" : "Chelsea FC",
+      "league" : "EPL",
+      "city" : "Fulham Road London SW6 1HS",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/61.png"
+    }, {
+      "id" : 62,
+      "name" : "Everton FC",
+      "league" : "EPL",
+      "city" : "Goodison Park Liverpool L4 4EL",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/62.png"
+    }, {
+      "id" : 63,
+      "name" : "Fulham FC",
+      "league" : "EPL",
+      "city" : "Stevenage Road London SW6 6HH",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/63.png"
+    }, {
+      "id" : 64,
+      "name" : "Liverpool FC",
+      "league" : "EPL",
+      "city" : "Anfield Road Liverpool L4 0TH",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/64.png"
+    }, {
+      "id" : 65,
+      "name" : "Manchester City FC",
+      "league" : "EPL",
+      "city" : "SportCity Manchester M11 3FF",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/65.png"
+    }, {
+      "id" : 66,
+      "name" : "Manchester United FC",
+      "league" : "EPL",
+      "city" : "Sir Matt Busby Way Manchester M16 0RA",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/66.png"
+    }, {
+      "id" : 67,
+      "name" : "Newcastle United FC",
+      "league" : "EPL",
+      "city" : "Sports Direct Arena Newcastle upon Tyne NE1 4ST",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/67.png"
+    }, {
+      "id" : 71,
+      "name" : "Sunderland AFC",
+      "league" : "EPL",
+      "city" : "The Sunderland Stadium of Light Sunderland SR5 1SU",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/71.png"
+    }, {
+      "id" : 73,
+      "name" : "Tottenham Hotspur FC",
+      "league" : "EPL",
+      "city" : "748 High Road London N17 0AP",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/73.png"
+    }, {
+      "id" : 76,
+      "name" : "Wolverhampton Wanderers FC",
+      "league" : "EPL",
+      "city" : "Waterloo Road Wolverhampton WV1 4QR",
+      "colors" : "\uD83D\uDFE1⚫",
+      "emblemUrl" : "https://crests.football-data.org/76.png"
+    }, {
+      "id" : 328,
+      "name" : "Burnley FC",
+      "league" : "EPL",
+      "city" : "Harry Potts Way Burnley BB10 4BX",
+      "colors" : "\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/328.png"
+    }, {
+      "id" : 341,
+      "name" : "Leeds United FC",
+      "league" : "EPL",
+      "city" : "Elland Road Leeds LS11 0ES",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/341.png"
+    }, {
+      "id" : 351,
+      "name" : "Nottingham Forest FC",
+      "league" : "EPL",
+      "city" : "West Bridgeford Nottingham NG2 5GJ",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/351.png"
+    }, {
+      "id" : 354,
+      "name" : "Crystal Palace FC",
+      "league" : "EPL",
+      "city" : "Whitehorse Lane London SE25 6PU",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/354.png"
+    }, {
+      "id" : 397,
+      "name" : "Brighton & Hove Albion FC",
+      "league" : "EPL",
+      "city" : "44 North Road Brighton & Hove BN1 1YR",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/397.png"
+    }, {
+      "id" : 402,
+      "name" : "Brentford FC",
+      "league" : "EPL",
+      "city" : "Braemar Road Brentford TW8 0NT",
+      "colors" : "\uD83D\uDD34⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/402.png"
+    }, {
+      "id" : 563,
+      "name" : "West Ham United FC",
+      "league" : "EPL",
+      "city" : "London London E20 2ST",
+      "colors" : "\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/563.png"
+    }, {
+      "id" : 1044,
+      "name" : "AFC Bournemouth",
+      "league" : "EPL",
+      "city" : "Kings Park Bournemouth BH7 7AF",
+      "colors" : "\uD83D\uDD34⚫",
+      "emblemUrl" : "https://crests.football-data.org/bournemouth.png"
+    } ],
+    "LaLiga" : [ {
+      "id" : 77,
+      "name" : "Athletic Club",
+      "league" : "LaLiga",
+      "city" : "23 Bilbao 48009",
+      "colors" : "\uD83D\uDD34⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/77.png"
+    }, {
+      "id" : 78,
+      "name" : "Club Atlético de Madrid",
+      "league" : "LaLiga",
+      "city" : "67 Madrid 28005",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/78.png"
+    }, {
+      "id" : 79,
+      "name" : "CA Osasuna",
+      "league" : "LaLiga",
+      "city" : "s/n Pamplona 31006",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/79.png"
+    }, {
+      "id" : 80,
+      "name" : "RCD Espanyol de Barcelona",
+      "league" : "LaLiga",
+      "city" : "100 Cornellà de Llobregat 08940",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/80.png"
+    }, {
+      "id" : 81,
+      "name" : "FC Barcelona",
+      "league" : "LaLiga",
+      "city" : "Avenida Arístides Maillol s/n Barcelona 08028",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35\uD83D\uDFE0",
+      "emblemUrl" : "https://crests.football-data.org/81.png"
+    }, {
+      "id" : 82,
+      "name" : "Getafe CF",
+      "league" : "LaLiga",
+      "city" : "s/n Getafe 28903",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/82.png"
+    }, {
+      "id" : 86,
+      "name" : "Real Madrid CF",
+      "league" : "LaLiga",
+      "city" : "1 Madrid 28036",
+      "colors" : "⚪\uD83D\uDFE3",
+      "emblemUrl" : "https://crests.football-data.org/86.png"
+    }, {
+      "id" : 87,
+      "name" : "Rayo Vallecano de Madrid",
+      "league" : "LaLiga",
+      "city" : "s/n Madrid 28018",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/87.png"
+    }, {
+      "id" : 88,
+      "name" : "Levante UD",
+      "league" : "LaLiga",
+      "city" : "44 Valencia 46019",
+      "colors" : "\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/88.png"
+    }, {
+      "id" : 89,
+      "name" : "RCD Mallorca",
+      "league" : "LaLiga",
+      "city" : "s/n Palma de Mallorca 07011",
+      "colors" : "\uD83D\uDD34⚫",
+      "emblemUrl" : "https://crests.football-data.org/89.png"
+    }, {
+      "id" : 90,
+      "name" : "Real Betis Balompié",
+      "league" : "LaLiga",
+      "city" : "s/n Sevilla 41012",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://crests.football-data.org/90.png"
+    }, {
+      "id" : 92,
+      "name" : "Real Sociedad de Fútbol",
+      "league" : "LaLiga",
+      "city" : "1 San Sebastián 20014",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/92.png"
+    }, {
+      "id" : 94,
+      "name" : "Villarreal CF",
+      "league" : "LaLiga",
+      "city" : "s/n Villarreal 12540",
+      "colors" : "\uD83D\uDD35\uD83D\uDFE1",
+      "emblemUrl" : "https://crests.football-data.org/94.png"
+    }, {
+      "id" : 95,
+      "name" : "Valencia CF",
+      "league" : "LaLiga",
+      "city" : "2 Valencia 46010",
+      "colors" : "⚪⚫\uD83D\uDFE0",
+      "emblemUrl" : "https://crests.football-data.org/95.png"
+    }, {
+      "id" : 263,
+      "name" : "Deportivo Alavés",
+      "league" : "LaLiga",
+      "city" : "s/n Vitoria 01007",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/263.png"
+    }, {
+      "id" : 285,
+      "name" : "Elche CF",
+      "league" : "LaLiga",
+      "city" : "3 Elche 03208",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://crests.football-data.org/285.png"
+    }, {
+      "id" : 298,
+      "name" : "Girona FC",
+      "league" : "LaLiga",
+      "city" : "141 Girona 17003",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/298.png"
+    }, {
+      "id" : 558,
+      "name" : "RC Celta de Vigo",
+      "league" : "LaLiga",
+      "city" : "1 Vigo 36203",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/558.png"
+    }, {
+      "id" : 559,
+      "name" : "Sevilla FC",
+      "league" : "LaLiga",
+      "city" : "s/n Sevilla 41005",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/559.png"
+    }, {
+      "id" : 1048,
+      "name" : "Real Oviedo",
+      "league" : "LaLiga",
+      "city" : "s/n Oviedo 33013",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/1048.png"
+    } ],
+    "Bundesliga" : [ {
+      "id" : 1,
+      "name" : "1. FC Köln",
+      "league" : "Bundesliga",
+      "city" : "Franz-Kremer-Allee 1 Köln 50937",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/1.png"
+    }, {
+      "id" : 2,
+      "name" : "TSG 1899 Hoffenheim",
+      "league" : "Bundesliga",
+      "city" : "Horrenberger Straße 58 Zuzenhausen 74939",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/2.png"
+    }, {
+      "id" : 3,
+      "name" : "Bayer 04 Leverkusen",
+      "league" : "Bundesliga",
+      "city" : "Bismarckstr. 122-124 Leverkusen 51373",
+      "colors" : "\uD83D\uDD34⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/3.png"
+    }, {
+      "id" : 4,
+      "name" : "Borussia Dortmund",
+      "league" : "Bundesliga",
+      "city" : "Rheinlanddamm 207-209 Dortmund 44137",
+      "colors" : "\uD83D\uDFE1⚫",
+      "emblemUrl" : "https://crests.football-data.org/4.png"
+    }, {
+      "id" : 5,
+      "name" : "FC Bayern München",
+      "league" : "Bundesliga",
+      "city" : "Säbenerstr. 51 München 81547",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/5.png"
+    }, {
+      "id" : 7,
+      "name" : "Hamburger SV",
+      "league" : "Bundesliga",
+      "city" : "Sylvesterallee 7 Hamburg 22525",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/7.png"
+    }, {
+      "id" : 10,
+      "name" : "VfB Stuttgart",
+      "league" : "Bundesliga",
+      "city" : "Mercedesstraße 109 Stuttgart 70372",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/10.png"
+    }, {
+      "id" : 11,
+      "name" : "VfL Wolfsburg",
+      "league" : "Bundesliga",
+      "city" : "In den Allerwiesen 1 Wolfsburg 38446",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://crests.football-data.org/11.png"
+    }, {
+      "id" : 12,
+      "name" : "SV Werder Bremen",
+      "league" : "Bundesliga",
+      "city" : "Franz-Böhmert-Str. 1c Bremen 28205",
+      "colors" : "\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://crests.football-data.org/12.png"
+    }, {
+      "id" : 15,
+      "name" : "1. FSV Mainz 05",
+      "league" : "Bundesliga",
+      "city" : "Dr.-Martin-Luther-King-Weg 20 Mainz 55122",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/15.png"
+    }, {
+      "id" : 16,
+      "name" : "FC Augsburg",
+      "league" : "Bundesliga",
+      "city" : "Donauwörther Straße 170 Augsburg 86154",
+      "colors" : "\uD83D\uDD34\uD83D\uDFE2⚪",
+      "emblemUrl" : "https://crests.football-data.org/16.png"
+    }, {
+      "id" : 17,
+      "name" : "SC Freiburg",
+      "league" : "Bundesliga",
+      "city" : "Schwarzwaldstraße 193 Freiburg 79117",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/17.png"
+    }, {
+      "id" : 18,
+      "name" : "Borussia Mönchengladbach",
+      "league" : "Bundesliga",
+      "city" : "Hennes-Weisweiler-Allee 1 Mönchengladbach 41179",
+      "colors" : "\uD83D\uDFE2⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/18.png"
+    }, {
+      "id" : 19,
+      "name" : "Eintracht Frankfurt",
+      "league" : "Bundesliga",
+      "city" : "Mörfelder Landstraße 362 Frankfurt am Main 60528",
+      "colors" : "\uD83D\uDD34⚫",
+      "emblemUrl" : "https://crests.football-data.org/19.png"
+    }, {
+      "id" : 20,
+      "name" : "FC St. Pauli 1910",
+      "league" : "Bundesliga",
+      "city" : "Auf dem Heiligengeistfeld Hamburg 20359",
+      "colors" : "⚪",
+      "emblemUrl" : "https://crests.football-data.org/20.png"
+    }, {
+      "id" : 28,
+      "name" : "1. FC Union Berlin",
+      "league" : "Bundesliga",
+      "city" : "An der Wuhlheide 263 Berlin 12555",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/28.png"
+    }, {
+      "id" : 44,
+      "name" : "1. FC Heidenheim 1846",
+      "league" : "Bundesliga",
+      "city" : "Schloßhaustraße 162 Heidenheim 89522",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/44.png"
+    }, {
+      "id" : 721,
+      "name" : "RB Leipzig",
+      "league" : "Bundesliga",
+      "city" : "Neumarkt 29-33 Leipzig 04109",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/721.png"
+    } ],
+    "SerieA" : [ {
+      "id" : 98,
+      "name" : "AC Milan",
+      "league" : "SerieA",
+      "city" : "Via Filippo Turati 3 Milano 20121",
+      "colors" : "\uD83D\uDD34⚫",
+      "emblemUrl" : "https://crests.football-data.org/98.png"
+    }, {
+      "id" : 99,
+      "name" : "ACF Fiorentina",
+      "league" : "SerieA",
+      "city" : "Viale Manfredo Fanti 4 Firenze 50137",
+      "colors" : "⚪\uD83D\uDFE3",
+      "emblemUrl" : "https://crests.football-data.org/99.png"
+    }, {
+      "id" : 100,
+      "name" : "AS Roma",
+      "league" : "SerieA",
+      "city" : "600 Roma 00128",
+      "colors" : "⚪\uD83D\uDFE0",
+      "emblemUrl" : "https://crests.football-data.org/100.png"
+    }, {
+      "id" : 102,
+      "name" : "Atalanta BC",
+      "league" : "SerieA",
+      "city" : "Zingonia Ciserano 24040",
+      "colors" : "\uD83D\uDD35⚫",
+      "emblemUrl" : "https://crests.football-data.org/102.png"
+    }, {
+      "id" : 103,
+      "name" : "Bologna FC 1909",
+      "league" : "SerieA",
+      "city" : "Via Casteldebole 10 Bologna 40132",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/103.png"
+    }, {
+      "id" : 104,
+      "name" : "Cagliari Calcio",
+      "league" : "SerieA",
+      "city" : "Viale la Plaia 15 Cagliari 09123",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/104.png"
+    }, {
+      "id" : 107,
+      "name" : "Genoa CFC",
+      "league" : "SerieA",
+      "city" : "67 Genova 16155",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/107.png"
+    }, {
+      "id" : 108,
+      "name" : "FC Internazionale Milano",
+      "league" : "SerieA",
+      "city" : "Corso Vittorio Emanuele II 9 Milano 20122",
+      "colors" : "\uD83D\uDD35⚫",
+      "emblemUrl" : "https://crests.football-data.org/108.png"
+    }, {
+      "id" : 109,
+      "name" : "Juventus FC",
+      "league" : "SerieA",
+      "city" : "32 Torino 10128",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/109.png"
+    }, {
+      "id" : 110,
+      "name" : "SS Lazio",
+      "league" : "SerieA",
+      "city" : "1000 Formello 00060",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/110.png"
+    }, {
+      "id" : 112,
+      "name" : "Parma Calcio 1913",
+      "league" : "SerieA",
+      "city" : "4 Parma 43121",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/112.png"
+    }, {
+      "id" : 113,
+      "name" : "SSC Napoli",
+      "league" : "SerieA",
+      "city" : "Km 35 Castel Volturno 81030",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/113.png"
+    }, {
+      "id" : 115,
+      "name" : "Udinese Calcio",
+      "league" : "SerieA",
+      "city" : "Via Agostino e Angelo Candolini 2 Udine 33100",
+      "colors" : "⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/115.png"
+    }, {
+      "id" : 450,
+      "name" : "Hellas Verona FC",
+      "league" : "SerieA",
+      "city" : "37 Verona 37136",
+      "colors" : "\uD83D\uDD35\uD83D\uDFE1",
+      "emblemUrl" : "https://crests.football-data.org/450.png"
+    }, {
+      "id" : 457,
+      "name" : "US Cremonese",
+      "league" : "SerieA",
+      "city" : "19 Cremona 26100",
+      "colors" : "\uD83D\uDD34",
+      "emblemUrl" : "https://crests.football-data.org/457.png"
+    }, {
+      "id" : 471,
+      "name" : "US Sassuolo Calcio",
+      "league" : "SerieA",
+      "city" : "47 Sassuolo 41049",
+      "colors" : "\uD83D\uDFE2⚫",
+      "emblemUrl" : "https://crests.football-data.org/471.png"
+    }, {
+      "id" : 487,
+      "name" : "AC Pisa 1909",
+      "league" : "SerieA",
+      "city" : "Piazza della Stazione 22 (scala A) Pisa null",
+      "colors" : "\uD83D\uDD35⚫",
+      "emblemUrl" : "https://crests.football-data.org/487.png"
+    }, {
+      "id" : 586,
+      "name" : "Torino FC",
+      "league" : "SerieA",
+      "city" : "Via Arcivescovado 1 Torino 10122",
+      "colors" : "⚪",
+      "emblemUrl" : "https://crests.football-data.org/586.png"
+    }, {
+      "id" : 5890,
+      "name" : "US Lecce",
+      "league" : "SerieA",
+      "city" : "Via Templari 11 Lecce 73100",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35\uD83D\uDFE1",
+      "emblemUrl" : "https://crests.football-data.org/5890.png"
+    }, {
+      "id" : 7397,
+      "name" : "Como 1907",
+      "league" : "SerieA",
+      "city" : "Viale Sinigaglia 2 Como 22100",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/7397.png"
+    } ],
+    "Ligue1" : [ {
+      "id" : 511,
+      "name" : "Toulouse FC",
+      "league" : "Ligue1",
+      "city" : "BP 54023 Toulouse 31028",
+      "colors" : "⚪\uD83D\uDFE3",
+      "emblemUrl" : "https://crests.football-data.org/511.png"
+    }, {
+      "id" : 512,
+      "name" : "Stade Brestois 29",
+      "league" : "Ligue1",
+      "city" : "470 bis rue Alain Colas Brest 29200",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/512.png"
+    }, {
+      "id" : 516,
+      "name" : "Olympique de Marseille",
+      "league" : "Ligue1",
+      "city" : "traverse de La Martine Marseille 13012",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/516.png"
+    }, {
+      "id" : 519,
+      "name" : "AJ Auxerre",
+      "league" : "Ligue1",
+      "city" : "Route de Vaux BP 349 Auxerre 89006",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/519.png"
+    }, {
+      "id" : 521,
+      "name" : "Lille OSC",
+      "league" : "Ligue1",
+      "city" : "780 Camphin-en-Pévèle Lille null",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/521.png"
+    }, {
+      "id" : 522,
+      "name" : "OGC Nice",
+      "league" : "Ligue1",
+      "city" : "avenue du Ray Nice 06100",
+      "colors" : "\uD83D\uDD34⚫",
+      "emblemUrl" : "https://crests.football-data.org/522.png"
+    }, {
+      "id" : 523,
+      "name" : "Olympique Lyonnais",
+      "league" : "Ligue1",
+      "city" : "350 avenue Jean Jaurès Lyon 69007",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/523.png"
+    }, {
+      "id" : 524,
+      "name" : "Paris Saint-Germain FC",
+      "league" : "Ligue1",
+      "city" : "rue de Commandant Guibaud Paris 7501",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/524.png"
+    }, {
+      "id" : 525,
+      "name" : "FC Lorient",
+      "league" : "Ligue1",
+      "city" : "BP 404 Lorient 56104",
+      "colors" : "⚫\uD83D\uDFE0",
+      "emblemUrl" : "https://crests.football-data.org/525.png"
+    }, {
+      "id" : 529,
+      "name" : "Stade Rennais FC 1901",
+      "league" : "Ligue1",
+      "city" : "La Piverdière - Chemin de la Taupinais CS 5390 Rennes 35039",
+      "colors" : "\uD83D\uDD34⚫",
+      "emblemUrl" : "https://crests.football-data.org/529.png"
+    }, {
+      "id" : 532,
+      "name" : "Angers SCO",
+      "league" : "Ligue1",
+      "city" : "BP 20212 Angers 49002",
+      "colors" : "\uD83D\uDFE1⚪⚫",
+      "emblemUrl" : "https://crests.football-data.org/532.png"
+    }, {
+      "id" : 533,
+      "name" : "Le Havre AC",
+      "league" : "Ligue1",
+      "city" : "2 route du château BP 90 Saint-Laurent-de-Brèvedent 76700",
+      "colors" : "\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/533.png"
+    }, {
+      "id" : 543,
+      "name" : "FC Nantes",
+      "league" : "Ligue1",
+      "city" : "La Jonelière Nantes 44240",
+      "colors" : "\uD83D\uDFE1\uD83D\uDFE2",
+      "emblemUrl" : "https://crests.football-data.org/543.png"
+    }, {
+      "id" : 545,
+      "name" : "FC Metz",
+      "league" : "Ligue1",
+      "city" : "BP 40292 Metz 5700",
+      "colors" : "\uD83D\uDD34\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/545.png"
+    }, {
+      "id" : 546,
+      "name" : "Racing Club de Lens",
+      "league" : "Ligue1",
+      "city" : "33 rue Arthur Lamendin Avion 62210",
+      "colors" : "\uD83D\uDD34\uD83D\uDFE1",
+      "emblemUrl" : "https://crests.football-data.org/546.png"
+    }, {
+      "id" : 548,
+      "name" : "AS Monaco FC",
+      "league" : "Ligue1",
+      "city" : "Avenue des Castellans Monaco 98000",
+      "colors" : "\uD83D\uDD34⚪",
+      "emblemUrl" : "https://crests.football-data.org/548.png"
+    }, {
+      "id" : 576,
+      "name" : "RC Strasbourg Alsace",
+      "league" : "Ligue1",
+      "city" : "12 Rue Extenwoerth Strasbourg 67000",
+      "colors" : "\uD83D\uDD35⚪",
+      "emblemUrl" : "https://crests.football-data.org/576.png"
+    }, {
+      "id" : 1045,
+      "name" : "Paris FC",
+      "league" : "Ligue1",
+      "city" : "17 rue Neuve Tolbiac Paris 75013",
+      "colors" : "\uD83D\uDD35",
+      "emblemUrl" : "https://crests.football-data.org/1045.png"
+    } ]
+  },
+  "timestamp" : "2025-11-27T20:03:36.589391900"
+}

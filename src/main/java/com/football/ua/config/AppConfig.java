@@ -34,9 +34,7 @@ public class AppConfig {
         return Clock.systemDefaultZone();
     }
 
-    /**
-     * Власна реалізація CacheManager з підтримкою різних конфігурацій кешів
-     */
+    
     @Bean
     @Primary
     public CacheManager cacheManager() {
@@ -48,3 +46,5 @@ public class AppConfig {
         public record Automoderation(boolean enabled) {}
     }
 }
+
+

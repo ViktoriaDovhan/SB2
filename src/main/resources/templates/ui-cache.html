@@ -59,6 +59,23 @@
                             <!-- Загальна статистика -->
                         </div>
 
+                        <!-- Teams Management Section -->
+                        <div class="cache-section" sec:authorize="hasRole('MODERATOR')">
+                            <div class="section-title">
+                                <h3>⚽ Управління командами</h3>
+                                <p>Оновлення даних команд з зовнішнього API</p>
+                            </div>
+
+                            <div class="teams-controls">
+                                <button id="btnRefreshTeamsFromApi" class="btn btn-success">
+                                    🚀 Оновити команди з API
+                                </button>
+                                <div id="teamsStatus" class="teams-status">
+                                    <!-- Статус буде показуватися тут -->
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Toolbar -->
                         <div class="cache-toolbar">
                             <h3 class="toolbar-title">Список кешів</h3>
@@ -122,6 +139,8 @@
         const statsOverview = document.getElementById('statsOverview');
         const btnRefreshAllStats = document.getElementById('btnRefreshAllStats');
         const btnClearAllCaches = document.getElementById('btnClearAllCaches');
+        const btnRefreshTeamsFromApi = document.getElementById('btnRefreshTeamsFromApi');
+        const teamsStatus = document.getElementById('teamsStatus');
         const showEmptyCachesCheckbox = document.getElementById('showEmptyCaches');
 
         // Global state for stats
@@ -364,9 +383,62 @@
             }
         }
 
+        // Оновити команди з API
+        async function refreshTeamsFromApi() {
+            try {
+                setButtonLoading(btnRefreshTeamsFromApi, true);
+                showTeamsStatus('⏳ Оновлення команд з API...', 'info');
+
+                const response = await fetch('/api/moderator/teams/refresh', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP ${response.status}` }));
+                    throw new Error(errorData.message || `HTTP помилка ${response.status}`);
+                }
+
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    showTeamsStatus(`✅ ${result.message}`, 'success');
+                    showAlert(`🚀 ${result.message}`, 'success');
+                } else {
+                    showTeamsStatus(`⚠️ ${result.message}`, 'warning');
+                    showAlert(`⚠️ ${result.message}`, 'error');
+                }
+
+            } catch (error) {
+                console.error('Teams API Error:', error);
+                showTeamsStatus(`❌ Помилка: ${error.message}`, 'error');
+                showAlert(`❌ Помилка оновлення команд: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(btnRefreshTeamsFromApi, false);
+            }
+        }
+
+
+        // Показати статус команд
+        function showTeamsStatus(message, type = 'info') {
+            if (!teamsStatus) return;
+
+            teamsStatus.innerHTML = `<span class="status-${type}">${message}</span>`;
+            teamsStatus.style.display = 'block';
+
+            // Автоматично сховати через 10 секунд для успіху
+            if (type === 'success') {
+                setTimeout(() => {
+                    teamsStatus.style.display = 'none';
+                }, 10000);
+            }
+        }
+
         // Обробники подій
         if (btnRefreshAllStats) btnRefreshAllStats.addEventListener('click', loadAllCacheStats);
         if (btnClearAllCaches) btnClearAllCaches.addEventListener('click', clearAllCaches);
+        if (btnRefreshTeamsFromApi) btnRefreshTeamsFromApi.addEventListener('click', refreshTeamsFromApi);
         if (showEmptyCachesCheckbox) showEmptyCachesCheckbox.addEventListener('change', renderCacheTable);
 
         // Експорт функцій для inline onclick

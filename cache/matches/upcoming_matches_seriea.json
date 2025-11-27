@@ -1,101 +1,245 @@
 {
   "duration" : 60,
   "data" : [ {
-    "date" : "2025-11-23",
+    "date" : "2025-11-28",
     "score" : {
       "away" : null,
       "home" : null
     },
-    "matchday" : 12,
+    "matchday" : 13,
     "awayTeam" : {
-      "name" : "US Lecce",
-      "id" : 5890,
-      "shortName" : "Lecce",
-      "crest" : "https://crests.football-data.org/5890.png"
-    },
-    "league" : "SerieA",
-    "homeTeam" : {
-      "name" : "SS Lazio",
-      "id" : 110,
-      "shortName" : "Lazio",
-      "crest" : "https://crests.football-data.org/110.png"
-    },
-    "id" : 536930,
-    "time" : "17:00",
-    "kickoffAt" : "2025-11-23T17:00:00",
-    "status" : "TIMED"
-  }, {
-    "date" : "2025-11-23",
-    "score" : {
-      "away" : null,
-      "home" : null
-    },
-    "matchday" : 12,
-    "awayTeam" : {
-      "name" : "AC Milan",
-      "id" : 98,
-      "shortName" : "Milan",
-      "crest" : "https://crests.football-data.org/98.png"
-    },
-    "league" : "SerieA",
-    "homeTeam" : {
-      "name" : "FC Internazionale Milano",
-      "id" : 108,
-      "shortName" : "Inter",
-      "crest" : "https://crests.football-data.org/108.png"
-    },
-    "id" : 536929,
-    "time" : "19:45",
-    "kickoffAt" : "2025-11-23T19:45:00",
-    "status" : "TIMED"
-  }, {
-    "date" : "2025-11-24",
-    "score" : {
-      "away" : null,
-      "home" : null
-    },
-    "matchday" : 12,
-    "awayTeam" : {
-      "name" : "Como 1907",
-      "id" : 7397,
-      "shortName" : "Como 1907",
-      "crest" : "https://crests.football-data.org/7397.png"
-    },
-    "league" : "SerieA",
-    "homeTeam" : {
-      "name" : "Torino FC",
-      "id" : 586,
-      "shortName" : "Torino",
-      "crest" : "https://crests.football-data.org/586.png"
-    },
-    "id" : 536927,
-    "time" : "17:30",
-    "kickoffAt" : "2025-11-24T17:30:00",
-    "status" : "TIMED"
-  }, {
-    "date" : "2025-11-24",
-    "score" : {
-      "away" : null,
-      "home" : null
-    },
-    "matchday" : 12,
-    "awayTeam" : {
-      "name" : "AC Pisa 1909",
-      "id" : 487,
-      "shortName" : "AC Pisa",
-      "crest" : "https://crests.football-data.org/487.png"
-    },
-    "league" : "SerieA",
-    "homeTeam" : {
       "name" : "US Sassuolo Calcio",
       "id" : 471,
       "shortName" : "Sassuolo",
       "crest" : "https://crests.football-data.org/471.png"
     },
-    "id" : 536931,
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "Como 1907",
+      "id" : 7397,
+      "shortName" : "Como 1907",
+      "crest" : "https://crests.football-data.org/7397.png"
+    },
+    "id" : 536939,
     "time" : "19:45",
-    "kickoffAt" : "2025-11-24T19:45:00",
+    "kickoffAt" : "2025-11-28T19:45:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-29",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "Hellas Verona FC",
+      "id" : 450,
+      "shortName" : "Verona",
+      "crest" : "https://crests.football-data.org/450.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "Genoa CFC",
+      "id" : 107,
+      "shortName" : "Genoa",
+      "crest" : "https://crests.football-data.org/107.png"
+    },
+    "id" : 536938,
+    "time" : "14:00",
+    "kickoffAt" : "2025-11-29T14:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-29",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "Udinese Calcio",
+      "id" : 115,
+      "shortName" : "Udinese",
+      "crest" : "https://crests.football-data.org/115.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "Parma Calcio 1913",
+      "id" : 112,
+      "shortName" : "Parma",
+      "crest" : "https://crests.football-data.org/112.png"
+    },
+    "id" : 536942,
+    "time" : "14:00",
+    "kickoffAt" : "2025-11-29T14:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-29",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "Cagliari Calcio",
+      "id" : 104,
+      "shortName" : "Cagliari",
+      "crest" : "https://crests.football-data.org/104.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "Juventus FC",
+      "id" : 109,
+      "shortName" : "Juventus",
+      "crest" : "https://crests.football-data.org/109.png"
+    },
+    "id" : 536941,
+    "time" : "17:00",
+    "kickoffAt" : "2025-11-29T17:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-29",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "SS Lazio",
+      "id" : 110,
+      "shortName" : "Lazio",
+      "crest" : "https://crests.football-data.org/110.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "AC Milan",
+      "id" : 98,
+      "shortName" : "Milan",
+      "crest" : "https://crests.football-data.org/98.png"
+    },
+    "id" : 536935,
+    "time" : "19:45",
+    "kickoffAt" : "2025-11-29T19:45:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-30",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "Torino FC",
+      "id" : 586,
+      "shortName" : "Torino",
+      "crest" : "https://crests.football-data.org/586.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "US Lecce",
+      "id" : 5890,
+      "shortName" : "Lecce",
+      "crest" : "https://crests.football-data.org/5890.png"
+    },
+    "id" : 536944,
+    "time" : "11:30",
+    "kickoffAt" : "2025-11-30T11:30:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-30",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "FC Internazionale Milano",
+      "id" : 108,
+      "shortName" : "Inter",
+      "crest" : "https://crests.football-data.org/108.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "AC Pisa 1909",
+      "id" : 487,
+      "shortName" : "AC Pisa",
+      "crest" : "https://crests.football-data.org/487.png"
+    },
+    "id" : 536943,
+    "time" : "14:00",
+    "kickoffAt" : "2025-11-30T14:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-30",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "ACF Fiorentina",
+      "id" : 99,
+      "shortName" : "Fiorentina",
+      "crest" : "https://crests.football-data.org/99.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "Atalanta BC",
+      "id" : 102,
+      "shortName" : "Atalanta",
+      "crest" : "https://crests.football-data.org/102.png"
+    },
+    "id" : 536937,
+    "time" : "17:00",
+    "kickoffAt" : "2025-11-30T17:00:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-11-30",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "SSC Napoli",
+      "id" : 113,
+      "shortName" : "Napoli",
+      "crest" : "https://crests.football-data.org/113.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "AS Roma",
+      "id" : 100,
+      "shortName" : "Roma",
+      "crest" : "https://crests.football-data.org/100.png"
+    },
+    "id" : 536936,
+    "time" : "19:45",
+    "kickoffAt" : "2025-11-30T19:45:00",
+    "status" : "TIMED"
+  }, {
+    "date" : "2025-12-01",
+    "score" : {
+      "away" : null,
+      "home" : null
+    },
+    "matchday" : 13,
+    "awayTeam" : {
+      "name" : "US Cremonese",
+      "id" : 457,
+      "shortName" : "Cremonese",
+      "crest" : "https://crests.football-data.org/457.png"
+    },
+    "league" : "SerieA",
+    "homeTeam" : {
+      "name" : "Bologna FC 1909",
+      "id" : 103,
+      "shortName" : "Bologna",
+      "crest" : "https://crests.football-data.org/103.png"
+    },
+    "id" : 536940,
+    "time" : "19:45",
+    "kickoffAt" : "2025-12-01T19:45:00",
     "status" : "TIMED"
   } ],
-  "timestamp" : "2025-11-23T18:41:55.730492500"
+  "timestamp" : "2025-11-27T15:38:11.946970"
 }

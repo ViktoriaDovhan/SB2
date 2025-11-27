@@ -13,17 +13,12 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
-/**
- * Власна реалізація CacheManager з використанням Caffeine
- * Підтримує різні конфігурації кешів для різних типів даних
- */
 public class CustomCacheManager implements CacheManager {
 
     private static final Logger log = LoggerFactory.getLogger(CustomCacheManager.class);
 
     private final Map<String, Cache> cacheMap = new ConcurrentHashMap<>();
 
-    // Конфігурації для різних типів кешів
     private static final Map<String, CacheConfig> CACHE_CONFIGS = Map.of(
         "matches", new CacheConfig(30, TimeUnit.MINUTES, 1000L),
         "teams", new CacheConfig(60, TimeUnit.MINUTES, 500L),
@@ -43,19 +38,16 @@ public class CustomCacheManager implements CacheManager {
         return cacheMap.keySet();
     }
 
-    /**
-     * Створює кеш з відповідною конфігурацією
-     */
     private Cache createCache(String name) {
         CacheConfig config = CACHE_CONFIGS.getOrDefault(name,
-            new CacheConfig(30, TimeUnit.MINUTES, 100L)); // дефолтна конфігурація
+            new CacheConfig(30, TimeUnit.MINUTES, 100L));
 
         com.github.benmanes.caffeine.cache.Cache<Object, Object> caffeineCache = Caffeine.newBuilder()
             .expireAfterWrite(Duration.ofMillis(config.timeUnit.toMillis(config.duration)))
             .maximumSize(config.maxSize)
             .removalListener((key, value, cause) ->
                 log.debug("Кеш '{}' - видалено елемент: {} через {}", name, key, cause))
-            .recordStats() // для моніторингу статистики
+            .recordStats()
             .build();
 
         log.info("Створено кеш '{}' з TTL={} {}, maxSize={}",
@@ -64,9 +56,7 @@ public class CustomCacheManager implements CacheManager {
         return new CustomCaffeineCache(name, caffeineCache);
     }
 
-    /**
-     * Конфігурація для конкретного кешу
-     */
+    
     private static class CacheConfig {
         final long duration;
         final TimeUnit timeUnit;
@@ -79,9 +69,7 @@ public class CustomCacheManager implements CacheManager {
         }
     }
 
-    /**
-     * Розширена версія CaffeineCache з додатковою функціональністю
-     */
+    
     private static class CustomCaffeineCache extends CaffeineCache {
 
         private final com.github.benmanes.caffeine.cache.Cache<Object, Object> caffeineCache;
@@ -91,9 +79,7 @@ public class CustomCacheManager implements CacheManager {
             this.caffeineCache = caffeineCache;
         }
 
-        /**
-         * Повертає статистику кешу
-         */
+        
         public Map<String, Object> getStats() {
             var stats = caffeineCache.stats();
             return Map.of(
@@ -106,9 +92,7 @@ public class CustomCacheManager implements CacheManager {
             );
         }
 
-        /**
-         * Очищає кеш і повертає кількість видалених елементів
-         */
+        
         public long clearAndCount() {
             long sizeBefore = caffeineCache.estimatedSize();
             caffeineCache.invalidateAll();
@@ -116,9 +100,7 @@ public class CustomCacheManager implements CacheManager {
         }
     }
 
-    /**
-     * Повертає статистику для всіх кешів
-     */
+    
     public Map<String, Map<String, Object>> getAllCacheStats() {
         Map<String, Map<String, Object>> stats = new ConcurrentHashMap<>();
         for (Map.Entry<String, Cache> entry : cacheMap.entrySet()) {
@@ -129,20 +111,16 @@ public class CustomCacheManager implements CacheManager {
         return stats;
     }
 
-    /**
-     * Очищає всі кеші, скидає статистику і повертає статистику очищення
-     */
+    
     public Map<String, Long> clearAllCaches() {
         Map<String, Long> clearedCounts = new ConcurrentHashMap<>();
-        
-        // Створюємо копію ключів, щоб уникнути ConcurrentModificationException при видаленні
+
         for (String cacheName : cacheMap.keySet()) {
             Cache cache = cacheMap.get(cacheName);
             if (cache instanceof CustomCaffeineCache customCache) {
                 long clearedCount = customCache.clearAndCount();
                 clearedCounts.put(cacheName, clearedCount);
-                
-                // Видаляємо кеш з мапи, щоб при наступному зверненні він перестворився з новою статистикою
+
                 cacheMap.remove(cacheName);
                 
                 log.info("Очищено та скинуто статистику кешу '{}': {} елементів", cacheName, clearedCount);
@@ -151,15 +129,12 @@ public class CustomCacheManager implements CacheManager {
         return clearedCounts;
     }
 
-    /**
-     * Очищає конкретний кеш і скидає його статистику
-     */
+    
     public long clearCache(String name) {
         Cache cache = cacheMap.get(name);
         if (cache instanceof CustomCaffeineCache customCache) {
             long clearedCount = customCache.clearAndCount();
-            
-            // Видаляємо кеш з мапи, щоб при наступному зверненні він перестворився з новою статистикою
+
             cacheMap.remove(name);
             
             log.info("Очищено та скинуто статистику кешу '{}': {} елементів", name, clearedCount);
@@ -168,3 +143,4 @@ public class CustomCacheManager implements CacheManager {
         return 0;
     }
 }
+

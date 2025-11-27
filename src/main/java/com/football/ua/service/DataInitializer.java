@@ -13,11 +13,13 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CacheManager cacheManager;
+    private final DataMigrationService dataMigrationService;
 
-    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder, CacheManager cacheManager) {
+    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder, CacheManager cacheManager, DataMigrationService dataMigrationService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.cacheManager = cacheManager;
+        this.dataMigrationService = dataMigrationService;
     }
 
     @Override
@@ -61,8 +63,16 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println("ℹ️ Користувач 'editor' вже існує");
             }
 
-            // Ініціалізація кешів
             initializeCaches();
+
+            if (dataMigrationService.isDatabaseEmpty()) {
+                System.out.println("🔄 Міграція команд з кешу в базу даних...");
+                dataMigrationService.migrateTeamsFromCacheToDatabase();
+
+                dataMigrationService.cleanupTeamCacheFiles();
+            } else {
+                System.out.println("ℹ️ База даних вже містить команди, міграція пропущена");
+            }
 
             System.out.println("✅ Ініціалізація користувачів завершена успішно!");
         } catch (Exception e) {
@@ -72,14 +82,12 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    /**
-     * Ініціалізує основні кеші системи
-     */
+    
     private void initializeCaches() {
         System.out.println("🔄 Ініціалізація кешів системи...");
 
         try {
-            // Ініціалізація основних кешів
+
             String[] cacheNames = {"matches", "teams", "standings", "players", "statistics", "predictions"};
 
             for (String cacheName : cacheNames) {
@@ -93,8 +101,10 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ Ініціалізація кешів завершена успішно!");
         } catch (Exception e) {
             System.err.println("❌ Помилка при ініціалізації кешів: " + e.getMessage());
-            // Не кидаємо виключення, щоб не зупиняти ініціалізацію
+
         }
     }
 }
+
+
 

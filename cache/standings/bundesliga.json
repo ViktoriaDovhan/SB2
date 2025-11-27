@@ -18,14 +18,14 @@
     }, {
       "teamName" : "RB Leipzig",
       "teamCrest" : "https://crests.football-data.org/721.png",
-      "goalsFor" : 21,
+      "goalsFor" : 22,
       "lost" : 2,
       "won" : 8,
       "playedGames" : 11,
       "position" : 2,
       "draw" : 1,
       "goalsAgainst" : 13,
-      "goalDifference" : 8,
+      "goalDifference" : 9,
       "points" : 25
     }, {
       "teamName" : "Bayer 04 Leverkusen",
@@ -88,16 +88,28 @@
       "goalDifference" : 5,
       "points" : 20
     }, {
+      "teamName" : "1. FC Union Berlin",
+      "teamCrest" : "https://crests.football-data.org/28.png",
+      "goalsFor" : 14,
+      "lost" : 4,
+      "won" : 4,
+      "playedGames" : 11,
+      "position" : 8,
+      "draw" : 3,
+      "goalsAgainst" : 17,
+      "goalDifference" : -3,
+      "points" : 15
+    }, {
       "teamName" : "SV Werder Bremen",
       "teamCrest" : "https://crests.football-data.org/12.png",
       "goalsFor" : 15,
       "lost" : 4,
       "won" : 4,
       "playedGames" : 11,
-      "position" : 8,
+      "position" : 9,
       "draw" : 3,
-      "goalsAgainst" : 19,
-      "goalDifference" : -4,
+      "goalsAgainst" : 20,
+      "goalDifference" : -5,
       "points" : 15
     }, {
       "teamName" : "1. FC Köln",
@@ -106,7 +118,7 @@
       "lost" : 5,
       "won" : 4,
       "playedGames" : 11,
-      "position" : 9,
+      "position" : 10,
       "draw" : 2,
       "goalsAgainst" : 19,
       "goalDifference" : 1,
@@ -118,7 +130,7 @@
       "lost" : 4,
       "won" : 3,
       "playedGames" : 11,
-      "position" : 10,
+      "position" : 11,
       "draw" : 4,
       "goalsAgainst" : 20,
       "goalDifference" : -5,
@@ -130,22 +142,10 @@
       "lost" : 5,
       "won" : 3,
       "playedGames" : 11,
-      "position" : 11,
+      "position" : 12,
       "draw" : 3,
       "goalsAgainst" : 19,
       "goalDifference" : -3,
-      "points" : 12
-    }, {
-      "teamName" : "1. FC Union Berlin",
-      "teamCrest" : "https://crests.football-data.org/28.png",
-      "goalsFor" : 13,
-      "lost" : 4,
-      "won" : 3,
-      "playedGames" : 10,
-      "position" : 12,
-      "draw" : 3,
-      "goalsAgainst" : 17,
-      "goalDifference" : -4,
       "points" : 12
     }, {
       "teamName" : "FC Augsburg",
@@ -187,13 +187,13 @@
       "teamName" : "FC St. Pauli 1910",
       "teamCrest" : "https://crests.football-data.org/20.png",
       "goalsFor" : 9,
-      "lost" : 7,
+      "lost" : 8,
       "won" : 2,
-      "playedGames" : 10,
+      "playedGames" : 11,
       "position" : 16,
       "draw" : 1,
-      "goalsAgainst" : 20,
-      "goalDifference" : -11,
+      "goalsAgainst" : 21,
+      "goalDifference" : -12,
       "points" : 7
     }, {
       "teamName" : "1. FSV Mainz 05",
@@ -221,5 +221,5 @@
       "points" : 5
     } ]
   },
-  "timestamp" : "2025-11-23T18:29:37.998538200"
+  "timestamp" : "2025-11-27T01:16:22.331560900"
 }

@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class JwtUtil {
 
     private static final String SECRET_KEY = "football_app_secret_key_for_jwt_token_generation_minimum_256_bits_required";
-    private static final long JWT_EXPIRATION = 86400000;
+    private static final long JWT_EXPIRATION = 604800000;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());

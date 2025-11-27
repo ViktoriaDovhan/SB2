@@ -12,10 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
-/**
- * REST API для управління кешами додатку
- * Доступно тільки для адміністраторів
- */
 @RestController
 @RequestMapping("/api/cache")
 @Tag(name = "Cache Management", description = "API для управління кешами системи")
@@ -30,9 +26,6 @@ public class CacheManagementController {
         this.cacheManager = cacheManager;
     }
 
-    /**
-     * Отримати статистику всіх кешів
-     */
     @GetMapping("/stats")
     @Operation(summary = "Статистика кешів", description = "Повертає статистику використання всіх кешів")
     public ResponseEntity<Map<String, Map<String, Object>>> getCacheStats() {
@@ -47,9 +40,6 @@ public class CacheManagementController {
         return ResponseEntity.badRequest().build();
     }
 
-    /**
-     * Отримати статистику конкретного кешу
-     */
     @GetMapping("/stats/{cacheName}")
     @Operation(summary = "Статистика конкретного кешу", description = "Повертає статистику використання вказаного кешу")
     public ResponseEntity<Map<String, Object>> getCacheStats(@PathVariable String cacheName) {
@@ -72,9 +62,6 @@ public class CacheManagementController {
         return ResponseEntity.badRequest().build();
     }
 
-    /**
-     * Очистити всі кеші
-     */
     @DeleteMapping("/clear")
     @Operation(summary = "Очистити всі кеші", description = "Видаляє всі елементи з усіх кешів системи")
     public ResponseEntity<Map<String, Long>> clearAllCaches() {
@@ -91,9 +78,6 @@ public class CacheManagementController {
         return ResponseEntity.badRequest().build();
     }
 
-    /**
-     * Очистити конкретний кеш
-     */
     @DeleteMapping("/clear/{cacheName}")
     @Operation(summary = "Очистити конкретний кеш", description = "Видаляє всі елементи з вказаного кешу")
     public ResponseEntity<Map<String, Object>> clearCache(@PathVariable String cacheName) {
@@ -115,9 +99,6 @@ public class CacheManagementController {
         return ResponseEntity.badRequest().build();
     }
 
-    /**
-     * Отримати інформацію про доступні кеші
-     */
     @GetMapping("/info")
     @Operation(summary = "Інформація про кеші", description = "Повертає інформацію про всі доступні кеші та їх конфігурації")
     public ResponseEntity<Map<String, Object>> getCacheInfo() {
@@ -133,9 +114,6 @@ public class CacheManagementController {
         return ResponseEntity.ok(info);
     }
 
-    /**
-     * Перевірити існування кешу
-     */
     @GetMapping("/exists/{cacheName}")
     @Operation(summary = "Перевірити існування кешу", description = "Перевіряє чи існує вказаний кеш")
     public ResponseEntity<Map<String, Object>> cacheExists(@PathVariable String cacheName) {

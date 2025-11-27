@@ -22,7 +22,6 @@ public class ExternalApiRateLimitingAspect {
     private static final Duration WINDOW = Duration.ofMinutes(1);
     private static final int MAX_CALLS_PER_MINUTE = 10;
 
-    // Глобальна черга викликів до зовнішнього API (для всього застосунку)
     private final Deque<Instant> apiCalls = new ArrayDeque<>();
 
     @Around("@annotation(com.football.ua.aspect.ExternalApiCall)")
@@ -30,7 +29,7 @@ public class ExternalApiRateLimitingAspect {
         Instant now = Instant.now();
 
         synchronized (apiCalls) {
-            // прибираємо всі виклики старші за 1 хвилину
+
             while (!apiCalls.isEmpty() && apiCalls.peekFirst().isBefore(now.minus(WINDOW))) {
                 apiCalls.pollFirst();
             }
@@ -43,11 +42,10 @@ public class ExternalApiRateLimitingAspect {
                 );
             }
 
-            // реєструємо новий виклик
             apiCalls.addLast(now);
         }
 
-        // якщо ліміт не перевищено – реально викликаємо метод
         return joinPoint.proceed();
     }
 }
+

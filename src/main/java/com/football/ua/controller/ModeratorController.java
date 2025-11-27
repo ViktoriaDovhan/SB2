@@ -1,10 +1,12 @@
 package com.football.ua.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.football.ua.model.Team;
 import com.football.ua.model.entity.PostEntity;
 import com.football.ua.model.entity.TopicEntity;
 import com.football.ua.model.entity.UserEntity;
 import com.football.ua.repo.UserRepository;
+import com.football.ua.service.ExternalTeamApiService;
 import com.football.ua.service.ForumDbService;
 import com.football.ua.service.ModerationService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -24,7 +26,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/moderator")
@@ -32,20 +38,25 @@ import java.util.Map;
 @Tag(name = "👮 Moderation", description = "API для модерації (MODERATOR)")
 public class ModeratorController {
 
+    private static final Logger log = LoggerFactory.getLogger(ModeratorController.class);
+
     private final ObjectMapper objectMapper;
     private final Path resourcesPath;
     private final ForumDbService forum;
     private final ObjectProvider<ModerationService> moderationProvider;
     private final UserRepository userRepository;
+    private final ExternalTeamApiService externalTeamApiService;
 
-    public ModeratorController(ObjectMapper objectMapper, 
-                              ForumDbService forum, 
+    public ModeratorController(ObjectMapper objectMapper,
+                              ForumDbService forum,
                               ObjectProvider<ModerationService> moderationProvider,
-                              UserRepository userRepository) throws IOException {
+                              UserRepository userRepository,
+                              ExternalTeamApiService externalTeamApiService) throws IOException {
         this.objectMapper = objectMapper;
         this.forum = forum;
         this.moderationProvider = moderationProvider;
         this.userRepository = userRepository;
+        this.externalTeamApiService = externalTeamApiService;
         this.resourcesPath = getPathToResources();
             System.out.println("✅ Шлях для запису файлу гравця тижня: " + resourcesPath);
     }
@@ -126,21 +137,58 @@ public class ModeratorController {
     }
 
     @PostMapping("/users/{username}/unban")
-    @Operation(summary = "Розблокувати користувача", 
+    @Operation(summary = "Розблокувати користувача",
                description = "👮 MODERATOR - розблокування користувача",
                security = @SecurityRequirement(name = "bearerAuth"))
     public ResponseEntity<?> unbanUser(@PathVariable String username) {
         UserEntity user = userRepository.findByUsername(username)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Користувача не знайдено"));
-        
+
         user.setEnabled(true);
         userRepository.save(user);
-        
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "Користувача розблоковано");
         response.put("username", username);
         return ResponseEntity.ok(response);
     }
+
+    @PostMapping("/teams/refresh")
+    @Operation(summary = "Оновити команди з API",
+               description = "👮 MODERATOR - примусове оновлення команд з зовнішнього API в базу даних",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Map<String, String>> refreshTeamsFromApi() {
+        try {
+            log.info("👮 MODERATOR: Запит на примусове оновлення команд з API");
+
+            Map<String, List<Team>> teams = externalTeamApiService.getTeamsFromApi();
+            Map<String, String> result = new HashMap<>();
+            result.put("status", "success");
+            result.put("message", "Команди успішно оновлено з API. Загальна кількість: " +
+                    teams.values().stream().mapToInt(List::size).sum() + " команд з " + teams.size() + " ліг");
+
+            if ("success".equals(result.get("status"))) {
+                log.info("✅ MODERATOR: Команди успішно оновлено з API");
+                return ResponseEntity.ok(result);
+            } else if ("warning".equals(result.get("status"))) {
+                log.warn("⚠️ MODERATOR: Попередження при оновленні команд: {}", result.get("message"));
+                return ResponseEntity.ok(result);
+            } else {
+                log.error("❌ MODERATOR: Помилка при оновленні команд: {}", result.get("message"));
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(result);
+            }
+
+        } catch (Exception e) {
+            log.error("❌ MODERATOR: Критична помилка при оновленні команд: {}", e.getMessage());
+
+            Map<String, String> errorResult = new HashMap<>();
+            errorResult.put("status", "error");
+            errorResult.put("message", "Критична помилка: " + e.getMessage());
+
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
+        }
+    }
+
 
     private Path getPathToResources() throws IOException {
         Path projectRoot = Paths.get(new File(".").getAbsolutePath()).getParent();

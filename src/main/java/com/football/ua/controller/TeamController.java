@@ -3,6 +3,7 @@ package com.football.ua.controller;
 import com.football.ua.model.Team;
 import com.football.ua.service.ExternalTeamApiService;
 import com.football.ua.service.FileCacheService;
+import com.football.ua.service.TeamDbService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
@@ -26,6 +27,9 @@ public class TeamController {
     @Autowired
     private FileCacheService fileCacheService;
 
+    @Autowired
+    private TeamDbService teamDbService;
+
     @GetMapping
     @Operation(summary = "Отримати список всіх команд", description = "Повертає список всіх збережених команд")
     public List<Team> list() {
@@ -45,13 +49,21 @@ public class TeamController {
     }
     
     @GetMapping("/actual")
-    @Operation(summary = "Отримати актуальні команди з ліг", description = "Повертає команди з УПЛ, ЛЧ та АПЛ зі стороннього API або фолбек даних")
+    @Operation(summary = "Отримати актуальні команди з ліг", description = "Повертає команди з БД або API")
     public Map<String, List<Team>> getActualTeams() {
         log.info("Отримано запит на актуальні команди");
-        
+
+        Map<String, List<Team>> dbTeams = teamDbService.getAllTeams();
+        if (!dbTeams.isEmpty()) {
+            log.info("Повертаємо дані з БД ({} ліг з {} командами)",
+                    dbTeams.size(), dbTeams.values().stream().mapToInt(List::size).sum());
+            return dbTeams;
+        }
+
+        log.info("Дані відсутні в БД, отримуємо з API");
         Map<String, List<Team>> leagues = externalTeamApiService.getTeamsFromApi();
-        
-        log.info("Повернуто {} ліг з {} командами", leagues.size(), 
+
+        log.info("Повернуто {} ліг з {} командами з API", leagues.size(),
                  leagues.values().stream().mapToInt(List::size).sum());
         return leagues;
     }
@@ -174,7 +186,6 @@ public class TeamController {
 
         Map<String, Object> cacheInfo = fileCacheService.getCacheInfo();
 
-        // Додамо інформацію про валідність конкретних кешів
         Map<String, Boolean> cacheValidity = new HashMap<>();
         cacheValidity.put("teams", fileCacheService.isCacheValid("teams", "all_teams"));
         cacheValidity.put("standings_upl", fileCacheService.isCacheValid("standings", "UPL"));
@@ -209,4 +220,5 @@ public class TeamController {
         return response;
     }
 }
+
 

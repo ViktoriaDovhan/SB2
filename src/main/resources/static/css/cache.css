@@ -421,6 +421,48 @@
     }
 }
 
+/* Teams Management Section */
+.teams-controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+}
+
+.teams-controls .btn {
+    min-width: 250px;
+    font-weight: 600;
+    padding: 12px 24px;
+}
+
+.teams-status {
+    flex: 1;
+    min-height: 24px;
+    display: none;
+    align-items: center;
+}
+
+.status-success {
+    color: var(--success, #28a745);
+    font-weight: 500;
+}
+
+.status-error {
+    color: var(--error, #dc3545);
+    font-weight: 500;
+}
+
+.status-warning {
+    color: var(--warning, #ffc107);
+    font-weight: 500;
+}
+
+.status-info {
+    color: var(--info, #17a2b8);
+    font-weight: 500;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .cache-toolbar {
@@ -431,6 +473,21 @@
     .toolbar-actions {
         flex-direction: column;
         align-items: stretch;
+    }
+
+    .teams-controls {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .teams-controls .btn {
+        width: 100%;
+        min-width: auto;
+    }
+
+    .teams-status {
+        text-align: center;
+        margin-top: 8px;
     }
 
     .toggle-switch {

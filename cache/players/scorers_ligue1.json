@@ -1,6 +1,17 @@
 {
   "duration" : 60,
   "data" : [ {
+    "teamName" : "Olympique de Marseille",
+    "teamCrest" : "https://crests.football-data.org/516.png",
+    "nationality" : "England",
+    "penalties" : 4,
+    "assists" : 4,
+    "teamId" : 516,
+    "name" : "Mason Greenwood",
+    "id" : 101075,
+    "position" : null,
+    "goals" : 10
+  }, {
     "teamName" : "RC Strasbourg Alsace",
     "teamCrest" : "https://crests.football-data.org/576.png",
     "nationality" : "Argentina",
@@ -23,27 +34,27 @@
     "position" : null,
     "goals" : 8
   }, {
-    "teamName" : "Olympique de Marseille",
-    "teamCrest" : "https://crests.football-data.org/516.png",
-    "nationality" : "England",
-    "penalties" : 4,
-    "assists" : 4,
-    "teamId" : 516,
-    "name" : "Mason Greenwood",
-    "id" : 101075,
-    "position" : null,
-    "goals" : 8
-  }, {
     "teamName" : "OGC Nice",
     "teamCrest" : "https://crests.football-data.org/522.png",
     "nationality" : "France",
     "penalties" : 2,
-    "assists" : 1,
+    "assists" : 2,
     "teamId" : 522,
     "name" : "Sofiane Diop",
     "id" : 76723,
     "position" : null,
     "goals" : 6
+  }, {
+    "teamName" : "Olympique de Marseille",
+    "teamCrest" : "https://crests.football-data.org/516.png",
+    "nationality" : "Gabon",
+    "penalties" : 0,
+    "assists" : 4,
+    "teamId" : 516,
+    "name" : "Pierre-Emerick Aubameyang",
+    "id" : 7801,
+    "position" : null,
+    "goals" : 5
   }, {
     "teamName" : "Paris FC",
     "teamCrest" : "https://crests.football-data.org/1045.png",
@@ -67,49 +78,38 @@
     "position" : null,
     "goals" : 5
   }, {
-    "teamName" : "AS Monaco FC",
-    "teamCrest" : "https://crests.football-data.org/548.png",
-    "nationality" : "Spain",
-    "penalties" : 3,
+    "teamName" : "Paris Saint-Germain FC",
+    "teamCrest" : "https://crests.football-data.org/524.png",
+    "nationality" : "Portugal",
+    "penalties" : 0,
     "assists" : 0,
-    "teamId" : 548,
-    "name" : "Ansu Fati",
-    "id" : 128040,
+    "teamId" : 524,
+    "name" : "Joao Neves",
+    "id" : 190877,
     "position" : null,
     "goals" : 5
   }, {
-    "teamName" : "Racing Club de Lens",
-    "teamCrest" : "https://crests.football-data.org/546.png",
+    "teamName" : "Paris Saint-Germain FC",
+    "teamCrest" : "https://crests.football-data.org/524.png",
     "nationality" : "France",
-    "penalties" : 1,
-    "assists" : 1,
-    "teamId" : 546,
-    "name" : "Odsonne Edouard",
-    "id" : 16077,
+    "penalties" : 0,
+    "assists" : 0,
+    "teamId" : 524,
+    "name" : "Bradley Barcola",
+    "id" : 172762,
     "position" : null,
     "goals" : 5
   }, {
-    "teamName" : "Lille OSC",
-    "teamCrest" : "https://crests.football-data.org/521.png",
-    "nationality" : "Iceland",
-    "penalties" : 0,
-    "assists" : 0,
-    "teamId" : 521,
-    "name" : "Hákon Haraldsson",
-    "id" : 213221,
-    "position" : null,
-    "goals" : 4
-  }, {
-    "teamName" : "Olympique de Marseille",
-    "teamCrest" : "https://crests.football-data.org/516.png",
-    "nationality" : "Gabon",
-    "penalties" : 0,
+    "teamName" : "Stade Brestois 29",
+    "teamCrest" : "https://crests.football-data.org/512.png",
+    "nationality" : "France",
+    "penalties" : 4,
     "assists" : 2,
-    "teamId" : 516,
-    "name" : "Pierre-Emerick Aubameyang",
-    "id" : 7801,
+    "teamId" : 512,
+    "name" : "Romain Del Castillo",
+    "id" : 856,
     "position" : null,
-    "goals" : 4
+    "goals" : 5
   } ],
-  "timestamp" : "2025-11-13T16:35:56.034366300"
+  "timestamp" : "2025-11-27T02:33:05.856702700"
 }

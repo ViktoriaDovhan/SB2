@@ -23,10 +23,9 @@ public class FileCacheService {
     private static final Logger log = LoggerFactory.getLogger(FileCacheService.class);
     private static final String CACHE_DIR = "cache";
 
-    // Різні інтервали кешування для різних типів даних (у хвилинах)
-    private static final long TEAMS_CACHE_DURATION = 60; // 1 година - команди змінюються рідко
-    private static final long STANDINGS_CACHE_DURATION = 15; // 15 хвилин - турнірні таблиці оновлюються частіше
-    private static final long MATCHES_CACHE_DURATION = 60; // 60 хвилин - матчі оновлюються помірно (збільшено для стабільності)
+    private static final long TEAMS_CACHE_DURATION = 60;
+    private static final long STANDINGS_CACHE_DURATION = 15;
+    private static final long MATCHES_CACHE_DURATION = 60;
 
     private final ObjectMapper objectMapper;
 
@@ -34,8 +33,7 @@ public class FileCacheService {
         this.objectMapper = new ObjectMapper();
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
-        
-        // Створюємо структуру директорій для кешу
+
         try {
             String[] subDirs = {"teams", "standings", "matches", "players"};
             for (String subDir : subDirs) {
@@ -51,12 +49,10 @@ public class FileCacheService {
         }
     }
 
-    // Загальний метод для збереження в кеш
     public <T> void saveToCache(String category, String key, T data) {
         saveToCache(category, key, data, getCacheDuration(category));
     }
 
-    // Метод з вказанням тривалості кешування
     public <T> void saveToCache(String category, String key, T data, long durationMinutes) {
         try {
             Path categoryPath = Paths.get(CACHE_DIR, category);
@@ -80,13 +76,11 @@ public class FileCacheService {
         }
     }
 
-    // Старий метод для зворотної сумісності
     @Deprecated
     public <T> void saveToCache(String key, T data) {
         saveToCache("general", key, data);
     }
 
-    // Загальний метод для завантаження з кешу
     @SuppressWarnings("unchecked")
     public <T> T loadFromCache(String category, String key, Class<T> clazz) {
         try {
@@ -101,7 +95,6 @@ public class FileCacheService {
             String timestampStr = (String) cacheData.get("timestamp");
             LocalDateTime timestamp = LocalDateTime.parse(timestampStr);
 
-            // Отримуємо тривалість кешування (може бути Integer або Long)
             Object durationObj = cacheData.get("duration");
             Long durationMinutes;
             if (durationObj instanceof Long) {
@@ -114,7 +107,6 @@ public class FileCacheService {
                 durationMinutes = getCacheDuration(category);
             }
 
-            // Перевіряємо чи не застарілий кеш
             LocalDateTime now = LocalDateTime.now();
             long minutesOld = java.time.Duration.between(timestamp, now).toMinutes();
 
@@ -140,14 +132,12 @@ public class FileCacheService {
         }
     }
 
-    // Старий метод для зворотної сумісності
     @Deprecated
     @SuppressWarnings("unchecked")
     public <T> T loadFromCache(String key, Class<T> clazz) {
         return loadFromCache("general", key, clazz);
     }
 
-    // Метод для завантаження з кешу без перевірки терміну дії (використовується як fallback)
     @SuppressWarnings("unchecked")
     public <T> T loadFromCacheIgnoringExpiration(String category, String key, Class<T> clazz) {
         try {
@@ -160,7 +150,6 @@ public class FileCacheService {
 
             Map<String, Object> cacheData = objectMapper.readValue(cacheFile, Map.class);
 
-            // Перевіряємо, чи є всі необхідні поля
             if (!cacheData.containsKey("timestamp") || !cacheData.containsKey("data")) {
                 log.warn("⚠️ Кеш файл пошкоджений (відсутні поля): {}/{}", category, key);
                 return null;
@@ -169,7 +158,6 @@ public class FileCacheService {
             String timestampStr = (String) cacheData.get("timestamp");
             LocalDateTime timestamp = LocalDateTime.parse(timestampStr);
 
-            // Отримуємо тривалість кешування для логування
             Object durationObj = cacheData.get("duration");
             Long durationMinutes;
             if (durationObj instanceof Long) {
@@ -202,7 +190,6 @@ public class FileCacheService {
         }
     }
 
-    // Метод для перевірки валідності кешу за категорією
     public boolean isCacheValid(String category, String key) {
         try {
             File cacheFile = new File(Paths.get(CACHE_DIR, category, key + ".json").toString());
@@ -215,7 +202,6 @@ public class FileCacheService {
             long fileSize = cacheFile.length();
             log.debug("📁 Кеш файл існує: {}/{} ({} байт)", category, key, fileSize);
 
-            // Спочатку перевіряємо, чи файл не порожній
             if (fileSize == 0) {
                 log.warn("⚠️ Кеш файл порожній: {}/{}", category, key);
                 return false;
@@ -223,7 +209,6 @@ public class FileCacheService {
 
             Map<String, Object> cacheData = objectMapper.readValue(cacheFile, Map.class);
 
-            // Перевіряємо, чи є всі необхідні поля
             if (!cacheData.containsKey("timestamp") || !cacheData.containsKey("data")) {
                 log.warn("⚠️ Кеш файл пошкоджений (відсутні поля): {}/{}", category, key);
                 return false;
@@ -232,7 +217,6 @@ public class FileCacheService {
             String timestampStr = (String) cacheData.get("timestamp");
             LocalDateTime timestamp = LocalDateTime.parse(timestampStr);
 
-            // Отримуємо тривалість кешування (може бути Integer або Long)
             Object durationObj = cacheData.get("duration");
             Long durationMinutes;
             if (durationObj instanceof Long) {
@@ -251,7 +235,6 @@ public class FileCacheService {
             log.debug("🔍 Деталі кешу {}/{}: різниця={} хв, ліміт={} хв",
                      category, key, minutesOld, durationMinutes);
 
-            // Захищаємося від негативних значень (якщо timestamp в майбутньому)
             if (minutesOld < 0) {
                 log.warn("⚠️ Timestamp в майбутньому для {}/{}: {} < {} (різниця: {} хв)", category, key, timestamp, now, minutesOld);
                 return false;
@@ -272,13 +255,11 @@ public class FileCacheService {
         }
     }
 
-    // Старий метод для зворотної сумісності
     @Deprecated
     public boolean isCacheValid(String key) {
         return isCacheValid("general", key);
     }
 
-    // Метод для очищення кешу за категорією
     public void clearCache(String category, String key) {
         try {
             File cacheFile = new File(Paths.get(CACHE_DIR, category, key + ".json").toString());
@@ -291,7 +272,6 @@ public class FileCacheService {
         }
     }
 
-    // Старий метод для зворотної сумісності
     @Deprecated
     public void clearCache(String key) {
         clearCache("general", key);
@@ -309,7 +289,6 @@ public class FileCacheService {
         }
     }
 
-    // Рекурсивне видалення директорії
     private void clearDirectory(File dir) {
         File[] files = dir.listFiles();
         if (files != null) {
@@ -322,7 +301,6 @@ public class FileCacheService {
         }
     }
 
-    // Метод для отримання тривалості кешування за категорією
     private long getCacheDuration(String category) {
         switch (category) {
             case "teams":
@@ -332,13 +310,12 @@ public class FileCacheService {
             case "matches":
                 return MATCHES_CACHE_DURATION;
             case "players":
-                return TEAMS_CACHE_DURATION; // гравці теж рідко змінюються
+                return TEAMS_CACHE_DURATION;
             default:
-                return 30; // дефолт 30 хвилин
+                return 30;
         }
     }
 
-    // Метод для отримання інформації про кеш
     public Map<String, Object> getCacheInfo() {
         Map<String, Object> info = new HashMap<>();
         File cacheDir = new File(CACHE_DIR);
@@ -375,20 +352,19 @@ public class FileCacheService {
         return info;
     }
 
-    // Метод для перевірки чи потрібно оновити кеш (враховуючи час останнього оновлення)
     public boolean shouldUpdateCache(String category, String key) {
         if (!isCacheValid(category, key)) {
             return true;
         }
 
-        // Додаткова логіка: наприклад, для матчів оновлювати частіше в ігрові дні
         if ("matches".equals(category)) {
-            // Можна додати логіку перевірки часу дня, днів тижня тощо
-            return false; // поки що не оновлюємо якщо валідний
+
+            return false;
         }
 
         return false;
     }
 }
+
 
 

@@ -5,23 +5,12 @@
     "teamCrest" : "https://crests.football-data.org/86.png",
     "nationality" : "France",
     "penalties" : 3,
-    "assists" : 2,
+    "assists" : 3,
     "teamId" : 86,
     "name" : "Kylian Mbappé",
     "id" : 3374,
     "position" : null,
     "goals" : 13
-  }, {
-    "teamName" : "Club Atlético de Madrid",
-    "teamCrest" : "https://crests.football-data.org/78.png",
-    "nationality" : "Argentina",
-    "penalties" : 2,
-    "assists" : 2,
-    "teamId" : 78,
-    "name" : "Julián Álvarez",
-    "id" : 98571,
-    "position" : null,
-    "goals" : 7
   }, {
     "teamName" : "FC Barcelona",
     "teamCrest" : "https://crests.football-data.org/81.png",
@@ -31,6 +20,28 @@
     "teamId" : 81,
     "name" : "Robert Lewandowski",
     "id" : 371,
+    "position" : null,
+    "goals" : 8
+  }, {
+    "teamName" : "FC Barcelona",
+    "teamCrest" : "https://crests.football-data.org/81.png",
+    "nationality" : "Spain",
+    "penalties" : 0,
+    "assists" : 2,
+    "teamId" : 81,
+    "name" : "Ferrán Torres",
+    "id" : 33154,
+    "position" : null,
+    "goals" : 7
+  }, {
+    "teamName" : "Club Atlético de Madrid",
+    "teamCrest" : "https://crests.football-data.org/78.png",
+    "nationality" : "Argentina",
+    "penalties" : 2,
+    "assists" : 2,
+    "teamId" : 78,
+    "name" : "Julián Álvarez",
+    "id" : 98571,
     "position" : null,
     "goals" : 7
   }, {
@@ -67,14 +78,14 @@
     "position" : null,
     "goals" : 6
   }, {
-    "teamName" : "FC Barcelona",
-    "teamCrest" : "https://crests.football-data.org/81.png",
+    "teamName" : "RCD Espanyol de Barcelona",
+    "teamCrest" : "https://crests.football-data.org/80.png",
     "nationality" : "Spain",
     "penalties" : 0,
-    "assists" : 2,
-    "teamId" : 81,
-    "name" : "Ferrán Torres",
-    "id" : 33154,
+    "assists" : 0,
+    "teamId" : 80,
+    "name" : "Pere Milla",
+    "id" : 32398,
     "position" : null,
     "goals" : 5
   }, {
@@ -93,23 +104,12 @@
     "teamCrest" : "https://crests.football-data.org/92.png",
     "nationality" : "Spain",
     "penalties" : 3,
-    "assists" : 2,
+    "assists" : 3,
     "teamId" : 92,
     "name" : "Mikel Oyarzabal",
     "id" : 180137,
     "position" : null,
     "goals" : 5
-  }, {
-    "teamName" : "Real Betis Balompié",
-    "teamCrest" : "https://crests.football-data.org/90.png",
-    "nationality" : "Colombia",
-    "penalties" : 0,
-    "assists" : 2,
-    "teamId" : 90,
-    "name" : "Cucho Hernández",
-    "id" : 32415,
-    "position" : null,
-    "goals" : 5
   } ],
-  "timestamp" : "2025-11-13T15:45:53.269364900"
+  "timestamp" : "2025-11-27T02:32:50.957178400"
 }

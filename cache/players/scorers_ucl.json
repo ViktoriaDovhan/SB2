@@ -1,6 +1,17 @@
 {
   "duration" : 60,
   "data" : [ {
+    "teamName" : "Real Madrid CF",
+    "teamCrest" : "https://crests.football-data.org/86.png",
+    "nationality" : "France",
+    "penalties" : 3,
+    "assists" : 0,
+    "teamId" : 86,
+    "name" : "Kylian Mbappé",
+    "id" : 3374,
+    "position" : null,
+    "goals" : 9
+  }, {
     "teamName" : "Galatasaray SK",
     "teamCrest" : "https://crests.football-data.org/610.png",
     "nationality" : "Nigeria",
@@ -11,17 +22,6 @@
     "id" : 9434,
     "position" : null,
     "goals" : 6
-  }, {
-    "teamName" : "Real Madrid CF",
-    "teamCrest" : "https://crests.football-data.org/86.png",
-    "nationality" : "France",
-    "penalties" : 3,
-    "assists" : 0,
-    "teamId" : 86,
-    "name" : "Kylian Mbappé",
-    "id" : 3374,
-    "position" : null,
-    "goals" : 5
   }, {
     "teamName" : "FC Bayern München",
     "teamCrest" : "https://crests.football-data.org/5.png",
@@ -44,6 +44,17 @@
     "id" : 38101,
     "position" : null,
     "goals" : 5
+  }, {
+    "teamName" : "Arsenal FC",
+    "teamCrest" : "https://crests.football-data.org/57.png",
+    "nationality" : "Brazil",
+    "penalties" : 0,
+    "assists" : 1,
+    "teamId" : 57,
+    "name" : "Martinelli",
+    "id" : 61450,
+    "position" : null,
+    "goals" : 4
   }, {
     "teamName" : "FC Barcelona",
     "teamCrest" : "https://crests.football-data.org/81.png",
@@ -78,38 +89,27 @@
     "position" : null,
     "goals" : 4
   }, {
-    "teamName" : "Arsenal FC",
-    "teamCrest" : "https://crests.football-data.org/57.png",
-    "nationality" : "Brazil",
+    "teamName" : "Newcastle United FC",
+    "teamCrest" : "https://crests.football-data.org/67.png",
+    "nationality" : "England",
     "penalties" : 0,
     "assists" : 1,
-    "teamId" : 57,
-    "name" : "Martinelli",
-    "id" : 61450,
+    "teamId" : 67,
+    "name" : "Harvey Barnes",
+    "id" : 8076,
     "position" : null,
-    "goals" : 3
+    "goals" : 4
   }, {
-    "teamName" : "Borussia Dortmund",
-    "teamCrest" : "https://crests.football-data.org/4.png",
-    "nationality" : "Germany",
-    "penalties" : 0,
-    "assists" : 0,
-    "teamId" : 4,
-    "name" : "Felix Kalu Nmecha",
-    "id" : 101074,
-    "position" : null,
-    "goals" : 3
-  }, {
-    "teamName" : "Juventus FC",
-    "teamCrest" : "https://crests.football-data.org/109.png",
-    "nationality" : "Serbia",
-    "penalties" : 0,
+    "teamName" : "Paris Saint-Germain FC",
+    "teamCrest" : "https://crests.football-data.org/524.png",
+    "nationality" : "Portugal",
+    "penalties" : 1,
     "assists" : 1,
-    "teamId" : 109,
-    "name" : "Dušan Vlahović",
-    "id" : 82002,
+    "teamId" : 524,
+    "name" : "Vitinha",
+    "id" : 178722,
     "position" : null,
-    "goals" : 3
+    "goals" : 4
   } ],
-  "timestamp" : "2025-11-23T19:51:40.262913900"
+  "timestamp" : "2025-11-27T02:32:59.251439400"
 }

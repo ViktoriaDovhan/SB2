@@ -70,7 +70,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            logger.error("JWT validation error: " + e.getMessage());
+            logger.debug("JWT validation error: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

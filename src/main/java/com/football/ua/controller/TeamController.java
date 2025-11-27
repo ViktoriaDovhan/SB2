@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/teams")
@@ -34,6 +35,19 @@ public class TeamController {
     @Operation(summary = "Отримати список всіх команд", description = "Повертає список всіх збережених команд")
     public List<Team> list() {
         log.info("Отримано запит на список всіх команд");
+
+        // Спочатку перевіряємо дані в БД (кешуються)
+        Map<String, List<Team>> dbTeams = teamDbService.getAllTeams();
+        if (!dbTeams.isEmpty()) {
+            List<Team> allTeams = dbTeams.values().stream()
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
+            log.info("Повертаємо {} команд з БД (кешовано)", allTeams.size());
+            return allTeams;
+        }
+
+        // Фолбек на статичний Map якщо БД порожня
+        log.info("БД порожня, повертаємо {} команд зі статичного списку", db.size());
         return new ArrayList<>(db.values());
     }
 

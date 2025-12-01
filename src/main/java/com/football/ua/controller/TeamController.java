@@ -2,7 +2,7 @@ package com.football.ua.controller;
 
 import com.football.ua.model.Team;
 import com.football.ua.service.ExternalTeamApiService;
-import com.football.ua.service.FileCacheService;
+import com.football.ua.service.DatabaseCacheService;
 import com.football.ua.service.TeamDbService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -26,7 +26,7 @@ public class TeamController {
     private ExternalTeamApiService externalTeamApiService;
 
     @Autowired
-    private FileCacheService fileCacheService;
+    private DatabaseCacheService fileCacheService;
 
     @Autowired
     private TeamDbService teamDbService;
@@ -86,7 +86,7 @@ public class TeamController {
     @Operation(summary = "Отримати список доступних ліг", description = "Повертає список кодів доступних футбольних ліг")
     public List<String> getLeagues() {
         log.info("Отримано запит на список ліг");
-        List<String> leagues = Arrays.asList("UPL", "UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
+        List<String> leagues = Arrays.asList("UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
         log.debug("Повертається {} ліг", leagues.size());
         return leagues;
     }
@@ -193,6 +193,21 @@ public class TeamController {
         return response;
     }
 
+    @GetMapping("/matches/all")
+    @Operation(summary = "Отримати всі матчі сезону (всі ліги)", description = "Повертає список всіх матчів сезону для всіх ліг")
+    public Map<String, Object> getAllMatchesSeason() {
+        log.info("Отримано запит на всі матчі сезону (всі ліги)");
+        List<Map<String, Object>> matches = externalTeamApiService.getAllMatchesSeason();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("total", matches.size());
+        response.put("matches", matches);
+        response.put("type", "all_season_global");
+
+        log.info("Повернуто {} матчів сезону (глобально)", matches.size());
+        return response;
+    }
+
     @GetMapping("/cache/info")
     @Operation(summary = "Отримати інформацію про кеш", description = "Повертає статистику файлового кешу")
     public Map<String, Object> getCacheInfo() {
@@ -202,7 +217,7 @@ public class TeamController {
 
         Map<String, Boolean> cacheValidity = new HashMap<>();
         cacheValidity.put("teams", fileCacheService.isCacheValid("teams", "all_teams"));
-        cacheValidity.put("standings_upl", fileCacheService.isCacheValid("standings", "UPL"));
+
         cacheValidity.put("matches_upcoming", fileCacheService.isCacheValid("matches", "upcoming_matches_by_matchday"));
         cacheValidity.put("matches_previous", fileCacheService.isCacheValid("matches", "previous_matches_by_matchday"));
 

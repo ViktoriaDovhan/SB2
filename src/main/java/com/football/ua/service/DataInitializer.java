@@ -74,6 +74,26 @@ public class DataInitializer implements CommandLineRunner {
                 System.out.println("ℹ️ База даних вже містить команди, міграція пропущена");
             }
 
+            // Міграція матчів з кешу
+            System.out.println("🔄 Перевірка та міграція матчів...");
+            dataMigrationService.migrateMatchesFromCacheToDatabase();
+
+            // Очищення дублікатів
+            System.out.println("🧹 Очищення дублікатів матчів...");
+            dataMigrationService.removeDuplicateMatches();
+
+            // Міграція турнірних таблиць
+            System.out.println("🔄 Міграція турнірних таблиць з API...");
+            dataMigrationService.migrateStandingsForAllLeagues();
+
+            // Міграція бомбардирів
+            System.out.println("🔄 Міграція бомбардирів з API...");
+            dataMigrationService.migrateScorersForAllLeagues();
+
+            // Видалення команд УПЛ
+            System.out.println("🗑️ Видалення команд УПЛ...");
+            dataMigrationService.removeUPLTeams();
+
             System.out.println("✅ Ініціалізація користувачів завершена успішно!");
         } catch (Exception e) {
             System.err.println("❌ Помилка при ініціалізації користувачів: " + e.getMessage());

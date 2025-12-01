@@ -114,7 +114,7 @@ function isMatchesSectionActive(containerId) {
 
 function getLeagueEmoji(league) {
     const emojis = {
-        'UPL': '🇺🇦',
+        'UCL': '⭐',
         'UCL': '⭐',
         'EPL': '🏴',
         'LaLiga': '🇪🇸',

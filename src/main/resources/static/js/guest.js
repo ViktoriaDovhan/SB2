@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     if (isAuthenticated()) {
         const role = getRole();
-        switch(role) {
+        switch (role) {
             case 'MODERATOR':
                 window.location.href = '/moderator.html';
                 break;
@@ -17,10 +17,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     updateUserInfo();
+
+    // Load initial data
     loadNews();
     loadMatches();
-    loadTeams();
     loadForumTopics();
+
+    // Load upcoming matches notifications
+    if (typeof loadUpcomingMatchesNotifications === 'function') {
+        loadUpcomingMatchesNotifications();
+    }
+
+    // Initialize teams by league functionality
+    if (typeof loadTeamsByLeague === 'function') {
+        loadTeamsByLeague('UCL');
+    }
+
+    // Initialize score toggle for matches
+    const showScoresCheckbox = document.getElementById('showScores');
+    if (showScoresCheckbox) {
+        showScoresCheckbox.addEventListener('change', () => {
+            loadMatches();
+        });
+    }
 
     setupTabs();
 });
@@ -101,133 +120,89 @@ function showTab(tabName) {
 async function loadNews() {
     try {
         const response = await fetch('/api/news');
-        const news = await response.json();
-        
-        displayNewsList(news);
+        if (response.ok) {
+            const news = await response.json();
+            const newsContainer = document.getElementById('all-news');
+            if (newsContainer && Array.isArray(news)) {
+                if (news.length > 0) {
+                    if (typeof renderNewsList === 'function') {
+                        renderNewsList(news, 'all-news');
+                    }
+                } else {
+                    newsContainer.innerHTML = '<p class="empty-state">Новин поки немає</p>';
+                }
+            }
+        }
     } catch (error) {
         console.error('Помилка завантаження новин:', error);
     }
 }
 
-function displayNewsList(newsList) {
-    const container = document.getElementById('news-list');
-    if (!container) return;
-    
-    if (newsList.length === 0) {
-        container.innerHTML = '<p class="empty-state">Новин поки немає</p>';
-        return;
-    }
-    
-    container.innerHTML = newsList.map(news => `
-        <div class="news-card">
-            <h3>${escapeHtml(news.title)}</h3>
-            <p>${escapeHtml(news.content)}</p>
-            <div class="news-meta">
-                <span>❤️ ${news.likes || 0} вподобайок</span>
-                <span>ID: ${news.id}</span>
-            </div>
-        </div>
-    `).join('');
-}
-
 async function loadMatches() {
     try {
-        const response = await fetch('/api/matches');
-        const matches = await response.json();
-        
-        displayMatchesList(matches);
+        const dbMatchesP = fetch('/api/matches').then(r => r.json());
+        const externalMatchesP = fetch('/api/teams/matches/all').then(r => r.json());
+
+        const [dbMatches, externalData] = await Promise.all([dbMatchesP, externalMatchesP]);
+
+        let allMatches = [];
+
+        // Process DB matches
+        if (Array.isArray(dbMatches)) {
+            allMatches = [...dbMatches];
+        }
+
+        // Process external matches
+        if (externalData && Array.isArray(externalData.matches)) {
+            const normalized = externalData.matches.map(m => ({
+                id: m.id,
+                homeTeam: m.homeTeam?.name || 'Unknown',
+                awayTeam: m.awayTeam?.name || 'Unknown',
+                homeScore: m.score?.home ?? null,
+                awayScore: m.score?.away ?? null,
+                kickoffAt: m.kickoffAt,
+                league: m.league,
+                isExternal: true
+            }));
+            allMatches = [...allMatches, ...normalized];
+        }
+
+        // Deduplicate by ID
+        const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
+
+        // Sort by date (newest first)
+        uniqueMatches.sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
+
+        // Check if scores should be shown
+        const showScoresCheckbox = document.getElementById('showScores');
+        const showScores = showScoresCheckbox ? showScoresCheckbox.checked : true;
+
+        // Render matches
+        if (typeof renderMatchesList === 'function') {
+            renderMatchesList(uniqueMatches, 'all-matches', showScores);
+        }
+
     } catch (error) {
         console.error('Помилка завантаження матчів:', error);
+        const container = document.getElementById('all-matches');
+        if (container) {
+            container.innerHTML = '<p class="empty-state">Помилка завантаження матчів</p>';
+        }
     }
-}
-
-function displayMatchesList(matchesList) {
-    const container = document.getElementById('matches-list');
-    if (!container) return;
-    
-    if (matchesList.length === 0) {
-        container.innerHTML = '<p class="empty-state">Матчів поки немає</p>';
-        return;
-    }
-    
-    container.innerHTML = matchesList.map(match => `
-        <div class="match-card">
-            <div class="match-teams">
-                <span class="team">${escapeHtml(match.homeTeam)}</span>
-                <span class="vs">vs</span>
-                <span class="team">${escapeHtml(match.awayTeam)}</span>
-            </div>
-            <div class="match-score">
-                <span class="score">${match.homeScore !== null ? match.homeScore : '-'} : ${match.awayScore !== null ? match.awayScore : '-'}</span>
-            </div>
-            <div class="match-time">
-                📅 ${formatDateTime(match.kickoffAt)}
-            </div>
-        </div>
-    `).join('');
-}
-
-async function loadTeams() {
-    try {
-        const response = await fetch('/api/teams');
-        const teams = await response.json();
-        
-        displayTeamsList(teams);
-    } catch (error) {
-        console.error('Помилка завантаження команд:', error);
-    }
-}
-
-function displayTeamsList(teamsList) {
-    const container = document.getElementById('teams-list');
-    if (!container) return;
-    
-    if (teamsList.length === 0) {
-        container.innerHTML = '<p class="empty-state">Команд поки немає</p>';
-        return;
-    }
-    
-    container.innerHTML = teamsList.map(team => `
-        <div class="team-card">
-            <div class="team-emblem">${team.colors || '⚽'}</div>
-            <h3>${escapeHtml(team.name)}</h3>
-            <p class="team-info">
-                ${team.league ? `🏆 ${escapeHtml(team.league)}` : ''}
-                ${team.city ? `📍 ${escapeHtml(team.city)}` : ''}
-            </p>
-        </div>
-    `).join('');
 }
 
 async function loadForumTopics() {
     try {
         const response = await fetch('/api/forum/topics');
-        const topics = await response.json();
-        
-        displayForumTopics(topics);
+        if (response.ok) {
+            const topics = await response.json();
+            if (typeof renderForumTopics === 'function') {
+                renderForumTopics(topics);
+            }
+        }
     } catch (error) {
-        console.error('Помилка завантаження форуму:', error);
+        console.error('Помилка завантаження тем форуму:', error);
     }
-}
-
-function displayForumTopics(topics) {
-    const container = document.getElementById('forum-list');
-    if (!container) return;
-    
-    if (topics.length === 0) {
-        container.innerHTML = '<p class="empty-state">Тем на форумі поки немає</p>';
-        return;
-    }
-    
-    container.innerHTML = topics.map(topic => `
-        <div class="forum-topic">
-            <h3>${escapeHtml(topic.title)}</h3>
-            <div class="topic-meta">
-                <span>👤 ${escapeHtml(topic.author)}</span>
-                <span>💬 ${topic.posts ? topic.posts.length : 0} коментарів</span>
-            </div>
-        </div>
-    `).join('');
 }
 
 function escapeHtml(text) {
@@ -240,12 +215,11 @@ function escapeHtml(text) {
 function formatDateTime(dateTimeString) {
     if (!dateTimeString) return '-';
     const date = new Date(dateTimeString);
-    return date.toLocaleString('uk-UA', { 
-        year: 'numeric', 
-        month: 'long', 
+    return date.toLocaleString('uk-UA', {
+        year: 'numeric',
+        month: 'long',
         day: 'numeric',
         hour: '2-digit',
         minute: '2-digit'
     });
 }
-

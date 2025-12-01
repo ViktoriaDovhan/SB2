@@ -4,6 +4,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.football.ua.model.Team;
 import com.football.ua.model.dto.FootballDataResponse;
+import com.football.ua.model.entity.MatchEntity;
+import com.football.ua.repo.TeamRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,10 +29,22 @@ public class ExternalTeamApiService {
     private WebClient footballApiWebClient;
 
     @Autowired
-    private FileCacheService fileCacheService;
+    private DatabaseCacheService fileCacheService;
 
     @Autowired
     private RateLimiterService rateLimiterService;
+
+    @Autowired
+    private MatchDbService matchDbService;
+
+    @Autowired
+    private ScorerDbService scorerDbService;
+
+    @Autowired
+    private StandingDbService standingDbService;
+
+    @Autowired
+    private TeamRepository teamRepository;
 
     @Value("${football.api.enabled:false}")
     private boolean apiEnabled;
@@ -50,10 +64,6 @@ public class ExternalTeamApiService {
     private Map<String, Map<String, Object>> cachedStandings = new HashMap<>();
     private Map<String, Long> standingsUpdateTime = new HashMap<>();
 
-    private List<Map<String, Object>> cachedUpcomingMatches = null;
-    private long upcomingMatchesUpdateTime = 0;
-    private final Map<String, Long> leagueUpdateTimestamps = new HashMap<>();
-
     private static final Map<String, String> LEAGUE_COLORS = Map.of(
             "UPL", "🔵🟡",
             "EPL", "🔵⚪",
@@ -63,6 +73,8 @@ public class ExternalTeamApiService {
             "SerieA", "🔵⚪",
             "Ligue1", "🔵🔴"
     );
+
+    private final Map<String, Long> leagueUpdateTimestamps = new HashMap<>();
 
     @ExternalApiCall
     public synchronized Map<String, List<Team>> getTeamsFromApi() {
@@ -120,7 +132,7 @@ public class ExternalTeamApiService {
 
         try {
             log.debug("→ Запит: GET /competitions/{}/teams", apiLeagueCode);
-            
+
             FootballDataResponse response = footballApiWebClient
                     .get()
                     .uri("/competitions/{code}/teams", apiLeagueCode)
@@ -139,7 +151,7 @@ public class ExternalTeamApiService {
             }
 
             return new ArrayList<>();
-            
+
         } catch (Exception e) {
             String errorMsg = e.getMessage();
             if (errorMsg != null) {
@@ -156,6 +168,7 @@ public class ExternalTeamApiService {
             throw e;
         }
     }
+
     private List<Team> loadOrRefreshLeague(String leagueCode) {
         if (isLeagueFreshInMemory(leagueCode)) {
             return cachedTeams.get(leagueCode);
@@ -280,11 +293,11 @@ public class ExternalTeamApiService {
 
     private Team convertToTeam(FootballDataResponse.TeamData teamData, String leagueCode) {
         Team team = new Team();
-        
+
         team.id = teamData.getId();
         team.name = teamData.getName();
         team.league = leagueCode;
-        
+
         String address = teamData.getAddress();
         if (address != null && !address.isEmpty()) {
             String[] parts = address.split(",");
@@ -292,11 +305,11 @@ public class ExternalTeamApiService {
         } else {
             team.city = "";
         }
-        
-        team.colors = teamData.getClubColors() != null ? 
-                      convertClubColorsToEmojis(teamData.getClubColors()) : 
+
+        team.colors = teamData.getClubColors() != null ?
+                      convertClubColorsToEmojis(teamData.getClubColors()) :
                       LEAGUE_COLORS.getOrDefault(leagueCode, "⚪");
-        
+
         team.emblemUrl = teamData.getCrest() != null ? teamData.getCrest() : "";
 
         return team;
@@ -304,10 +317,10 @@ public class ExternalTeamApiService {
 
     private String convertClubColorsToEmojis(String clubColors) {
         if (clubColors == null) return "⚪";
-        
+
         String colors = clubColors.toLowerCase();
         StringBuilder emojis = new StringBuilder();
-        
+
         if (colors.contains("red")) emojis.append("🔴");
         if (colors.contains("blue")) emojis.append("🔵");
         if (colors.contains("yellow") || colors.contains("gold")) emojis.append("🟡");
@@ -316,7 +329,7 @@ public class ExternalTeamApiService {
         if (colors.contains("black")) emojis.append("⚫");
         if (colors.contains("orange")) emojis.append("🟠");
         if (colors.contains("purple") || colors.contains("violet")) emojis.append("🟣");
-        
+
         return emojis.length() > 0 ? emojis.toString() : "⚪";
     }
 
@@ -430,9 +443,44 @@ public class ExternalTeamApiService {
     }
 
     public Map<String, Object> getLeagueStandings(String leagueCode) {
-
         String cacheKey = leagueCode.toLowerCase();
+        
+        // 1. Спочатку пробуємо завантажити з БД
+        try {
+            List<com.football.ua.model.entity.StandingEntity> standingsFromDb = standingDbService.listByLeague(leagueCode);
+            
+            if (standingsFromDb != null && !standingsFromDb.isEmpty()) {
+                log.info("✅ Повертаємо {} позицій турнірної таблиці з БД для ліги {}", standingsFromDb.size(), leagueCode);
+                
+                // Конвертуємо Entity в Map для відповіді
+                List<Map<String, Object>> result = new ArrayList<>();
+                for (com.football.ua.model.entity.StandingEntity standing : standingsFromDb) {
+                    Map<String, Object> standingMap = new HashMap<>();
+                    standingMap.put("position", standing.getPosition());
+                    standingMap.put("teamName", standing.getTeamName());
+                    standingMap.put("teamCrest", standing.getTeamCrest());
+                    standingMap.put("playedGames", standing.getPlayedGames());
+                    standingMap.put("won", standing.getWon());
+                    standingMap.put("draw", standing.getDraw());
+                    standingMap.put("lost", standing.getLost());
+                    standingMap.put("goalsFor", standing.getGoalsFor());
+                    standingMap.put("goalsAgainst", standing.getGoalsAgainst());
+                    standingMap.put("goalDifference", standing.getGoalDifference());
+                    standingMap.put("points", standing.getPoints());
+                    result.add(standingMap);
+                }
+                
+                Map<String, Object> response = new HashMap<>();
+                response.put("league", leagueCode);
+                response.put("standings", result);
+                response.put("source", "database");
+                return response;
+            }
+        } catch (Exception e) {
+            log.warn("⚠️ Помилка завантаження турнірної таблиці з БД: {}", e.getMessage());
+        }
 
+        // 2. Якщо не знайдено в БД, перевіряємо файловий кеш
         if (fileCacheService.isCacheValid("standings", cacheKey)) {
             try {
                 Object cached = fileCacheService.loadFromCache("standings", cacheKey, Map.class);
@@ -450,6 +498,7 @@ public class ExternalTeamApiService {
             }
         }
 
+        // 3. Перевіряємо застарілий кеш як fallback
         Map<String, Object> staleCache = null;
         try {
             Object cachedData = fileCacheService.loadFromCacheIgnoringExpiration("standings", cacheKey, Map.class);
@@ -492,9 +541,10 @@ public class ExternalTeamApiService {
             return result;
         }
 
+        // 4. Якщо нічого не знайдено, завантажуємо з API
         try {
             log.info("→ Запит: GET /competitions/{}/standings", apiLeagueCode);
-            
+
             rateLimiterService.acquire();
 
             Map<String, Object> response = footballApiWebClient
@@ -506,17 +556,17 @@ public class ExternalTeamApiService {
 
             if (response != null && response.containsKey("standings")) {
                 List<Map<String, Object>> standings = (List<Map<String, Object>>) response.get("standings");
-                
+
                 if (standings != null && !standings.isEmpty()) {
                     Map<String, Object> totalStandings = standings.get(0);
                     List<Map<String, Object>> table = (List<Map<String, Object>>) totalStandings.get("table");
-                    
+
                     if (table != null) {
                         List<Map<String, Object>> formattedTable = table.stream()
                                 .map(entry -> {
                                     Map<String, Object> formatted = new HashMap<>();
                                     Map<String, Object> team = (Map<String, Object>) entry.get("team");
-                                    
+
                                     if (team != null) {
                                         formatted.put("position", entry.get("position"));
                                         formatted.put("teamName", team.get("name"));
@@ -530,11 +580,11 @@ public class ExternalTeamApiService {
                                         formatted.put("goalDifference", entry.get("goalDifference"));
                                         formatted.put("points", entry.get("points"));
                                     }
-                                    
+
                                     return formatted;
                                 })
                                 .collect(Collectors.toList());
-                        
+
                         result.put("league", leagueCode);
                         result.put("standings", formattedTable);
                         result.put("source", "api");
@@ -588,604 +638,306 @@ public class ExternalTeamApiService {
         }
     }
 
-    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getUpcomingMatches() {
-        return getMatchesByMatchday("upcoming", 0, "SCHEDULED");
+        log.info("Отримано запит на майбутні матчі");
+        List<MatchEntity> allMatches = matchDbService.list();
+        LocalDateTime now = LocalDateTime.now();
+        
+        return allMatches.stream()
+                .filter(match -> match.getKickoffAt().isAfter(now))
+                .map(this::convertMatchToMap)
+                .collect(java.util.stream.Collectors.toList());
     }
 
-    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getPreviousMatches() {
-
-
-
-        return getMatchesByMatchday("current_tour", 0, null);
+        log.info("Отримано запит на минулі матчі");
+        List<MatchEntity> allMatches = matchDbService.list();
+        LocalDateTime now = LocalDateTime.now();
+        
+        return allMatches.stream()
+                .filter(match -> match.getKickoffAt().isBefore(now))
+                .map(this::convertMatchToMap)
+                .collect(java.util.stream.Collectors.toList());
     }
 
-    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getUpcomingMatchesForLeague(String leagueCode) {
-        return getMatchesByMatchdayForLeague(leagueCode, "upcoming", 0, "SCHEDULED");
+        log.info("Отримано запит на майбутні матчі для ліги: {}", leagueCode);
+        List<MatchEntity> allMatches = matchDbService.list();
+        LocalDateTime now = LocalDateTime.now();
+        
+        return allMatches.stream()
+                .filter(match -> match.getLeague().equals(leagueCode))
+                .filter(match -> match.getKickoffAt().isAfter(now))
+                .map(this::convertMatchToMap)
+                .collect(java.util.stream.Collectors.toList());
     }
 
-    @SuppressWarnings("unchecked")
     public List<Map<String, Object>> getPreviousMatchesForLeague(String leagueCode) {
-
-        return getMatchesByMatchdayForLeague(leagueCode, "current_tour", 0, null);
+        log.info("Отримано запит на минулі матчі для ліги: {}", leagueCode);
+        List<MatchEntity> allMatches = matchDbService.list();
+        LocalDateTime now = LocalDateTime.now();
+        
+        return allMatches.stream()
+                .filter(match -> match.getLeague().equals(leagueCode))
+                .filter(match -> match.getKickoffAt().isBefore(now))
+                .map(this::convertMatchToMap)
+                .collect(java.util.stream.Collectors.toList());
     }
 
-    @SuppressWarnings("unchecked")
-    private List<Map<String, Object>> getMatchesByMatchdayForLeague(String leagueCode, String type, int matchdayOffset, String statusFilter) {
-        String cacheKey = type + "_matches_" + leagueCode.toLowerCase();
+    public List<Map<String, Object>> getTopScorersForLeague(String leagueCode) {
+        log.info("Отримано запит на топ бомбардирів для ліги: {}", leagueCode);
+        
+        try {
+            // Спочатку пробуємо завантажити з БД
+            List<com.football.ua.model.entity.ScorerEntity> scorersFromDb = scorerDbService.listByLeague(leagueCode);
+            
+            if (scorersFromDb != null && !scorersFromDb.isEmpty()) {
+                log.info("✅ Повертаємо {} бомбардирів з БД для ліги {}", scorersFromDb.size(), leagueCode);
+                
+                // Конвертуємо Entity в Map для відповіді
+                List<Map<String, Object>> result = new ArrayList<>();
+                for (com.football.ua.model.entity.ScorerEntity scorer : scorersFromDb) {
+                    Map<String, Object> scorerMap = new HashMap<>();
+                    scorerMap.put("playerId", scorer.getPlayerId());
+                    scorerMap.put("name", scorer.getPlayerName()); // Змінено з playerName на name для відповідності frontend
+                    scorerMap.put("teamId", scorer.getTeamId());
+                    scorerMap.put("teamName", scorer.getTeamName());
 
-        if (fileCacheService.isCacheValid("matches", cacheKey)) {
-            try {
-                Object cached = fileCacheService.loadFromCache("matches", cacheKey, List.class);
-                if (cached != null) {
-                    log.debug("📦 Повертаємо закешовані {} матчі для {} з файлу", type, leagueCode);
-                    return (List<Map<String, Object>>) cached;
+                    // Додаємо емблему команди, якщо можливо знайти команду за ID
+                    String teamCrest = "";
+                    if (scorer.getTeamId() != null) {
+                        try {
+                            Optional<com.football.ua.model.entity.TeamEntity> teamEntity = teamRepository.findById(scorer.getTeamId().longValue());
+                            if (teamEntity.isPresent()) {
+                                teamCrest = teamEntity.get().getEmblemUrl() != null ? teamEntity.get().getEmblemUrl() : "";
+                            }
+                        } catch (Exception e) {
+                            log.debug("Не вдалося знайти емблему для команди з ID {}: {}", scorer.getTeamId(), e.getMessage());
+                        }
+                    }
+                    scorerMap.put("teamCrest", teamCrest);
+
+                    scorerMap.put("goals", scorer.getGoals());
+                    scorerMap.put("assists", scorer.getAssists());
+                    scorerMap.put("penalties", scorer.getPenalties());
+                    scorerMap.put("league", scorer.getLeague());
+                    result.add(scorerMap);
                 }
-            } catch (Exception e) {
-                log.warn("⚠️ Помилка завантаження з кешу: {}", e.getMessage());
+                
+                return result;
             }
-        }
-
-        if (!apiEnabled) {
-            log.info("API вимкнено, повертаємо порожній список матчів для {}", leagueCode);
-            List<Map<String, Object>> empty = new ArrayList<>();
-
-            return empty;
-        }
-
-        if ("UPL".equals(leagueCode)) {
-            log.debug("UPL: немає API, повертаємо порожній список");
+            
+            log.info("⚠️ Бомбардири не знайдені в БД для ліги {}, повертаємо порожній список", leagueCode);
+            return new ArrayList<>();
+            
+        } catch (Exception e) {
+            log.error("❌ Помилка отримання бомбардирів для {}: {}", leagueCode, e.getMessage());
             return new ArrayList<>();
         }
+    }
 
+    public List<Map<String, Object>> getAllMatchesForLeague(String leagueCode) {
+        log.info("Отримано запит на всі матчі сезону для ліги: {}", leagueCode);
+        List<MatchEntity> allMatches = matchDbService.list();
+        
+        return allMatches.stream()
+                .filter(match -> match.getLeague().equals(leagueCode))
+                .map(this::convertMatchToMap)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<Map<String, Object>> getAllMatchesSeason() {
+        log.info("Отримано запит на всі матчі сезону (всі ліги)");
+        List<MatchEntity> allMatches = matchDbService.list();
+        
+        return allMatches.stream()
+                .map(this::convertMatchToMap)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    private Map<String, Object> convertMatchToMap(MatchEntity match) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", match.getId());
+        map.put("homeTeam", match.getHomeTeam().getName());
+        map.put("awayTeam", match.getAwayTeam().getName());
+        map.put("homeTeamEmblem", match.getHomeTeam().getEmblemUrl());
+        map.put("awayTeamEmblem", match.getAwayTeam().getEmblemUrl());
+        map.put("homeScore", match.getHomeScore());
+        map.put("awayScore", match.getAwayScore());
+        map.put("kickoffAt", match.getKickoffAt().toString());
+        map.put("league", match.getLeague());
+        map.put("status", match.getKickoffAt().isBefore(LocalDateTime.now()) ? "FINISHED" : "SCHEDULED");
+        return map;
+    }
+
+    // ==================== API FETCHING METHODS ====================
+    
+    /**
+     * Завантажити матчі для ліги з зовнішнього API
+     */
+    public List<Map<String, Object>> fetchMatchesFromApi(String leagueCode) {
         String apiLeagueCode = LEAGUE_CODES.get(leagueCode);
         if (apiLeagueCode == null) {
-            log.warn("⚠️ {}: невідомий код ліги", leagueCode);
+            log.warn("Невідомий код ліги: {}", leagueCode);
             return new ArrayList<>();
         }
 
-        log.info("⚡ Завантажуємо {} матчі для {}...", type, leagueCode);
-
         try {
-
-            Integer currentMatchday = getCurrentMatchday(apiLeagueCode);
-            if (currentMatchday == null) {
-                log.warn("⚠️ {}: не вдалося визначити поточний тур", leagueCode);
-
-                try {
-                    Object cachedData = fileCacheService.loadFromCacheIgnoringExpiration("matches", cacheKey, List.class);
-                    if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                        log.info("📦 API недоступний, повертаємо застарілі дані з кешу для {}", leagueCode);
-                        return (List<Map<String, Object>>) cachedData;
-                    }
-                } catch (Exception cacheError) {
-                    log.warn("⚠️ Помилка читання застарілого кешу: {}", cacheError.getMessage());
-                }
-                return new ArrayList<>();
-            }
-
-            int targetMatchday = currentMatchday + matchdayOffset;
-            if (targetMatchday < 1) {
-                log.debug("⚠️ {}: тур {} менше 1, пропускаємо", leagueCode, targetMatchday);
-
-                try {
-                    Object cachedData = fileCacheService.loadFromCacheIgnoringExpiration("matches", cacheKey, List.class);
-                    if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                        log.info("📦 Тур менше 1, повертаємо застарілі дані з кешу для {}", leagueCode);
-                        return (List<Map<String, Object>>) cachedData;
-                    }
-                } catch (Exception cacheError) {
-                    log.warn("⚠️ Помилка читання застарілого кешу: {}", cacheError.getMessage());
-                }
-                return new ArrayList<>();
-            }
-
-            log.debug("→ Запит: GET /competitions/{}/matches (тур {}, статус: {})",
-                     apiLeagueCode, targetMatchday, statusFilter);
+            log.info("→ Запит матчів з API для ліги: {} ({})", leagueCode, apiLeagueCode);
 
             rateLimiterService.acquire();
 
-            FootballDataResponse response = footballApiWebClient
+            Map<String, Object> response = footballApiWebClient
                     .get()
-                    .uri(uriBuilder -> {
-                        var builder = uriBuilder
-                            .path("/competitions/{code}/matches")
-                            .queryParam("matchday", targetMatchday);
+                    .uri("/competitions/{code}/matches", apiLeagueCode)
+                    .retrieve()
+                    .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
+                    .block();
+
+            if (response != null && response.containsKey("matches")) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> matchesData = (List<Map<String, Object>>) response.get("matches");
+                
+                if (matchesData != null && !matchesData.isEmpty()) {
+                    log.info("✅ Отримано {} матчів для ліги {}", matchesData.size(), leagueCode);
+                    
+                    // Конвертуємо дані API в наш формат
+                    List<Map<String, Object>> convertedMatches = new ArrayList<>();
+                    for (Map<String, Object> matchData : matchesData) {
+                        Map<String, Object> converted = new HashMap<>();
                         
-                        if (statusFilter != null) {
-                            builder.queryParam("status", statusFilter);
+                        // Базова інформація
+                        converted.put("id", matchData.get("id"));
+                        converted.put("league", leagueCode);
+                        converted.put("status", matchData.get("status"));
+                        converted.put("matchday", matchData.get("matchday"));
+                        
+                        // Дата і час
+                        String utcDate = (String) matchData.get("utcDate");
+                        if (utcDate != null) {
+                            converted.put("kickoffAt", utcDate);
                         }
                         
-                        return builder.build(apiLeagueCode);
-                    })
-                    .retrieve()
-                    .bodyToMono(FootballDataResponse.class)
-                    .doOnError(error -> log.error("Помилка API для {}: {}",
-                                                 leagueCode, error.getMessage()))
-                    .block();
-
-            List<Map<String, Object>> matches = new ArrayList<>();
-            if (response != null && response.getMatches() != null) {
-                matches = response.getMatches().stream()
-                        .map(match -> convertMatchToMap(match, leagueCode))
-                        .collect(Collectors.toList());
-
-                    log.info("✅ {}: {} матчів (тур {})", leagueCode, matches.size(), targetMatchday);
-                } else {
-                    log.warn("⚠️ {}: порожня відповідь (тур {})", leagueCode, targetMatchday);
-                }
-
-                if (matches != null && !matches.isEmpty()) {
-                    fileCacheService.saveToCache("matches", cacheKey, matches);
-                    log.debug("💾 Збережено {} матчів для {} в кеш", matches.size(), leagueCode);
-                } else {
-                    log.debug("⚠️ Не зберігаємо порожні матчі для {} в кеш", leagueCode);
-
-
-                    if ("upcoming".equals(type) && matchdayOffset < 2) {
-                        log.info("🔄 {}: у турі {} немає запланованих матчів, перевіряємо наступний...", leagueCode, targetMatchday);
-                        return getMatchesByMatchdayForLeague(leagueCode, type, matchdayOffset + 1, statusFilter);
+                        // Команди
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> homeTeamData = (Map<String, Object>) matchData.get("homeTeam");
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> awayTeamData = (Map<String, Object>) matchData.get("awayTeam");
+                        
+                        if (homeTeamData != null) {
+                            converted.put("homeTeam", homeTeamData.get("name"));
+                            converted.put("homeTeamId", homeTeamData.get("id"));
+                        }
+                        if (awayTeamData != null) {
+                            converted.put("awayTeam", awayTeamData.get("name"));
+                            converted.put("awayTeamId", awayTeamData.get("id"));
+                        }
+                        
+                        // Рахунок
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> scoreData = (Map<String, Object>) matchData.get("score");
+                        if (scoreData != null) {
+                            @SuppressWarnings("unchecked")
+                            Map<String, Object> fullTime = (Map<String, Object>) scoreData.get("fullTime");
+                            if (fullTime != null) {
+                                converted.put("homeScore", fullTime.get("home"));
+                                converted.put("awayScore", fullTime.get("away"));
+                            }
+                        }
+                        
+                        convertedMatches.add(converted);
                     }
-                }
-
-                return matches;
-
-        } catch (Exception e) {
-            log.error("❌ Помилка завантаження матчів для {}: {}", leagueCode, e.getMessage());
-
-            try {
-
-                Object cachedData = fileCacheService.loadFromCache("matches", cacheKey, List.class);
-                if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                    log.info("📦 Повертаємо дані з валідного кешу для {}", leagueCode);
-                    return (List<Map<String, Object>>) cachedData;
-                }
-
-                cachedData = fileCacheService.loadFromCacheIgnoringExpiration("matches", cacheKey, List.class);
-                if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                    log.info("📦 Повертаємо застарілі дані з кешу для {} (API недоступний)", leagueCode);
-                    return (List<Map<String, Object>>) cachedData;
-                }
-            } catch (Exception cacheError) {
-                log.warn("⚠️ Помилка читання з кешу: {}", cacheError.getMessage());
-            }
-
-            return new ArrayList<>();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getMatchesByMatchday(String type, int matchdayOffset, String statusFilter) {
-        String cacheKey = type + "_matches_by_matchday";
-
-        if (fileCacheService.isCacheValid("matches", cacheKey)) {
-            try {
-                Object cached = fileCacheService.loadFromCache("matches", cacheKey, List.class);
-                if (cached != null) {
-                    log.debug("📦 Повертаємо закешовані {} матчі з файлу", type);
-                    return (List<Map<String, Object>>) cached;
-                }
-            } catch (Exception e) {
-                log.warn("⚠️ Помилка завантаження з кешу: {}", e.getMessage());
-            }
-        }
-
-        if (!apiEnabled) {
-            log.info("API вимкнено, повертаємо порожній список матчів");
-            List<Map<String, Object>> empty = new ArrayList<>();
-
-            return empty;
-        }
-
-        log.info("⚡ Завантажуємо {} матчі по турах...", type);
-        
-        try {
-            List<Map<String, Object>> allMatches = new ArrayList<>();
-            List<String> apiLeagues = Arrays.asList("UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
-            
-            for (String leagueCode : apiLeagues) {
-                try {
-                    List<Map<String, Object>> leagueMatches = getMatchesByMatchdayForLeague(leagueCode, type, matchdayOffset, statusFilter);
-                    if (leagueMatches != null) {
-                        allMatches.addAll(leagueMatches);
-                    }
-                } catch (Exception e) {
-                    log.error("❌ {}: помилка отримання матчів - {}", leagueCode, e.getMessage());
-                }
-            }
-
-            allMatches.sort((m1, m2) -> {
-                Object k1 = m1.get("kickoffAt");
-                Object k2 = m2.get("kickoffAt");
-                if (k1 == null || k2 == null) return 0;
-                if (k1 instanceof LocalDateTime && k2 instanceof LocalDateTime) {
-                    return ((LocalDateTime) k1).compareTo((LocalDateTime) k2);
-                }
-                return k1.toString().compareTo(k2.toString());
-            });
-
-            if (allMatches != null && !allMatches.isEmpty()) {
-                fileCacheService.saveToCache("matches", cacheKey, allMatches);
-                log.info("🎯 Завантажено {} {} матчів. Збережено в файловий кеш на 30 хв", 
-                        allMatches.size(), type);
-            } else {
-                log.warn("⚠️ Не зберігаємо порожні {} матчі в кеш", type);
-            }
-            return allMatches;
-            
-        } catch (Exception e) {
-            log.error("❌ Критична помилка завантаження матчів: {}", e.getMessage());
-
-            try {
-                Object cachedData = fileCacheService.loadFromCache("matches", cacheKey, List.class);
-                if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                    log.info("📦 Повертаємо застарілі дані з кешу замість порожнього результату");
-                    return (List<Map<String, Object>>) cachedData;
-                }
-            } catch (Exception cacheError) {
-                log.warn("⚠️ Помилка читання з кешу: {}", cacheError.getMessage());
-            }
-
-            log.warn("⚠️ Немає даних у кеші, повертаємо порожній список");
-            return new ArrayList<>();
-        }
-    }
-    
-    private Integer getCurrentMatchday(String apiLeagueCode) {
-        try {
-            Map<String, Object> response = footballApiWebClient
-                    .get()
-                    .uri("/competitions/{code}/standings", apiLeagueCode)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
-            
-            if (response != null && response.containsKey("season")) {
-                Map<String, Object> season = (Map<String, Object>) response.get("season");
-                if (season != null && season.containsKey("currentMatchday")) {
-                    return (Integer) season.get("currentMatchday");
-                }
-            }
-        } catch (Exception e) {
-            log.warn("⚠️ Помилка отримання поточного туру для {}: {}", apiLeagueCode, e.getMessage());
-        }
-        return null;
-    }
-
-    private Map<String, Object> convertMatchToMap(FootballDataResponse.MatchData matchData, String leagueCode) {
-        Map<String, Object> match = new HashMap<>();
-        
-        match.put("id", matchData.getId());
-        match.put("league", leagueCode);
-        match.put("status", matchData.getStatus());
-        match.put("matchday", matchData.getMatchday());
-        
-        if (matchData.getUtcDate() != null) {
-            try {
-                LocalDateTime kickoff = LocalDateTime.parse(
-                    matchData.getUtcDate(), 
-                    DateTimeFormatter.ISO_DATE_TIME
-                );
-                match.put("kickoffAt", kickoff);
-                match.put("date", kickoff.toLocalDate().toString());
-                match.put("time", kickoff.toLocalTime().toString());
-            } catch (Exception e) {
-                log.warn("Помилка парсингу дати: {}", matchData.getUtcDate());
-                match.put("kickoffAt", null);
-            }
-        }
-        
-        if (matchData.getHomeTeam() != null) {
-            Map<String, Object> homeTeam = new HashMap<>();
-            homeTeam.put("id", matchData.getHomeTeam().getId());
-            homeTeam.put("name", matchData.getHomeTeam().getName());
-            homeTeam.put("shortName", matchData.getHomeTeam().getShortName());
-            homeTeam.put("crest", matchData.getHomeTeam().getCrest());
-            match.put("homeTeam", homeTeam);
-        }
-        
-        if (matchData.getAwayTeam() != null) {
-            Map<String, Object> awayTeam = new HashMap<>();
-            awayTeam.put("id", matchData.getAwayTeam().getId());
-            awayTeam.put("name", matchData.getAwayTeam().getName());
-            awayTeam.put("shortName", matchData.getAwayTeam().getShortName());
-            awayTeam.put("crest", matchData.getAwayTeam().getCrest());
-            match.put("awayTeam", awayTeam);
-        }
-        
-        if (matchData.getScore() != null && matchData.getScore().getFullTime() != null) {
-            Map<String, Object> score = new HashMap<>();
-            score.put("home", matchData.getScore().getFullTime().getHome());
-            score.put("away", matchData.getScore().getFullTime().getAway());
-            match.put("score", score);
-        }
-        
-        return match;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getTopScorersForLeague(String leagueCode) {
-        String cacheKey = "scorers_" + leagueCode.toLowerCase();
-
-        if (fileCacheService.isCacheValid("players", cacheKey)) {
-            try {
-                Object cached = fileCacheService.loadFromCache("players", cacheKey, List.class);
-                if (cached != null) {
-                    log.debug("📦 Повертаємо закешованих бомбардирів для {} з файлу", leagueCode);
-                    return (List<Map<String, Object>>) cached;
-                }
-            } catch (Exception e) {
-                log.warn("⚠️ Помилка завантаження з кешу: {}", e.getMessage());
-            }
-        }
-
-        if (!apiEnabled) {
-            log.info("API вимкнено, повертаємо порожній список бомбардирів для {}", leagueCode);
-            List<Map<String, Object>> empty = new ArrayList<>();
-
-            return empty;
-        }
-
-        if ("UPL".equals(leagueCode)) {
-            log.debug("UPL: немає API, повертаємо порожній список бомбардирів");
-            return new ArrayList<>();
-        }
-
-        String apiLeagueCode = LEAGUE_CODES.get(leagueCode);
-        if (apiLeagueCode == null) {
-            log.warn("⚠️ {}: невідомий код ліги", leagueCode);
-            return new ArrayList<>();
-        }
-
-        log.info("⚡ Завантажуємо топ бомбардирів для {}...", leagueCode);
-
-        try {
-            log.debug("→ Запит: GET /competitions/{}/scorers?limit=10", apiLeagueCode);
-
-            rateLimiterService.acquire();
-
-            Map<String, Object> response = footballApiWebClient
-                    .get()
-                    .uri(uriBuilder -> uriBuilder
-                            .path("/competitions/{code}/scorers")
-                            .queryParam("limit", 10)
-                            .build(apiLeagueCode))
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .doOnError(error -> log.error("Помилка API для {}: {}",
-                                                 leagueCode, error.getMessage()))
-                    .block();
-
-            List<Map<String, Object>> scorers = new ArrayList<>();
-            if (response != null) {
-                Object scorersObj = response.get("scorers");
-
-                if (scorersObj == null) {
-                    log.warn("⚠️ Відповідь API не містить поля 'scorers', перевіряємо структуру: {}", response.keySet());
-                }
-                
-                List<Map<String, Object>> scorersList = null;
-                if (scorersObj instanceof List) {
-                    scorersList = (List<Map<String, Object>>) scorersObj;
-                } else if (response.containsKey("scorers")) {
-                    scorersList = (List<Map<String, Object>>) response.get("scorers");
-                }
-                
-                if (scorersList != null && !scorersList.isEmpty()) {
-                    log.debug("📊 Отримано {} бомбардирів з API для {}", scorersList.size(), leagueCode);
                     
-                    scorers = scorersList.stream()
-                            .limit(10)
-                            .map(scorerData -> {
-                                Map<String, Object> scorer = new HashMap<>();
-
-                                Map<String, Object> player = (Map<String, Object>) scorerData.get("player");
-                                if (player != null) {
-                                    scorer.put("name", player.get("name"));
-                                    scorer.put("id", player.get("id"));
-                                    scorer.put("nationality", player.get("nationality"));
-                                    scorer.put("position", player.get("position"));
-                                } else {
-                                    log.warn("⚠️ Бомбардир без даних гравця: {}", scorerData);
-                                }
-
-                                Map<String, Object> team = (Map<String, Object>) scorerData.get("team");
-                                if (team != null) {
-                                    scorer.put("teamName", team.get("name"));
-                                    scorer.put("teamId", team.get("id"));
-                                    scorer.put("teamCrest", team.get("crest"));
-                                } else {
-                                    log.warn("⚠️ Бомбардир без даних команди: {}", scorerData);
-                                }
-
-                                scorer.put("goals", scorerData.get("goals") != null ? scorerData.get("goals") : 0);
-                                scorer.put("assists", scorerData.get("assists") != null ? scorerData.get("assists") : 0);
-                                scorer.put("penalties", scorerData.get("penalties") != null ? scorerData.get("penalties") : 0);
-                                
-                                return scorer;
-                            })
-                            .filter(scorer -> scorer.get("name") != null)
-                            .collect(Collectors.toList());
-
-                    log.info("✅ {}: {} бомбардирів успішно оброблено", leagueCode, scorers.size());
-                } else {
-                    log.warn("⚠️ Список бомбардирів порожній або null для {}", leagueCode);
+                    return convertedMatches;
                 }
-            } else {
-                log.warn("⚠️ Відповідь API null для {}", leagueCode);
             }
 
-            if (scorers != null && !scorers.isEmpty()) {
-                fileCacheService.saveToCache("players", cacheKey, scorers);
-                log.debug("💾 Збережено {} бомбардирів для {} в кеш", scorers.size(), leagueCode);
-            } else {
-                log.debug("⚠️ Не зберігаємо порожніх бомбардирів для {} в кеш", leagueCode);
-            }
-
-            return scorers;
+            log.warn("⚠️ API не повернуло матчів для ліги {}", leagueCode);
+            return new ArrayList<>();
 
         } catch (Exception e) {
-            log.error("❌ Помилка завантаження бомбардирів для {}: {}", leagueCode, e.getMessage());
-
-            try {
-
-                Object cachedData = fileCacheService.loadFromCache("players", cacheKey, List.class);
-                if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                    log.info("📦 Повертаємо дані з валідного кешу для {}", leagueCode);
-                    return (List<Map<String, Object>>) cachedData;
+            String errorMsg = e.getMessage();
+            if (errorMsg != null && errorMsg.contains("429")) {
+                log.warn("⚠️ HTTP 429: Перевищено ліміт запитів для матчів {}. Спробую ще раз через 60 секунд", leagueCode);
+                try {
+                    Thread.sleep(60000); // Чекаємо 60 секунд
+                    return fetchMatchesFromApi(leagueCode); // Рекурсивний виклик для retry
+                } catch (InterruptedException ie) {
+                    log.error("❌ Перервано очікування retry для матчів {}: {}", leagueCode, ie.getMessage());
                 }
-
-                cachedData = fileCacheService.loadFromCacheIgnoringExpiration("players", cacheKey, List.class);
-                if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                    log.info("📦 Повертаємо застарілі дані з кешу для {} (API недоступний)", leagueCode);
-                    return (List<Map<String, Object>>) cachedData;
-                }
-            } catch (Exception cacheError) {
-                log.warn("⚠️ Помилка читання з кешу: {}", cacheError.getMessage());
             }
-
+            log.error("❌ Помилка завантаження матчів з API для {}: {}", leagueCode, e.getMessage());
             return new ArrayList<>();
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public List<Map<String, Object>> getAllMatchesForLeague(String leagueCode) {
-        String cacheKey = "all_matches_" + leagueCode.toLowerCase();
-
-        if (fileCacheService.isCacheValid("matches", cacheKey)) {
-            try {
-                Object cached = fileCacheService.loadFromCache("matches", cacheKey, List.class);
-                if (cached != null) {
-                    log.debug("📦 Повертаємо закешовані всі матчі для {} з файлу", leagueCode);
-                    return (List<Map<String, Object>>) cached;
-                }
-            } catch (Exception e) {
-                log.warn("⚠️ Помилка завантаження з кешу: {}", e.getMessage());
-            }
-        }
-
-        if (!apiEnabled) {
-            log.info("API вимкнено, повертаємо порожній список всіх матчів для {}", leagueCode);
-            List<Map<String, Object>> empty = new ArrayList<>();
-
-            return empty;
-        }
-
-        if ("UPL".equals(leagueCode)) {
-            log.debug("UPL: немає API, повертаємо порожній список всіх матчів");
-            return new ArrayList<>();
-        }
-
+    /**
+     * Завантажити бомбардирів для ліги з зовнішнього API
+     */
+    public List<Map<String, Object>> fetchScorersFromApi(String leagueCode) {
         String apiLeagueCode = LEAGUE_CODES.get(leagueCode);
         if (apiLeagueCode == null) {
-            log.warn("⚠️ {}: невідомий код ліги", leagueCode);
+            log.warn("Невідомий код ліги: {}", leagueCode);
             return new ArrayList<>();
         }
 
-        log.info("⚡ Завантажуємо всі матчі сезону для {}...", leagueCode);
-
         try {
-            log.debug("→ Запит: GET /competitions/{}/matches (завершені матчі, ліміт: 200)",
-                     apiLeagueCode);
+            log.info("→ Запит бомбардирів з API для ліги: {} ({})", leagueCode, apiLeagueCode);
 
-            List<Map<String, Object>> matches = new ArrayList<>();
+            Map<String, Object> response = footballApiWebClient
+                    .get()
+                    .uri("/competitions/{code}/scorers", apiLeagueCode)
+                    .retrieve()
+                    .bodyToMono(new org.springframework.core.ParameterizedTypeReference<Map<String, Object>>() {})
+                    .block();
 
-            try {
-
-                FootballDataResponse finishedResponse = footballApiWebClient
-                        .get()
-                        .uri(uriBuilder -> uriBuilder
-                                .path("/competitions/{code}/matches")
-                                .queryParam("status", "FINISHED")
-                                .queryParam("limit", 200)
-                                .build(apiLeagueCode))
-                        .retrieve()
-                        .bodyToMono(FootballDataResponse.class)
-                        .doOnError(error -> log.error("Помилка отримання завершених матчів для {}: {}",
-                                                     leagueCode, error.getMessage()))
-                        .block();
-
-                if (finishedResponse != null && finishedResponse.getMatches() != null) {
-                    List<Map<String, Object>> finishedMatches = finishedResponse.getMatches().stream()
-                            .map(match -> convertMatchToMap(match, leagueCode))
-                            .collect(Collectors.toList());
-                    matches.addAll(finishedMatches);
-                    log.info("✅ {}: отримано {} завершених матчів сезону", leagueCode, finishedMatches.size());
-                }
-
-                FootballDataResponse upcomingResponse = footballApiWebClient
-                        .get()
-                        .uri(uriBuilder -> uriBuilder
-                                .path("/competitions/{code}/matches")
-                                .queryParam("status", "SCHEDULED")
-                                .queryParam("limit", 100)
-                                .build(apiLeagueCode))
-                        .retrieve()
-                        .bodyToMono(FootballDataResponse.class)
-                        .doOnError(error -> log.error("Помилка отримання майбутніх матчів для {}: {}",
-                                                     leagueCode, error.getMessage()))
-                        .block();
-
-                if (upcomingResponse != null && upcomingResponse.getMatches() != null) {
-                    List<Map<String, Object>> upcomingMatches = upcomingResponse.getMatches().stream()
-                            .map(match -> convertMatchToMap(match, leagueCode))
-                            .collect(Collectors.toList());
-                    matches.addAll(upcomingMatches);
-                    log.info("✅ {}: отримано {} майбутніх матчів сезону", leagueCode, upcomingMatches.size());
-                }
-
-                log.info("✅ {}: загалом отримано {} матчів сезону з API", leagueCode, matches.size());
-
-            } catch (Exception e) {
-                log.warn("Не вдалося отримати матчі сезону з API для {}: {}", leagueCode, e.getMessage());
-
-                try {
-                    List<Map<String, Object>> finishedMatches = getPreviousMatchesForLeague(leagueCode);
-                    List<Map<String, Object>> upcomingMatches = getUpcomingMatchesForLeague(leagueCode);
-                    matches.addAll(finishedMatches);
-                    matches.addAll(upcomingMatches);
-                    log.info("📦 Використано резервні методи: {} завершених + {} майбутніх матчів для {}",
-                            finishedMatches.size(), upcomingMatches.size(), leagueCode);
-                } catch (Exception fallbackError) {
-                    log.error("Не вдалося отримати резервні дані для {}: {}", leagueCode, fallbackError.getMessage());
+            if (response != null && response.containsKey("scorers")) {
+                @SuppressWarnings("unchecked")
+                List<Map<String, Object>> scorersData = (List<Map<String, Object>>) response.get("scorers");
+                
+                if (scorersData != null && !scorersData.isEmpty()) {
+                    log.info("✅ Отримано {} бомбардирів для ліги {}", scorersData.size(), leagueCode);
+                    
+                    // Конвертуємо дані API в наш формат
+                    List<Map<String, Object>> convertedScorers = new ArrayList<>();
+                    for (Map<String, Object> scorerData : scorersData) {
+                        Map<String, Object> converted = new HashMap<>();
+                        
+                        // Інформація про гравця
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> playerData = (Map<String, Object>) scorerData.get("player");
+                        if (playerData != null) {
+                            converted.put("playerName", playerData.get("name"));
+                            converted.put("playerId", playerData.get("id"));
+                        }
+                        
+                        // Інформація про команду
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> teamData = (Map<String, Object>) scorerData.get("team");
+                        if (teamData != null) {
+                            converted.put("teamName", teamData.get("name"));
+                            converted.put("teamId", teamData.get("id"));
+                        }
+                        
+                        // Статистика
+                        converted.put("goals", scorerData.get("goals"));
+                        converted.put("assists", scorerData.get("assists"));
+                        converted.put("penalties", scorerData.get("penalties"));
+                        converted.put("league", leagueCode);
+                        
+                        convertedScorers.add(converted);
+                    }
+                    
+                    return convertedScorers;
                 }
             }
 
-            if (matches != null && !matches.isEmpty()) {
-                fileCacheService.saveToCache("matches", cacheKey, matches);
-                log.debug("💾 Збережено {} матчів сезону для {} в кеш", matches.size(), leagueCode);
-            } else {
-                log.debug("⚠️ Не зберігаємо порожні матчі сезону для {} в кеш", leagueCode);
-            }
-
-            return matches;
+            log.warn("⚠️ API не повернуло бомбардирів для ліги {}", leagueCode);
+            return new ArrayList<>();
 
         } catch (Exception e) {
-            log.error("❌ Помилка завантаження всіх матчів сезону для {}: {}", leagueCode, e.getMessage());
-
-            try {
-                Object cachedData = fileCacheService.loadFromCache("matches", cacheKey, List.class);
-                if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                    log.info("📦 Повертаємо дані з валідного кешу для {}", leagueCode);
-                    return (List<Map<String, Object>>) cachedData;
-                }
-
-                cachedData = fileCacheService.loadFromCacheIgnoringExpiration("matches", cacheKey, List.class);
-                if (cachedData != null && !((List<?>) cachedData).isEmpty()) {
-                    log.info("📦 Повертаємо застарілі дані з кешу для {} (API недоступний)", leagueCode);
-                    return (List<Map<String, Object>>) cachedData;
-                }
-            } catch (Exception cacheError) {
-                log.warn("⚠️ Помилка читання з кешу: {}", cacheError.getMessage());
-            }
-
+            log.error("❌ Помилка завантаження бомбардирів з API для {}: {}", leagueCode, e.getMessage());
             return new ArrayList<>();
         }
     }
 }
-
-
-
-

@@ -24,6 +24,7 @@ public interface TeamDbService {
     Optional<TeamEntity> findByName(String name);
     List<TeamEntity> findByLeague(String league);
     boolean existsByNameAndLeague(String name, String league);
+    void deleteTeamsByLeague(String league);
 }
 
 

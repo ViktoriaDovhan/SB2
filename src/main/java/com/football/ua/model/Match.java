@@ -17,4 +17,7 @@ public class Match {
     @NotNull public LocalDateTime kickoffAt;
     
     @NotBlank public String league;
+
+    public String homeTeamEmblem;
+    public String awayTeamEmblem;
 }

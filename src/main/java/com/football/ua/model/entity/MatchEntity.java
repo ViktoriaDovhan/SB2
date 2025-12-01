@@ -32,6 +32,12 @@ public class MatchEntity {
     @Column(nullable = false)
     private String league;
 
+    @Column(nullable = true)
+    private String status; // SCHEDULED, LIVE, FINISHED, POSTPONED, etc.
+
+    @Column(nullable = true)
+    private Integer matchday; // номер туру
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
 
@@ -52,6 +58,12 @@ public class MatchEntity {
     
     public String getLeague() { return league; }
     public void setLeague(String league) { this.league = league; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
+
+    public Integer getMatchday() { return matchday; }
+    public void setMatchday(Integer matchday) { this.matchday = matchday; }
 }
 
 

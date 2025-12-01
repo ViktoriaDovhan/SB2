@@ -46,17 +46,20 @@ public class ModeratorController {
     private final ObjectProvider<ModerationService> moderationProvider;
     private final UserRepository userRepository;
     private final ExternalTeamApiService externalTeamApiService;
+    private final com.football.ua.service.DataMigrationService dataMigrationService;
 
     public ModeratorController(ObjectMapper objectMapper,
                               ForumDbService forum,
                               ObjectProvider<ModerationService> moderationProvider,
                               UserRepository userRepository,
-                              ExternalTeamApiService externalTeamApiService) throws IOException {
+                              ExternalTeamApiService externalTeamApiService,
+                              com.football.ua.service.DataMigrationService dataMigrationService) throws IOException {
         this.objectMapper = objectMapper;
         this.forum = forum;
         this.moderationProvider = moderationProvider;
         this.userRepository = userRepository;
         this.externalTeamApiService = externalTeamApiService;
+        this.dataMigrationService = dataMigrationService;
         this.resourcesPath = getPathToResources();
             System.out.println("✅ Шлях для запису файлу гравця тижня: " + resourcesPath);
     }
@@ -186,6 +189,133 @@ public class ModeratorController {
             errorResult.put("message", "Критична помилка: " + e.getMessage());
 
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResult);
+        }
+    }
+
+    @PostMapping("/matches/refresh")
+    @Operation(summary = "Оновити матчі з API",
+               description = "👮 MODERATOR - примусове оновлення матчів з зовнішнього API",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Map<String, Object>> refreshMatchesFromApi() {
+        try {
+            log.info("👮 MODERATOR: Запит на примусове оновлення матчів з API");
+            Map<String, Integer> results = dataMigrationService.migrateMatchesForAllLeagues();
+            
+            int total = results.values().stream().mapToInt(Integer::intValue).sum();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Оновлено " + total + " матчів для " + results.size() + " ліг");
+            response.put("details", results);
+            
+            log.info("✅ MODERATOR: Матчі успішно оновлено з API");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ MODERATOR: Помилка оновлення матчів: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Помилка: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/standings/refresh")
+    @Operation(summary = "Оновити таблиці з API",
+               description = "👮 MODERATOR - примусове оновлення турнірних таблиць з API",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Map<String, Object>> refreshStandingsFromApi() {
+        try {
+            log.info("👮 MODERATOR: Запит на примусове оновлення таблиць з API");
+            Map<String, Integer> results = dataMigrationService.migrateStandingsForAllLeagues();
+            
+            int total = results.values().stream().mapToInt(Integer::intValue).sum();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Оновлено турнірні таблиці для " + results.size() + " ліг (" + total + " позицій)");
+            response.put("details", results);
+            
+            log.info("✅ MODERATOR: Таблиці успішно оновлено з API");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ MODERATOR: Помилка оновлення таблиць: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Помилка: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/scorers/refresh")
+    @Operation(summary = "Оновити бомбардирів з API",
+               description = "👮 MODERATOR - примусове оновлення даних бомбардирів з API",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Map<String, Object>> refreshScorersFromApi() {
+        try {
+            log.info("👮 MODERATOR: Запит на примусове оновлення бомбардирів з API");
+            Map<String, Integer> results = dataMigrationService.migrateScorersForAllLeagues();
+            
+            int total = results.values().stream().mapToInt(Integer::intValue).sum();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", "Оновлено дані бомбардирів для " + results.size() + " ліг (" + total + " гравців)");
+            response.put("details", results);
+            
+            log.info("✅ MODERATOR: Бомбардири успішно оновлено з API");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ MODERATOR: Помилка оновлення бомбардирів: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Помилка: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
+    @PostMapping("/all/refresh")
+    @Operation(summary = "Оновити ВСЕ з API",
+               description = "👮 MODERATOR - оновлення команд, матчів, таблиць та бомбардирів",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Map<String, Object>> refreshAllFromApi() {
+        try {
+            log.info("👮 MODERATOR: Запит на повне оновлення всіх даних з API");
+            
+            // Оновлюємо команди
+            Map<String, List<com.football.ua.model.Team>> teams = externalTeamApiService.getTeamsFromApi();
+            int teamsCount = teams.values().stream().mapToInt(List::size).sum();
+            
+            // Оновлюємо матчі
+            Map<String, Integer> matchesResults = dataMigrationService.migrateMatchesForAllLeagues();
+            int matchesCount = matchesResults.values().stream().mapToInt(Integer::intValue).sum();
+            
+            // Оновлюємо таблиці
+            Map<String, Integer> standingsResults = dataMigrationService.migrateStandingsForAllLeagues();
+            int standingsCount = standingsResults.values().stream().mapToInt(Integer::intValue).sum();
+            
+            // Оновлюємо бомбардирів
+            Map<String, Integer> scorersResults = dataMigrationService.migrateScorersForAllLeagues();
+            int scorersCount = scorersResults.values().stream().mapToInt(Integer::intValue).sum();
+            
+            Map<String, Object> response = new HashMap<>();
+            response.put("status", "success");
+            response.put("message", String.format(
+                "Оновлено: %d команд, %d матчів, %d позицій в таблицях, %d бомбардирів",
+                teamsCount, matchesCount, standingsCount, scorersCount
+            ));
+            response.put("teams", teamsCount);
+            response.put("matches", matchesResults);
+            response.put("standings", standingsResults);
+            response.put("scorers", scorersResults);
+            
+            log.info("✅ MODERATOR: Повне оновлення даних завершено");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("❌ MODERATOR: Помилка повного оновлення: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Помилка: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
     }
 

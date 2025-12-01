@@ -224,6 +224,9 @@ public class MatchController {
         dto.homeTeam = entity.getHomeTeam() != null ? entity.getHomeTeam().getName() : "TBD";
         dto.awayTeam = entity.getAwayTeam() != null ? entity.getAwayTeam().getName() : "TBD";
         
+        dto.homeTeamEmblem = entity.getHomeTeam() != null ? entity.getHomeTeam().getEmblemUrl() : "";
+        dto.awayTeamEmblem = entity.getAwayTeam() != null ? entity.getAwayTeam().getEmblemUrl() : "";
+        
         log.debug("Матч {}: home={}, away={} (Ліга: {})", entity.getId(), dto.homeTeam, dto.awayTeam, dto.league);
 
         return dto;

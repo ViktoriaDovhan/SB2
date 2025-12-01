@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMatches();
     // Завантажуємо майбутні та минулі матчі
     if (typeof loadTeamsByLeague === 'function') {
-        loadTeamsByLeague('UPL');
+        loadTeamsByLeague('UCL');
     } else {
         loadTeams();
     }
@@ -182,30 +182,72 @@ function displayNews(news, containerId, withInteractions = false) {
 
 async function loadMatches() {
     try {
-        const response = await fetch('/api/matches');
-        if (!response.ok) throw new Error('Помилка завантаження матчів');
+        // 1. Fetch DB matches
+        const dbMatchesP = fetch('/api/matches');
 
-        const matches = await response.json();
+        // 2. Fetch External matches (All Season)
+        const allExternalMatchesP = fetch('/api/teams/matches/all');
+
+        const [dbMatchesR, externalR] = await Promise.all([dbMatchesP, allExternalMatchesP]);
+
+        let allMatches = [];
+
+        // Process DB matches
+        if (dbMatchesR.ok) {
+            const json = await dbMatchesR.json();
+            if (Array.isArray(json)) {
+                allMatches = [...json];
+            }
+        }
+
+        // Process External Matches
+        if (externalR.ok) {
+            const json = await externalR.json();
+            if (json && Array.isArray(json.matches)) {
+                const normalized = json.matches.map(m => normalizeExternalMatch(m));
+                allMatches = [...allMatches, ...normalized];
+            }
+        }
+
+        // Deduplicate by ID
+        const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
+
+        // Sort by date (newest first)
+        uniqueMatches.sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
+
         const showScores = document.getElementById('showScores')?.checked ?? true;
 
         const now = new Date();
-        const upcomingMatches = matches
+        const upcomingMatches = uniqueMatches
             .filter(m => new Date(m.kickoffAt) > now)
             .slice(0, 6);
 
         if (typeof renderMatchesList === 'function') {
             renderMatchesList(upcomingMatches, 'home-matches', showScores);
-            renderMatchesList(matches, 'all-matches', showScores);
+            renderMatchesList(uniqueMatches, 'all-matches', showScores);
         } else {
             displayMatches(upcomingMatches, 'home-matches', showScores, true);
-            displayMatches(matches, 'all-matches', showScores, true);
+            displayMatches(uniqueMatches, 'all-matches', showScores, true);
         }
 
-        updateStatistics('matches', matches.length);
+        updateStatistics('matches', uniqueMatches.length);
     } catch (error) {
         console.error('Помилка:', error);
         showMessage('Не вдалося завантажити матчі', 'error');
     }
+}
+
+function normalizeExternalMatch(m) {
+    return {
+        id: m.id,
+        homeTeam: m.homeTeam?.name || 'Unknown',
+        awayTeam: m.awayTeam?.name || 'Unknown',
+        homeScore: m.score?.home ?? null,
+        awayScore: m.score?.away ?? null,
+        kickoffAt: m.kickoffAt,
+        league: m.league,
+        isExternal: true
+    };
 }
 
 function displayMatches(matches, containerId, showScores, withNotifications = false) {

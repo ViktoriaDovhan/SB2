@@ -42,6 +42,12 @@ public class MatchDbServiceImpl implements MatchDbService {
         match.setHomeTeam(home);
         match.setAwayTeam(away);
         match.setLeague(league);
+
+        List<MatchEntity> existing = matchRepository.findByHomeTeamAndAwayTeamAndKickoffAt(home, away, kickoffAt);
+        if (!existing.isEmpty()) {
+            return existing.get(0);
+        }
+
         return matchRepository.save(match);
     }
 

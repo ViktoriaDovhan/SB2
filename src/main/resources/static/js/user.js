@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMatches();
     // Завантажуємо майбутні та минулі матчі
     if (typeof loadTeamsByLeague === 'function') {
-        loadTeamsByLeague('UPL');
+        loadTeamsByLeague('UCL');
     } else {
         loadTeams();
     }
@@ -133,7 +133,7 @@ async function loadNews() {
     try {
         const response = await fetch('/api/news');
         if (!response.ok) throw new Error('Помилка завантаження новин');
-        
+
         const news = await response.json();
 
         if (typeof renderNewsList === 'function') {
@@ -154,12 +154,12 @@ async function loadNews() {
 function displayNews(news, containerId, withInteractions = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (news.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає новин</div>';
         return;
     }
-    
+
     container.innerHTML = news.map(item => `
         <article class="news-article">
             <div class="news-header">
@@ -182,53 +182,88 @@ function displayNews(news, containerId, withInteractions = false) {
 
 async function loadMatches() {
     try {
-        const response = await fetch('/api/matches');
-        if (!response.ok) throw new Error('Помилка завантаження матчів');
+        // 1. Fetch DB matches
+        const dbMatchesP = fetch('/api/matches');
 
-        const matches = await response.json();
-        const showScores = document.getElementById('showScores')?.checked ?? true;
+        // 2. Fetch External matches (All Season)
+        const allExternalMatchesP = fetch('/api/teams/matches/all');
 
-        console.log('Завантажено матчів:', matches.length);
-        matches.forEach(match => {
-            console.log(`Матч ${match.id}: ${match.homeTeam} vs ${match.awayTeam}`);
-        });
+        const [dbMatchesR, externalR] = await Promise.all([dbMatchesP, allExternalMatchesP]);
 
-        const now = new Date();
-        const upcomingMatches = matches
-            .filter(m => new Date(m.kickoffAt) > now)
-            .slice(0, 6);
-        
-        if (typeof renderMatchesList === 'function') {
-            renderMatchesList(upcomingMatches, 'home-matches', showScores);
-            renderMatchesList(matches, 'all-matches', showScores);
-        } else {
-            displayMatches(upcomingMatches, 'home-matches', showScores, true);
-            displayMatches(matches, 'all-matches', showScores, true);
+        let allMatches = [];
+
+        // Process DB matches
+        if (dbMatchesR.ok) {
+            const json = await dbMatchesR.json();
+            if (Array.isArray(json)) {
+                allMatches = [...json];
+            }
         }
 
-        updateStatistics('matches', matches.length);
+        // Process External Matches
+        if (externalR.ok) {
+            const json = await externalR.json();
+            if (json && Array.isArray(json.matches)) {
+                const normalized = json.matches.map(m => normalizeExternalMatch(m));
+                allMatches = [...allMatches, ...normalized];
+            }
+        }
+
+        // Deduplicate by ID
+        const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
+
+        // Sort by date (newest first)
+        uniqueMatches.sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
+
+        const now = new Date();
+        const upcomingMatches = uniqueMatches
+            .filter(m => new Date(m.kickoffAt) > now)
+            .slice(0, 6);
+
+        if (typeof renderMatchesList === 'function') {
+            renderMatchesList(upcomingMatches, 'home-matches');
+            renderMatchesList(uniqueMatches, 'all-matches');
+        } else {
+            displayMatches(upcomingMatches, 'home-matches', false);
+            displayMatches(uniqueMatches, 'all-matches', false);
+        }
+
+        updateStatistics('matches', uniqueMatches.length);
     } catch (error) {
         console.error('Помилка:', error);
         showMessage('Не вдалося завантажити матчі', 'error');
     }
 }
 
+function normalizeExternalMatch(m) {
+    return {
+        id: m.id,
+        homeTeam: m.homeTeam?.name || 'Unknown',
+        awayTeam: m.awayTeam?.name || 'Unknown',
+        homeScore: m.score?.home ?? null,
+        awayScore: m.score?.away ?? null,
+        kickoffAt: m.kickoffAt,
+        league: m.league,
+        isExternal: true
+    };
+}
+
 function displayMatches(matches, containerId, showScores, withNotifications = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (matches.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає матчів</div>';
         return;
     }
-    
+
     container.innerHTML = matches.map(match => {
         console.log(`Відображення матчу ${match.id}: ${match.homeTeam} vs ${match.awayTeam}, showScores=${showScores}`);
         const homeScore = match.homeScore ?? '?';
         const awayScore = match.awayScore ?? '?';
         const scoreDisplay = showScores ? `${homeScore} - ${awayScore}` : '? - ?';
         const isFuture = new Date(match.kickoffAt) > new Date();
-        
+
         return `
             <div class="match-card">
                 <div class="match-teams">
@@ -267,7 +302,7 @@ async function loadTeams() {
                 const arr = await userResp.json();
                 if (Array.isArray(arr)) userTeams = arr;
             }
-        } catch (_) {}
+        } catch (_) { }
 
         const combined = [...actualTeams, ...userTeams];
 
@@ -301,12 +336,12 @@ async function loadTeams() {
 function displayTeams(teams, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (teams.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає команд</div>';
         return;
     }
-    
+
     container.innerHTML = teams.map(team => `
         <div class="team-card">
             <div class="team-icon">
@@ -323,7 +358,7 @@ async function loadForumTopics() {
     try {
         const response = await fetchWithAuth('/api/forum/topics');
         if (!response.ok) throw new Error('Помилка завантаження форуму');
-        
+
         const topics = await response.json();
         if (typeof renderForumTopics === 'function') {
             renderForumTopics(topics);
@@ -341,12 +376,12 @@ async function loadForumTopics() {
 function displayForumTopics(topics) {
     const container = document.getElementById('forum-topics');
     if (!container) return;
-    
+
     if (topics.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає тем на форумі</div>';
         return;
     }
-    
+
     container.innerHTML = topics.map(topic => `
         <div class="topic-card">
             <h3 class="topic-title">${escapeHtml(topic.title)}</h3>
@@ -377,10 +412,10 @@ function hideCreateTopicForm() {
 
 async function createForumTopic(event) {
     event.preventDefault();
-    
+
     const title = document.getElementById('topic-title').value;
     const description = document.getElementById('topic-description').value;
-    
+
     try {
         const response = await fetchWithAuth('/api/forum/topics', {
             method: 'POST',
@@ -389,12 +424,12 @@ async function createForumTopic(event) {
             },
             body: JSON.stringify({ title, description })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Тему створено успішно!', 'success');
         hideCreateTopicForm();
         loadForumTopics();
@@ -408,7 +443,7 @@ async function showTopicPosts(topicId, topicTitle) {
     try {
         const response = await fetchWithAuth(`/api/forum/topics/${topicId}/posts`);
         if (!response.ok) throw new Error('Помилка завантаження постів');
-        
+
         const posts = await response.json();
 
         const modal = `
@@ -437,7 +472,7 @@ async function showTopicPosts(topicId, topicTitle) {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modal);
     } catch (error) {
         console.error('Помилка:', error);
@@ -447,9 +482,9 @@ async function showTopicPosts(topicId, topicTitle) {
 
 async function addPostToTopic(event, topicId) {
     event.preventDefault();
-    
+
     const content = document.getElementById('post-content').value;
-    
+
     try {
         const response = await fetchWithAuth(`/api/forum/topics/${topicId}/posts`, {
             method: 'POST',
@@ -458,12 +493,12 @@ async function addPostToTopic(event, topicId) {
             },
             body: JSON.stringify({ content })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Коментар додано!', 'success');
         closeTopicModal();
     } catch (error) {
@@ -484,9 +519,9 @@ async function likeNews(newsId) {
         const response = await fetchWithAuth(`/api/news/${newsId}/like`, {
             method: 'POST'
         });
-        
+
         if (!response.ok) throw new Error('Помилка');
-        
+
         showMessage('Вподобання додано!', 'success');
         loadNews();
     } catch (error) {
@@ -504,9 +539,9 @@ async function subscribeToMatch(matchId) {
         const response = await fetchWithAuth(`/api/matches/${matchId}/subscribe`, {
             method: 'POST'
         });
-        
+
         if (!response.ok) throw new Error('Помилка');
-        
+
         showMessage('Сповіщення увімкнено! Ви отримаєте нагадування перед матчем.', 'success');
     } catch (error) {
         console.error('Помилка:', error);
@@ -538,11 +573,11 @@ function showMessage(message, type = 'success') {
     if (existing) {
         existing.remove();
     }
-    
+
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
     alert.textContent = message;
-    
+
     const main = document.querySelector('.site-main .wrap');
     if (main) {
         main.insertBefore(alert, main.firstChild);

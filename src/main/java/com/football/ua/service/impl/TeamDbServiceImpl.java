@@ -132,6 +132,17 @@ public class TeamDbServiceImpl implements TeamDbService {
         return teamRepository.findByNameAndLeague(name, league).isPresent();
     }
 
+    @Override
+    @Transactional
+    @CacheEvict(value = "teams", allEntries = true)
+    public void deleteTeamsByLeague(String league) {
+        List<TeamEntity> teams = teamRepository.findByLeague(league);
+        if (!teams.isEmpty()) {
+            teamRepository.deleteAll(teams);
+            log.info("Видалено {} команд з ліги {}", teams.size(), league);
+        }
+    }
+
     
     private Team convertToTeam(TeamEntity entity) {
         Team team = new Team();

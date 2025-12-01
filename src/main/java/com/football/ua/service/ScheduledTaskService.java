@@ -25,7 +25,7 @@ public class ScheduledTaskService {
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
-    private FileCacheService fileCacheService;
+    private DatabaseCacheService fileCacheService;
 
     @Autowired
     private MatchService matchService;

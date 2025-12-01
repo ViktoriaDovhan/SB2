@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadMatches();
     // Завантажуємо майбутні та минулі матчі
     if (typeof loadTeamsByLeague === 'function') {
-        loadTeamsByLeague('UPL');
+        loadTeamsByLeague('UCL');
     } else {
         loadTeams();
     }
@@ -137,9 +137,9 @@ async function loadNews() {
     try {
         const response = await fetch('/api/news');
         if (!response.ok) throw new Error('Помилка завантаження новин');
-        
+
         const news = await response.json();
-        
+
         if (typeof renderNewsList === 'function') {
             renderNewsList(news.slice(0, 3), 'home-news');
             renderNewsList(news, 'all-news');
@@ -158,12 +158,12 @@ async function loadNews() {
 function displayNews(news, containerId, withInteractions = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (news.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає новин</div>';
         return;
     }
-    
+
     container.innerHTML = news.map(item => `
         <article class="news-article">
             <div class="news-header">
@@ -181,46 +181,88 @@ function displayNews(news, containerId, withInteractions = false) {
 
 async function loadMatches() {
     try {
-        const response = await fetch('/api/matches');
-        if (!response.ok) throw new Error('Помилка завантаження матчів');
-        
-        const matches = await response.json();
+        // 1. Fetch DB matches
+        const dbMatchesP = fetch('/api/matches');
+
+        // 2. Fetch External matches (All Season)
+        const allExternalMatchesP = fetch('/api/teams/matches/all');
+
+        const [dbMatchesR, externalR] = await Promise.all([dbMatchesP, allExternalMatchesP]);
+
+        let allMatches = [];
+
+        // Process DB matches
+        if (dbMatchesR.ok) {
+            const json = await dbMatchesR.json();
+            if (Array.isArray(json)) {
+                allMatches = [...json];
+            }
+        }
+
+        // Process External Matches
+        if (externalR.ok) {
+            const json = await externalR.json();
+            if (json && Array.isArray(json.matches)) {
+                const normalized = json.matches.map(m => normalizeExternalMatch(m));
+                allMatches = [...allMatches, ...normalized];
+            }
+        }
+
+        // Deduplicate by ID
+        const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
+
+        // Sort by date (newest first)
+        uniqueMatches.sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
+
         const showScores = document.getElementById('showScores')?.checked ?? true;
 
         const now = new Date();
-        const upcomingMatches = matches
+        const upcomingMatches = uniqueMatches
             .filter(m => new Date(m.kickoffAt) > now)
             .slice(0, 6);
-        
+
         if (typeof renderMatchesList === 'function') {
             renderMatchesList(upcomingMatches, 'home-matches', showScores);
-            renderMatchesList(matches, 'all-matches', showScores);
+            renderMatchesList(uniqueMatches, 'all-matches', showScores);
         } else {
             displayMatches(upcomingMatches, 'home-matches', showScores, false);
-            displayMatches(matches, 'all-matches', showScores, false);
+            displayMatches(uniqueMatches, 'all-matches', showScores, false);
         }
 
-        updateStatistics('matches', matches.length);
+        updateStatistics('matches', uniqueMatches.length);
     } catch (error) {
         console.error('Помилка:', error);
         showMessage('Не вдалося завантажити матчі', 'error');
     }
 }
 
+function normalizeExternalMatch(m) {
+    return {
+        id: m.id,
+        homeTeam: m.homeTeam?.name || 'Unknown',
+        awayTeam: m.awayTeam?.name || 'Unknown',
+        homeScore: m.score?.home ?? null,
+        awayScore: m.score?.away ?? null,
+        kickoffAt: m.kickoffAt,
+        league: m.league,
+        isExternal: true
+    };
+}
+
 function displayMatches(matches, containerId, showScores, withNotifications = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (matches.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає матчів</div>';
         return;
     }
-    
+
     container.innerHTML = matches.map(match => {
         const homeScore = match.homeScore ?? '?';
         const awayScore = match.awayScore ?? '?';
         const scoreDisplay = showScores ? `${homeScore} - ${awayScore}` : '? - ?';
-        
+
         return `
             <div class="match-card">
                 <div class="match-teams">
@@ -253,7 +295,7 @@ async function loadTeams() {
                 const arr = await userResp.json();
                 if (Array.isArray(arr)) userTeams = arr;
             }
-        } catch (_) {}
+        } catch (_) { }
 
         const combined = [...actualTeams, ...userTeams];
 
@@ -289,12 +331,12 @@ async function loadTeams() {
 function displayTeams(teams, containerId) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    
+
     if (teams.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає команд</div>';
         return;
     }
-    
+
     container.innerHTML = teams.map(team => `
         <div class="team-card">
             <div class="team-icon">
@@ -311,7 +353,7 @@ async function loadForumTopics() {
     try {
         const response = await fetchWithAuth('/api/forum/topics');
         if (!response.ok) throw new Error('Помилка завантаження форуму');
-        
+
         const topics = await response.json();
         if (typeof renderForumTopics === 'function') {
             renderForumTopics(topics);
@@ -329,12 +371,12 @@ async function loadForumTopics() {
 function displayForumTopics(topics) {
     const container = document.getElementById('forum-topics');
     if (!container) return;
-    
+
     if (topics.length === 0) {
         container.innerHTML = '<div class="empty-state">Немає тем на форумі</div>';
         return;
     }
-    
+
     container.innerHTML = topics.map(topic => `
         <div class="topic-card">
             <h3 class="topic-title">${escapeHtml(topic.title)}</h3>
@@ -357,12 +399,12 @@ async function loadEditorTeamsList() {
     try {
         const response = await fetch('/api/teams');
         if (!response.ok) throw new Error('Помилка завантаження команд');
-        
+
         const teams = await response.json();
-        
+
         const container = document.getElementById('editor-teams-list');
         if (!container) return;
-        
+
         container.innerHTML = `
             <div style="background: #f5f5f5; padding: 15px; border-radius: 5px; max-height: 300px; overflow-y: auto;">
                 ${teams.map(team => `
@@ -389,10 +431,10 @@ function hideCreateTopicForm() {
 
 async function createForumTopic(event) {
     event.preventDefault();
-    
+
     const title = document.getElementById('topic-title').value;
     const description = document.getElementById('topic-description').value;
-    
+
     try {
         const response = await fetchWithAuth('/api/forum/topics', {
             method: 'POST',
@@ -401,12 +443,12 @@ async function createForumTopic(event) {
             },
             body: JSON.stringify({ title, description })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Тему створено успішно!', 'success');
         hideCreateTopicForm();
         loadForumTopics();
@@ -420,7 +462,7 @@ async function showTopicPosts(topicId, topicTitle) {
     try {
         const response = await fetchWithAuth(`/api/forum/topics/${topicId}/posts`);
         if (!response.ok) throw new Error('Помилка завантаження постів');
-        
+
         const posts = await response.json();
 
         const modal = `
@@ -449,7 +491,7 @@ async function showTopicPosts(topicId, topicTitle) {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modal);
     } catch (error) {
         console.error('Помилка:', error);
@@ -459,9 +501,9 @@ async function showTopicPosts(topicId, topicTitle) {
 
 async function addPostToTopic(event, topicId) {
     event.preventDefault();
-    
+
     const content = document.getElementById('post-content').value;
-    
+
     try {
         const response = await fetchWithAuth(`/api/forum/topics/${topicId}/posts`, {
             method: 'POST',
@@ -470,12 +512,12 @@ async function addPostToTopic(event, topicId) {
             },
             body: JSON.stringify({ content })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Коментар додано!', 'success');
         closeTopicModal();
     } catch (error) {
@@ -493,10 +535,10 @@ function closeTopicModal() {
 
 async function createNews(event) {
     event.preventDefault();
-    
+
     const title = document.getElementById('news-create-title').value;
     const content = document.getElementById('news-create-content').value;
-    
+
     try {
         const response = await fetchWithAuth('/api/news', {
             method: 'POST',
@@ -505,12 +547,12 @@ async function createNews(event) {
             },
             body: JSON.stringify({ title, content })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Новину створено успішно!', 'success');
         document.getElementById('news-create-title').value = '';
         document.getElementById('news-create-content').value = '';
@@ -523,11 +565,11 @@ async function createNews(event) {
 
 async function updateNews(event) {
     event.preventDefault();
-    
+
     const id = document.getElementById('news-update-id').value;
     const title = document.getElementById('news-update-title').value;
     const content = document.getElementById('news-update-content').value;
-    
+
     try {
         const response = await fetchWithAuth(`/api/news/${id}`, {
             method: 'PUT',
@@ -536,12 +578,12 @@ async function updateNews(event) {
             },
             body: JSON.stringify({ title, content })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Новину оновлено успішно!', 'success');
         document.getElementById('news-update-id').value = '';
         document.getElementById('news-update-title').value = '';
@@ -555,23 +597,23 @@ async function updateNews(event) {
 
 async function deleteNews(event) {
     event.preventDefault();
-    
+
     const id = document.getElementById('news-delete-id').value;
-    
+
     if (!confirm(`Ви впевнені що хочете видалити новину #${id}?`)) {
         return;
     }
-    
+
     try {
         const response = await fetchWithAuth(`/api/news/${id}`, {
             method: 'DELETE'
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Новину видалено успішно!', 'success');
         document.getElementById('news-delete-id').value = '';
         loadNews();
@@ -632,12 +674,12 @@ async function createMatch(event) {
                 kickoffAt: kickoffAt
             })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage(`Матч створено успішно для ліги ${league}!`, 'success');
         document.getElementById('match-create-league').value = '';
         document.getElementById('match-create-home-id').value = '';
@@ -652,11 +694,11 @@ async function createMatch(event) {
 
 async function updateMatchScore(event) {
     event.preventDefault();
-    
+
     const id = document.getElementById('match-update-id').value;
     const homeScore = document.getElementById('match-update-home-score').value;
     const awayScore = document.getElementById('match-update-away-score').value;
-    
+
     try {
         const response = await fetchWithAuth(`/api/matches/${id}/score`, {
             method: 'PATCH',
@@ -668,12 +710,12 @@ async function updateMatchScore(event) {
                 awayScore: parseInt(awayScore)
             })
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Рахунок оновлено успішно!', 'success');
         document.getElementById('match-update-id').value = '';
         document.getElementById('match-update-home-score').value = '';
@@ -687,23 +729,23 @@ async function updateMatchScore(event) {
 
 async function deleteMatch(event) {
     event.preventDefault();
-    
+
     const id = document.getElementById('match-delete-id').value;
-    
+
     if (!confirm(`Ви впевнені що хочете видалити матч #${id}?`)) {
         return;
     }
-    
+
     try {
         const response = await fetchWithAuth(`/api/matches/${id}`, {
             method: 'DELETE'
         });
-        
+
         if (!response.ok) {
             const error = await response.text();
             throw new Error(error);
         }
-        
+
         showMessage('Матч видалено успішно!', 'success');
         document.getElementById('match-delete-id').value = '';
         loadMatches();
@@ -737,11 +779,11 @@ function showMessage(message, type = 'success') {
     if (existing) {
         existing.remove();
     }
-    
+
     const alert = document.createElement('div');
     alert.className = `alert alert-${type}`;
     alert.textContent = message;
-    
+
     const main = document.querySelector('.site-main .wrap');
     if (main) {
         main.insertBefore(alert, main.firstChild);

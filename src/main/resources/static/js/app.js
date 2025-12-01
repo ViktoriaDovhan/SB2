@@ -101,15 +101,23 @@ function renderMatchesList(matchesList, containerId = 'matches-list', showScores
         const awayScore = match.awayScore ?? '?';
         const scoreDisplay = showScores ? `${homeScore} : ${awayScore}` : '? : ?';
 
+        const onClickAttr = match.isExternal ? '' : `onclick="viewMatchDetail(${match.id})"`;
+
         return `
-        <div class="match-card" onclick="viewMatchDetail(${match.id})">
+        <div class="match-card" ${onClickAttr}>
             <div class="match-header">
                 <span class="match-date">📅 ${dateStr} • ${timeStr}</span>
             </div>
             <div class="match-teams">
-                <div class="team-name team-home">${escapeHtml(match.homeTeam)}</div>
+                <div class="team-container home">
+                    ${match.homeTeamEmblem ? `<img src="${escapeHtml(match.homeTeamEmblem)}" class="team-icon-small" alt="">` : ''}
+                    <div class="team-name team-home">${escapeHtml(match.homeTeam)}</div>
+                </div>
                 <div class="match-score">${scoreDisplay}</div>
-                <div class="team-name team-away">${escapeHtml(match.awayTeam)}</div>
+                <div class="team-container away">
+                    <div class="team-name team-away">${escapeHtml(match.awayTeam)}</div>
+                    ${match.awayTeamEmblem ? `<img src="${escapeHtml(match.awayTeamEmblem)}" class="team-icon-small" alt="">` : ''}
+                </div>
             </div>
             <div class="match-info">
                 <span class="info-badge">ID: ${match.id}</span>
@@ -302,7 +310,7 @@ function renderTeamsList(teamsList) {
     }
 
     const teamIcon = {
-        'UPL': '🇺🇦',
+        'UCL': '⭐',
         'UCL': '⭐',
         'EPL': '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
         'LaLiga': '🇪🇸',
@@ -329,7 +337,7 @@ function renderTeamsList(teamsList) {
     `}).join('');
 }
 
-let currentLeague = 'UPL';
+let currentLeague = 'UCL';
 
 async function loadTeamsByLeague(league) {
     // Очищаємо активні запити для старих ліг
@@ -442,12 +450,21 @@ async function loadTeamsByLeague(league) {
 
 async function updateDashboardStats() {
     const newsR = await apiFetch('GET', '/api/news');
-    const matchesR = await apiFetch('GET', '/api/matches');
     const teamsR = await apiFetch('GET', '/api/teams/actual');
     const topicsR = await apiFetch('GET', '/api/forum/topics');
 
+    // Завантажуємо матчі з усіх джерел для статистики
+    // Використовуємо тільки /api/teams/matches/all, оскільки він повертає всі матчі (включаючи локальні)
+    const externalR = await apiFetch('GET', '/api/teams/matches/all');
+
+    let totalMatchesCount = 0;
+    if (externalR.ok && externalR.json && externalR.json.total !== undefined) {
+        totalMatchesCount = externalR.json.total;
+    } else if (externalR.ok && externalR.json && Array.isArray(externalR.json.matches)) {
+        totalMatchesCount = externalR.json.matches.length;
+    }
+
     const newsCount = Array.isArray(newsR.json) ? newsR.json.length : 0;
-    const matchesCount = Array.isArray(matchesR.json) ? matchesR.json.length : 0;
 
     let teamsCount = 0;
     if (teamsR.ok && teamsR.json) {
@@ -458,11 +475,19 @@ async function updateDashboardStats() {
 
     const newsEl = document.getElementById('stat-news');
     const matchesEl = document.getElementById('stat-matches');
+    // const matchesDetailEl = document.getElementById('stat-matches-detail');
     const teamsEl = document.getElementById('stat-teams');
     const topicsEl = document.getElementById('stat-topics');
 
     if (newsEl) newsEl.textContent = newsCount;
-    if (matchesEl) matchesEl.textContent = matchesCount;
+    if (matchesEl) matchesEl.textContent = totalMatchesCount;
+    /*
+    if (matchesDetailEl) {
+        matchesDetailEl.textContent = currentTourMatchesCount > 0
+            ? `${currentTourMatchesCount} в поточному турі`
+            : '';
+    }
+    */
     if (teamsEl) teamsEl.textContent = teamsCount;
     if (topicsEl) topicsEl.textContent = topicsCount;
 }
@@ -476,10 +501,45 @@ async function writeList(section) {
         }
         updateDashboardStats();
     } else if (section === 'matches') {
-        const r = await apiFetch('GET', '/api/matches');
-        if (r.ok && Array.isArray(r.json)) {
-            renderMatchesList(r.json);
+        // 1. Fetch DB matches
+        const dbMatchesP = apiFetch('GET', '/api/matches');
+
+        // 2. Fetch External matches (All Season)
+        const allExternalMatchesP = apiFetch('GET', '/api/teams/matches/all');
+
+        const [dbMatchesR, externalR] = await Promise.all([dbMatchesP, allExternalMatchesP]);
+
+        let allMatches = [];
+
+        // Process DB matches
+        if (dbMatchesR.ok && Array.isArray(dbMatchesR.json)) {
+            allMatches = [...dbMatchesR.json];
         }
+
+        // Process External Matches
+        if (externalR.ok && externalR.json && Array.isArray(externalR.json.matches)) {
+            const normalized = externalR.json.matches.map(m => ({
+                id: m.id,
+                homeTeam: m.homeTeam?.name || 'Unknown',
+                awayTeam: m.awayTeam?.name || 'Unknown',
+                homeTeamEmblem: m.homeTeam?.crest || '',
+                awayTeamEmblem: m.awayTeam?.crest || '',
+                homeScore: m.score?.home ?? null,
+                awayScore: m.score?.away ?? null,
+                kickoffAt: m.kickoffAt,
+                league: m.league,
+                isExternal: true
+            }));
+            allMatches = [...allMatches, ...normalized];
+        }
+
+        // Deduplicate by ID
+        const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
+
+        // Sort by date (newest first)
+        uniqueMatches.sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
+
+        renderMatchesList(uniqueMatches, 'all-matches');
         updateDashboardStats();
     } else if (section === 'teams') {
         await loadTeamsByLeague(currentLeague);
@@ -1523,7 +1583,7 @@ async function renderUpcomingMatches(container, league) {
         container,
         league,
         mode: 'upcoming',
-        title: `📅 Майбутні матчі ${league}`,
+        title: `📅 Наступний тур ${league}`,
         emptyMessage: 'Немає запланованих матчів для обраної ліги.'
     });
 }
@@ -1751,14 +1811,15 @@ function filterMatchesByMode(matches, league, mode) {
                 }
             }
 
-            // ПРІОРИТЕТ: Якщо є теги API, використовуємо їх для фільтрації
+            // ПРІОР ИТЕТ: Якщо є теги API, використовуємо їх для фільтрації
             if (match.apiTags && match.apiTags.length > 0) {
                 if (mode === 'past') {
-                    // Показуємо матчі поточного туру (навіть якщо вони ще не зіграні)
+                    // Показуємо матчі поточного туру (всі матчі незалежно від статусу)
                     return match.apiTags.includes('current_tour');
                 } else if (mode === 'upcoming') {
-                    // Показуємо майбутні матчі (наступні тури)
-                    return match.apiTags.includes('upcoming');
+                    // Показуємо матчі наступного туру
+                    // Фільтруємо тільки upcoming матчі, які не є current_tour
+                    return match.apiTags.includes('upcoming') && !match.apiTags.includes('current_tour');
                 }
             }
 
@@ -1842,8 +1903,8 @@ function buildMatchCard(match, mode) {
         : '';
 
     // Отримуємо емблеми команд, якщо вони є
-    const homeTeamCrest = typeof match.homeTeam === 'object' && match.homeTeam?.crest ? match.homeTeam.crest : '';
-    const awayTeamCrest = typeof match.awayTeam === 'object' && match.awayTeam?.crest ? match.awayTeam.crest : '';
+    const homeTeamCrest = match.homeTeamEmblem || (typeof match.homeTeam === 'object' && match.homeTeam?.crest ? match.homeTeam.crest : '');
+    const awayTeamCrest = match.awayTeamEmblem || (typeof match.awayTeam === 'object' && match.awayTeam?.crest ? match.awayTeam.crest : '');
 
     // Отримуємо емодзі ліги
     const leagueEmoji = getLeagueEmojiForMatch(match.league);
@@ -1881,7 +1942,7 @@ function formatScoreValue(value) {
 function getLeagueEmojiForMatch(league) {
     if (!league) return '⚽';
     const emojis = {
-        'UPL': '🇺🇦',
+        'UCL': '⭐',
         'UCL': '⭐',
         'EPL': '🏴',
         'LaLiga': '🇪🇸',

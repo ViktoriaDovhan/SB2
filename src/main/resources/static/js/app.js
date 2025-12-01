@@ -790,7 +790,7 @@ function displayUpcomingMatchesNotifications(matches) {
             <div class="notification-icon">⚽🔔</div>
             <div class="notification-content">
                 <div class="notification-title">
-                    🎯 Майбутні матчі в найближчі 2 дні
+                    🎯 Наступний тур в найближчі 2 дні
                 </div>
                 <div class="notification-matches">
                     ${cardsHtml}
@@ -1799,14 +1799,18 @@ function filterMatchesByMode(matches, league, mode) {
             if (!kickoffDate || isNaN(kickoffDate.getTime())) {
                 // Якщо немає дати, використовуємо рахунок для визначення минулого/майбутнього
                 if (mode === 'past') {
-                    // Для минулих матчів перевіряємо наявність рахунку
-                    const hasScore = (match.score && (match.score.home !== undefined || match.score.away !== undefined)) ||
-                        (match.homeScore !== undefined && match.awayScore !== undefined);
+                    // Для минулих матчів перевіряємо наявність рахунку (враховуємо null)
+                    const hasScore = (match.score && (match.score.home !== undefined && match.score.home !== null ||
+                        match.score.away !== undefined && match.score.away !== null)) ||
+                        (match.homeScore !== undefined && match.homeScore !== null &&
+                         match.awayScore !== undefined && match.awayScore !== null);
                     return hasScore;
                 } else {
-                    // Для майбутніх матчів перевіряємо відсутність рахунку
-                    const hasNoScore = (!match.score || (match.score.home === undefined && match.score.away === undefined)) &&
-                        (match.homeScore === undefined || match.awayScore === undefined);
+                    // Для майбутніх матчів перевіряємо відсутність рахунку (враховуємо null)
+                    const hasNoScore = (!match.score || (match.score.home === undefined || match.score.home === null) &&
+                        (match.score.away === undefined || match.score.away === null)) &&
+                        (match.homeScore === undefined || match.homeScore === null ||
+                         match.awayScore === undefined || match.awayScore === null);
                     return hasNoScore;
                 }
             }

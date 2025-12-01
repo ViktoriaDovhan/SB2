@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import com.football.ua.model.entity.MatchEntity;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -17,6 +18,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class ScheduledTaskService {
@@ -38,6 +40,9 @@ public class ScheduledTaskService {
 
     @Autowired
     private ExternalTeamApiService externalTeamApiService;
+
+    @Autowired
+    private MatchDbService matchDbService;
 
     @Scheduled(cron = "0 0 2 * * *")
     public void performDailyDataUpdate() {
@@ -177,6 +182,131 @@ public class ScheduledTaskService {
         } catch (Exception e) {
             log.error("❌ Помилка під час оновлення статистики системи: {}", e.getMessage(), e);
         }
+    }
+
+    @Scheduled(fixedRate = 600000) // 10 хвилин
+    public void performMatchScoreUpdate() {
+        log.info("⚽ Початок оновлення рахунків матчів: {}", LocalDateTime.now().format(FORMATTER));
+
+        try {
+            List<MatchEntity> allMatches = matchDbService.list();
+            LocalDateTime now = LocalDateTime.now();
+
+            // Знаходимо завершені матчі без рахунків
+            List<MatchEntity> matchesToUpdate = allMatches.stream()
+                .filter(match -> match.getKickoffAt().isBefore(now)) // Матч уже відбувся
+                .filter(match -> match.getHomeScore() == null || match.getAwayScore() == null) // Немає рахунку
+                .toList();
+
+            if (matchesToUpdate.isEmpty()) {
+                log.debug("ℹ️ Немає матчів, які потребують оновлення рахунків");
+                return;
+            }
+
+            log.info("📊 Знайдено {} матчів для оновлення рахунків", matchesToUpdate.size());
+
+            int updatedCount = 0;
+            for (MatchEntity match : matchesToUpdate) {
+                try {
+                    boolean scoreUpdated = updateMatchScoreFromApi(match);
+                    if (scoreUpdated) {
+                        updatedCount++;
+                    }
+                } catch (Exception e) {
+                    log.warn("❌ Помилка оновлення рахунку матчу {} vs {}: {}",
+                        match.getHomeTeam().getName(),
+                        match.getAwayTeam().getName(),
+                        e.getMessage());
+                }
+            }
+
+            log.info("✅ Оновлено рахунків для {} матчів", updatedCount);
+
+        } catch (Exception e) {
+            log.error("❌ Помилка під час оновлення рахунків матчів: {}", e.getMessage(), e);
+        }
+    }
+
+    private boolean updateMatchScoreFromApi(MatchEntity match) {
+        try {
+            String leagueCode = match.getLeague();
+            String homeTeamName = match.getHomeTeam().getName();
+            String awayTeamName = match.getAwayTeam().getName();
+
+            log.debug("🔍 Пошук рахунку для матчу: {} vs {} (ліга: {})",
+                homeTeamName, awayTeamName, leagueCode);
+
+            // Отримуємо матчі з API для цієї ліги
+            List<Map<String, Object>> apiMatches = externalTeamApiService.fetchMatchesFromApi(leagueCode);
+
+            if (apiMatches == null || apiMatches.isEmpty()) {
+                log.debug("⚠️ Не отримано матчів з API для ліги {}", leagueCode);
+                return false;
+            }
+
+            // Шукаємо відповідний матч в API даних
+            Optional<Map<String, Object>> matchingApiMatch = apiMatches.stream()
+                .filter(apiMatch -> {
+                    String apiHomeTeam = (String) apiMatch.get("homeTeam");
+                    String apiAwayTeam = (String) apiMatch.get("awayTeam");
+                    return homeTeamName.equals(apiHomeTeam) && awayTeamName.equals(apiAwayTeam);
+                })
+                .findFirst();
+
+            if (matchingApiMatch.isEmpty()) {
+                log.debug("⚠️ Матч {} vs {} не знайдено в API даних ліги {}",
+                    homeTeamName, awayTeamName, leagueCode);
+                return false;
+            }
+
+            Map<String, Object> apiMatch = matchingApiMatch.get();
+            Object homeScoreObj = apiMatch.get("homeScore");
+            Object awayScoreObj = apiMatch.get("awayScore");
+
+            if (homeScoreObj == null || awayScoreObj == null) {
+                log.debug("⚠️ Рахунок ще не доступний для матчу {} vs {}",
+                    homeTeamName, awayTeamName);
+                return false;
+            }
+
+            Integer homeScore = convertToInteger(homeScoreObj);
+            Integer awayScore = convertToInteger(awayScoreObj);
+
+            if (homeScore == null || awayScore == null) {
+                log.debug("⚠️ Невірний формат рахунку для матчу {} vs {}",
+                    homeTeamName, awayTeamName);
+                return false;
+            }
+
+            // Оновлюємо рахунок в базі даних
+            matchDbService.updateScore(match.getId(), homeScore, awayScore);
+
+            log.info("✅ Оновлено рахунок матчу {} vs {}: {}:{}",
+                homeTeamName, awayTeamName, homeScore, awayScore);
+
+            return true;
+
+        } catch (Exception e) {
+            log.warn("❌ Помилка оновлення рахунку матчу {} vs {}: {}",
+                match.getHomeTeam().getName(),
+                match.getAwayTeam().getName(),
+                e.getMessage());
+            return false;
+        }
+    }
+
+    private Integer convertToInteger(Object value) {
+        if (value == null) return null;
+        if (value instanceof Integer) return (Integer) value;
+        if (value instanceof Number) return ((Number) value).intValue();
+        if (value instanceof String) {
+            try {
+                return Integer.parseInt((String) value);
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }
+        return null;
     }
 
     @Scheduled(cron = "0 0 3 * * 0")

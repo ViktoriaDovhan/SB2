@@ -27,6 +27,8 @@ import java.nio.charset.StandardCharsets;
 import org.springframework.http.*;
 import org.springframework.web.client.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -55,12 +57,13 @@ public class MatchController {
 
     @GetMapping
     @Operation(summary = "Отримати всі матчі", description = "Повертає список всіх футбольних матчів")
-    public List<Match> list(@RequestParam(value = "league", required = false) String league) {
+    public List<Match> list(@RequestParam(value = "league", required = false) String league, @RequestParam(value = "full", required = false, defaultValue = "false") boolean full) {
         MDC.put("operation", "list");
         MDC.put("endpoint", "/api/matches");
         try {
             log.info(DB_OPERATION, "Запит на отримання списку матчів");
-            var stream = matchDbService.list().stream();
+            List<MatchEntity> all = matchDbService.list();
+            var stream = all.stream();
             if (league != null && !league.trim().isEmpty()) {
                 String filter = league.trim();
                 stream = stream.filter(match -> {
@@ -69,7 +72,14 @@ public class MatchController {
                 });
             }
 
-            List<Match> matches = stream
+            List<MatchEntity> filtered = stream.collect(Collectors.toList());
+
+            if (!full) {
+                filtered = filterCurrentAndNextMatchdays(filtered);
+                filtered.sort(Comparator.comparing(MatchEntity::getKickoffAt).reversed());
+            }
+
+            List<Match> matches = filtered.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());
             log.info(DB_OPERATION, "Повернуто {} матчів", matches.size());
@@ -211,6 +221,68 @@ public class MatchController {
         } finally {
             MDC.clear();
         }
+    }
+
+    private List<MatchEntity> filterCurrentAndNextMatchdays(List<MatchEntity> matches) {
+        if (matches == null || matches.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        Map<String, List<MatchEntity>> byLeague = matches.stream()
+                .collect(Collectors.groupingBy(MatchEntity::getLeague));
+
+        List<MatchEntity> result = new ArrayList<>();
+
+        for (List<MatchEntity> leagueMatches : byLeague.values()) {
+            List<MatchEntity> past = leagueMatches.stream()
+                    .filter(m -> m.getKickoffAt().isBefore(now))
+                    .collect(Collectors.toList());
+            List<MatchEntity> future = leagueMatches.stream()
+                    .filter(m -> !m.getKickoffAt().isBefore(now))
+                    .collect(Collectors.toList());
+
+            Set<Integer> targetMatchdays = new HashSet<>();
+            past.stream()
+                    .map(MatchEntity::getMatchday)
+                    .filter(Objects::nonNull)
+                    .max(Integer::compareTo)
+                    .ifPresent(targetMatchdays::add);
+            future.stream()
+                    .map(MatchEntity::getMatchday)
+                    .filter(Objects::nonNull)
+                    .min(Integer::compareTo)
+                    .ifPresent(targetMatchdays::add);
+
+            Set<LocalDate> targetDates = new HashSet<>();
+            past.stream()
+                    .map(m -> m.getKickoffAt().toLocalDate())
+                    .max(LocalDate::compareTo)
+                    .ifPresent(targetDates::add);
+            future.stream()
+                    .map(m -> m.getKickoffAt().toLocalDate())
+                    .min(LocalDate::compareTo)
+                    .ifPresent(targetDates::add);
+
+            List<MatchEntity> leagueFiltered = leagueMatches.stream()
+                    .filter(m -> {
+                        Integer md = m.getMatchday();
+                        LocalDate date = m.getKickoffAt().toLocalDate();
+                        if (md != null && !targetMatchdays.isEmpty() && targetMatchdays.contains(md)) {
+                            return true;
+                        }
+                        return targetDates.contains(date);
+                    })
+                    .collect(Collectors.toList());
+
+            if (leagueFiltered.isEmpty()) {
+                result.addAll(leagueMatches);
+            } else {
+                result.addAll(leagueFiltered);
+            }
+        }
+
+        return result;
     }
     
     private Match toDto(MatchEntity entity) {

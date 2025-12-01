@@ -756,7 +756,7 @@ function initMatchesCheckboxes() {
                 if (upcomingCheckbox.checked) {
                     loadUpcomingMatchesFromApi();
                 } else {
-                    container.innerHTML = '<div class="empty-state">📅 Майбутні матчі вимкнено</div>';
+                    container.innerHTML = '<div class="empty-state">📅 Наступний тур вимкнено</div>';
                 }
             }
         });
@@ -771,7 +771,7 @@ function initMatchesCheckboxes() {
                 if (pastCheckbox.checked) {
                     loadPreviousMatchesFromApi();
                 } else {
-                    container.innerHTML = '<div class="empty-state">📅 Минулі матчі вимкнено</div>';
+                    container.innerHTML = '<div class="empty-state">📅 Поточний тур вимкнено</div>';
                 }
             }
         });

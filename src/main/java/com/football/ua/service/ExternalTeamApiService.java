@@ -642,46 +642,64 @@ public class ExternalTeamApiService {
         log.info("Отримано запит на майбутні матчі");
         List<MatchEntity> allMatches = matchDbService.list();
         LocalDateTime now = LocalDateTime.now();
-        
-        return allMatches.stream()
+
+        Map<String, List<MatchEntity>> matchesByLeague = allMatches.stream()
                 .filter(match -> match.getKickoffAt().isAfter(now))
+                .collect(Collectors.groupingBy(MatchEntity::getLeague));
+
+        return matchesByLeague.values().stream()
+                .flatMap(matches -> filterMatchesByMatchday(matches, true).stream())
+                .sorted(Comparator.comparing(MatchEntity::getKickoffAt))
                 .map(this::convertMatchToMap)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> getPreviousMatches() {
         log.info("Отримано запит на минулі матчі");
         List<MatchEntity> allMatches = matchDbService.list();
         LocalDateTime now = LocalDateTime.now();
-        
-        return allMatches.stream()
+
+        Map<String, List<MatchEntity>> matchesByLeague = allMatches.stream()
                 .filter(match -> match.getKickoffAt().isBefore(now))
+                .collect(Collectors.groupingBy(MatchEntity::getLeague));
+
+        return matchesByLeague.values().stream()
+                .flatMap(matches -> filterMatchesByMatchday(matches, false).stream())
+                .sorted(Comparator.comparing(MatchEntity::getKickoffAt).reversed())
                 .map(this::convertMatchToMap)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> getUpcomingMatchesForLeague(String leagueCode) {
         log.info("Отримано запит на майбутні матчі для ліги: {}", leagueCode);
         List<MatchEntity> allMatches = matchDbService.list();
         LocalDateTime now = LocalDateTime.now();
-        
-        return allMatches.stream()
+
+        List<MatchEntity> leagueMatches = allMatches.stream()
                 .filter(match -> match.getLeague().equals(leagueCode))
                 .filter(match -> match.getKickoffAt().isAfter(now))
+                .collect(Collectors.toList());
+
+        return filterMatchesByMatchday(leagueMatches, true).stream()
+                .sorted(Comparator.comparing(MatchEntity::getKickoffAt))
                 .map(this::convertMatchToMap)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> getPreviousMatchesForLeague(String leagueCode) {
         log.info("Отримано запит на минулі матчі для ліги: {}", leagueCode);
         List<MatchEntity> allMatches = matchDbService.list();
         LocalDateTime now = LocalDateTime.now();
-        
-        return allMatches.stream()
+
+        List<MatchEntity> leagueMatches = allMatches.stream()
                 .filter(match -> match.getLeague().equals(leagueCode))
                 .filter(match -> match.getKickoffAt().isBefore(now))
+                .collect(Collectors.toList());
+
+        return filterMatchesByMatchday(leagueMatches, false).stream()
+                .sorted(Comparator.comparing(MatchEntity::getKickoffAt).reversed())
                 .map(this::convertMatchToMap)
-                .collect(java.util.stream.Collectors.toList());
+                .collect(Collectors.toList());
     }
 
     public List<Map<String, Object>> getTopScorersForLeague(String leagueCode) {
@@ -755,6 +773,50 @@ public class ExternalTeamApiService {
                 .collect(java.util.stream.Collectors.toList());
     }
 
+    private List<MatchEntity> filterMatchesByMatchday(List<MatchEntity> matches, boolean upcoming) {
+        if (matches == null || matches.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Optional<Integer> targetMatchdayOpt = upcoming
+                ? matches.stream()
+                        .map(MatchEntity::getMatchday)
+                        .filter(Objects::nonNull)
+                        .min(Integer::compareTo)
+                : matches.stream()
+                        .map(MatchEntity::getMatchday)
+                        .filter(Objects::nonNull)
+                        .max(Integer::compareTo);
+
+        if (targetMatchdayOpt.isPresent()) {
+            Integer targetMatchday = targetMatchdayOpt.get();
+            List<MatchEntity> filteredByMatchday = matches.stream()
+                    .filter(match -> targetMatchday.equals(match.getMatchday()))
+                    .collect(Collectors.toList());
+            if (!filteredByMatchday.isEmpty()) {
+                return filteredByMatchday;
+            }
+        }
+
+        LocalDate targetDate = upcoming
+                ? matches.stream()
+                        .map(match -> match.getKickoffAt().toLocalDate())
+                        .min(LocalDate::compareTo)
+                        .orElse(null)
+                : matches.stream()
+                        .map(match -> match.getKickoffAt().toLocalDate())
+                        .max(LocalDate::compareTo)
+                        .orElse(null);
+
+        if (targetDate == null) {
+            return matches;
+        }
+
+        return matches.stream()
+                .filter(match -> match.getKickoffAt().toLocalDate().isEqual(targetDate))
+                .collect(Collectors.toList());
+    }
+
     private Map<String, Object> convertMatchToMap(MatchEntity match) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", match.getId());
@@ -766,6 +828,7 @@ public class ExternalTeamApiService {
         map.put("awayScore", match.getAwayScore());
         map.put("kickoffAt", match.getKickoffAt().toString());
         map.put("league", match.getLeague());
+        map.put("matchday", match.getMatchday());
         map.put("status", match.getKickoffAt().isBefore(LocalDateTime.now()) ? "FINISHED" : "SCHEDULED");
         return map;
     }

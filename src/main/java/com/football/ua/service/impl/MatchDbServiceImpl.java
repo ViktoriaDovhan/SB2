@@ -26,16 +26,22 @@ public class MatchDbServiceImpl implements MatchDbService {
     @Override
     @CacheEvict(value = "matches", allEntries = true)
     public MatchEntity create(String homeTeam, String awayTeam, LocalDateTime kickoffAt, String league) {
-        TeamEntity home = teamRepository.findByName(homeTeam).orElseGet(() -> {
-            TeamEntity t = new TeamEntity();
-            t.setName(homeTeam);
-            return teamRepository.save(t);
-        });
-        TeamEntity away = teamRepository.findByName(awayTeam).orElseGet(() -> {
-            TeamEntity t = new TeamEntity();
-            t.setName(awayTeam);
-            return teamRepository.save(t);
-        });
+
+        TeamEntity home = teamRepository.findByNameAndLeague(homeTeam, league)
+                .orElseGet(() -> {
+                    TeamEntity t = new TeamEntity();
+                    t.setName(homeTeam);
+                    t.setLeague(league); // якщо є таке поле
+                    return teamRepository.save(t);
+                });
+
+        TeamEntity away = teamRepository.findByNameAndLeague(awayTeam, league)
+                .orElseGet(() -> {
+                    TeamEntity t = new TeamEntity();
+                    t.setName(awayTeam);
+                    t.setLeague(league); // якщо є
+                    return teamRepository.save(t);
+                });
 
         MatchEntity match = new MatchEntity();
         match.setKickoffAt(kickoffAt);
@@ -50,6 +56,7 @@ public class MatchDbServiceImpl implements MatchDbService {
 
         return matchRepository.save(match);
     }
+
 
     @Override
     @CacheEvict(value = "matches", allEntries = true)

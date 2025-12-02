@@ -9,12 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class DataMigrationService {
+
     private static final Logger log = LoggerFactory.getLogger(DataMigrationService.class);
 
     @Autowired
@@ -37,11 +39,12 @@ public class DataMigrationService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    // ==================== МІГРАЦІЯ КОМАНД ====================
+
     public void migrateTeamsFromCacheToDatabase() {
         log.info("🔄 Початок міграції команд з кешу в базу даних");
 
         try {
-
             File allTeamsFile = new File("cache/teams/all_teams.json");
             if (!allTeamsFile.exists()) {
                 log.warn("⚠️ Файл cache/teams/all_teams.json не знайдено, пропускаємо міграцію");
@@ -90,7 +93,6 @@ public class DataMigrationService {
         }
     }
 
-    
     private Team convertMapToTeam(Map<String, Object> teamData, String league) {
         try {
             Team team = new Team();
@@ -136,7 +138,6 @@ public class DataMigrationService {
         }
     }
 
-    
     public void cleanupTeamCacheFiles() {
         log.info("🗑️ Початок очищення кеш файлів команд");
 
@@ -174,55 +175,48 @@ public class DataMigrationService {
         }
     }
 
+    // ==================== МІГРАЦІЯ МАТЧІВ ====================
+
+    /**
+     * Викликається з DataInitializer.
+     * Якщо матчі в БД вже є – нічого не робимо.
+     * Якщо немає – тягнемо їх з API і зберігаємо через MatchDbService.create(...)
+     */
     public void migrateMatchesFromCacheToDatabase() {
-        log.info("🔄 Початок міграції матчів з кешу в базу даних");
-        
+        log.info("🔄 Перевірка наявності матчів в БД перед міграцією з API");
+
         try {
-            // Спробуємо завантажити матчі з кешу бази даних
-            List<com.football.ua.model.entity.MatchEntity> cachedMatches = loadMatchesFromDatabaseCache();
-            
-            if (cachedMatches != null && !cachedMatches.isEmpty()) {
-                log.info("✅ Знайдено {} матчів в кеші БД, дані вже в базі", cachedMatches.size());
+            List<MatchEntity> existing = matchDbService.list();
+            if (existing != null && !existing.isEmpty()) {
+                log.info("✅ В БД вже є {} матчів, міграцію пропускаємо", existing.size());
                 return;
             }
-            
-            log.info("ℹ️ Матчі не знайдені в кеші, початковий запуск або очищено дані");
-            
-        } catch (Exception e) {
-            log.error("❌ Критична помилка під час міграції матчів: {}", e.getMessage(), e);
-        }
-    }
 
-    private List<com.football.ua.model.entity.MatchEntity> loadMatchesFromDatabaseCache() {
-        try {
-            // Завантажуємо через MatchDbService який має кеш
-            return new ArrayList<>();
+            log.info("ℹ️ Матчі в БД відсутні, виконуємо першу міграцію з API");
+            migrateMatchesForAllLeagues();
+
         } catch (Exception e) {
-            log.warn("❌ Помилка завантаження матчів з кешу: {}", e.getMessage());
-            return null;
+            log.error("❌ Критична помилка під час перевірки/міграції матчів: {}", e.getMessage(), e);
         }
     }
 
     public boolean hasMatches() {
         try {
-            // Перевіряємо через DatabaseCacheService
             return fileCacheService.isCacheValid("matches", "all_matches") ||
-                   fileCacheService.isCacheValid("matches", "upcoming_matches_by_matchday") ||
-                   fileCacheService.isCacheValid("matches", "previous_matches_by_matchday");
+                    fileCacheService.isCacheValid("matches", "upcoming_matches_by_matchday") ||
+                    fileCacheService.isCacheValid("matches", "previous_matches_by_matchday");
         } catch (Exception e) {
             log.warn("❌ Помилка перевірки наявності матчів: {}", e.getMessage());
             return false;
         }
     }
 
-    // ==================== MATCH MIGRATION ====================
-    
     public Map<String, Integer> migrateMatchesForAllLeagues() {
         log.info("🔄 Початок міграції матчів з API для всіх ліг");
         Map<String, Integer> results = new java.util.LinkedHashMap<>();
-        
+
         List<String> leagues = java.util.Arrays.asList("UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
-        
+
         for (String league : leagues) {
             try {
                 int count = migrateMatchesForLeague(league);
@@ -233,52 +227,114 @@ public class DataMigrationService {
                 results.put(league, 0);
             }
         }
-        
+
         int total = results.values().stream().mapToInt(Integer::intValue).sum();
         log.info("✅ Міграція матчів завершена: {} матчів для {} ліг", total, leagues.size());
-        
+
         return results;
     }
 
+    /**
+     * Завантажує матчі з API і створює їх через MatchDbService.create(...)
+     * НІЯКИХ додаткових методів у MatchDbService не потрібно.
+     */
     private int migrateMatchesForLeague(String leagueCode) {
         log.info("📥 Завантаження матчів для ліги: {}", leagueCode);
-        
+
         try {
-            // Викликаємо НОВИЙ метод який робить HTTP запит до API
             List<Map<String, Object>> matchesData = externalTeamApiService.fetchMatchesFromApi(leagueCode);
-            
+
             if (matchesData == null || matchesData.isEmpty()) {
                 log.warn("⚠️ Отримано 0 матчів для ліги {}", leagueCode);
                 return 0;
             }
-            
-            log.info("📦 Отримано {} матчів для ліги {} з API", matchesData.size(), leagueCode);
-            return matchesData.size();
-            
+
+            int created = 0;
+
+            for (Map<String, Object> matchData : matchesData) {
+                try {
+                    // Підтримуємо і старі, і нові ключі
+                    String homeTeamName = (String) (
+                            matchData.get("homeTeamName") != null
+                                    ? matchData.get("homeTeamName")
+                                    : matchData.get("homeTeam")
+                    );
+
+                    String awayTeamName = (String) (
+                            matchData.get("awayTeamName") != null
+                                    ? matchData.get("awayTeamName")
+                                    : matchData.get("awayTeam")
+                    );
+
+                    Object kickoffRaw = matchData.get("kickoffAt");
+                    LocalDateTime kickoffAt = toLocalDateTime(kickoffRaw);
+
+                    if (homeTeamName == null || awayTeamName == null || kickoffAt == null) {
+                        log.warn("⚠️ Пропускаємо матч з некоректними даними: home={}, away={}, kickoff={}",
+                                homeTeamName, awayTeamName, kickoffRaw);
+                        continue;
+                    }
+
+                    matchDbService.create(homeTeamName, awayTeamName, kickoffAt, leagueCode);
+                    created++;
+                } catch (Exception e) {
+                    log.warn("❌ Помилка обробки одного матчу для {}: {}", leagueCode, e.getMessage());
+                }
+            }
+
+            log.info("📦 Для ліги {} створено {} матчів у БД", leagueCode, created);
+            return created;
+
         } catch (Exception e) {
             log.error("❌ Помилка завантаження матчів для {}: {}", leagueCode, e.getMessage());
             return 0;
         }
     }
 
+    private LocalDateTime toLocalDateTime(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof LocalDateTime) {
+            return (LocalDateTime) value;
+        }
+        if (value instanceof String) {
+            String text = ((String) value).trim();
+            if (text.isEmpty()) {
+                return null;
+            }
+            try {
+                // якщо є часовий пояс
+                if (text.endsWith("Z") || text.contains("+")) {
+                    return java.time.OffsetDateTime.parse(text).toLocalDateTime();
+                }
+                return LocalDateTime.parse(text);
+            } catch (Exception e) {
+                log.warn("❌ Не вдалося розпарсити дату '{}': {}", text, e.getMessage());
+                return null;
+            }
+        }
+        return null;
+    }
+
+    // ==================== МІГРАЦІЯ ТАБЛИЦЬ ====================
+
     public Map<String, Integer> migrateStandingsForAllLeagues() {
         log.info("🔄 Початок міграції турнірних таблиць з API для всіх ліг");
         Map<String, Integer> results = new java.util.LinkedHashMap<>();
-        
+
         List<String> leagues = java.util.Arrays.asList("UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
-        
+
         for (String league : leagues) {
             try {
-                // Завантажуємо дані з API
                 Map<String, Object> standings = externalTeamApiService.getLeagueStandings(league);
                 if (standings != null && standings.containsKey("standings")) {
                     @SuppressWarnings("unchecked")
                     List<Map<String, Object>> standingsData = (List<Map<String, Object>>) standings.get("standings");
-                    
+
                     if (standingsData != null && !standingsData.isEmpty()) {
-                        // Конвертуємо в Entity та зберігаємо в БД
                         List<com.football.ua.model.entity.StandingEntity> entities = new ArrayList<>();
-                        
+
                         for (Map<String, Object> standing : standingsData) {
                             try {
                                 com.football.ua.model.entity.StandingEntity entity = new com.football.ua.model.entity.StandingEntity();
@@ -295,17 +351,15 @@ public class DataMigrationService {
                                 entity.setPoints(getInteger(standing.get("points")));
                                 entity.setLeague(league);
                                 entity.setLastUpdated(java.time.LocalDateTime.now());
-                                
+
                                 entities.add(entity);
                             } catch (Exception e) {
                                 log.warn("❌ Помилка конвертації запису таблиці для {}: {}", league, e.getMessage());
                             }
                         }
-                        
+
                         if (!entities.isEmpty()) {
-                            // Спочатку видаляємо старі дані для ліги
                             standingDbService.deleteByLeague(league);
-                            // Зберігаємо нові
                             standingDbService.saveAll(entities);
                             results.put(league, entities.size());
                             log.info("✅ Міграція таблиці для {}: {} позицій збережено в БД", league, entities.size());
@@ -323,28 +377,28 @@ public class DataMigrationService {
                 results.put(league, 0);
             }
         }
-        
+
         int total = results.values().stream().mapToInt(Integer::intValue).sum();
         log.info("✅ Міграція таблиць завершена: {} позицій для {} ліг збережено в БД", total, leagues.size());
-        
+
         return results;
     }
+
+    // ==================== МІГРАЦІЯ БОМБАРДИРІВ ====================
 
     public Map<String, Integer> migrateScorersForAllLeagues() {
         log.info("🔄 Початок міграції бомбардирів з API для всіх ліг");
         Map<String, Integer> results = new java.util.LinkedHashMap<>();
-        
+
         List<String> leagues = java.util.Arrays.asList("UCL", "EPL", "LaLiga", "Bundesliga", "SerieA", "Ligue1");
-        
+
         for (String league : leagues) {
             try {
-                // Завантажуємо дані з API
                 List<Map<String, Object>> scorers = externalTeamApiService.fetchScorersFromApi(league);
-                
+
                 if (scorers != null && !scorers.isEmpty()) {
-                    // Конвертуємо в Entity та зберігаємо в БД
                     List<com.football.ua.model.entity.ScorerEntity> entities = new ArrayList<>();
-                    
+
                     for (Map<String, Object> scorer : scorers) {
                         try {
                             com.football.ua.model.entity.ScorerEntity entity = new com.football.ua.model.entity.ScorerEntity();
@@ -357,17 +411,15 @@ public class DataMigrationService {
                             entity.setPenalties(getInteger(scorer.get("penalties")));
                             entity.setLeague(league);
                             entity.setLastUpdated(java.time.LocalDateTime.now());
-                            
+
                             entities.add(entity);
                         } catch (Exception e) {
                             log.warn("❌ Помилка конвертації бомбардира для {}: {}", league, e.getMessage());
                         }
                     }
-                    
+
                     if (!entities.isEmpty()) {
-                        // Спочатку видаляємо старі дані для ліги
                         scorerDbService.deleteByLeague(league);
-                        // Зберігаємо нові
                         scorerDbService.saveAll(entities);
                         results.put(league, entities.size());
                         log.info("✅ Міграція бомбардирів для {}: {} гравців збережено в БД", league, entities.size());
@@ -382,12 +434,15 @@ public class DataMigrationService {
                 results.put(league, 0);
             }
         }
-        
+
         int total = results.values().stream().mapToInt(Integer::intValue).sum();
         log.info("✅ Міграція бомбардирів завершена: {} гравців для {} ліг збережено в БД", total, leagues.size());
-        
+
         return results;
     }
+
+    // ==================== ІНШЕ ====================
+
     public void removeDuplicateMatches() {
         log.info("🧹 Початок очищення дублікатів матчів...");
         try {
@@ -398,14 +453,13 @@ public class DataMigrationService {
             }
 
             Map<String, List<MatchEntity>> groupedMatches = allMatches.stream()
-                .collect(java.util.stream.Collectors.groupingBy(m -> 
-                    m.getHomeTeam().getId() + "-" + m.getAwayTeam().getId() + "-" + m.getKickoffAt()
-                ));
+                    .collect(java.util.stream.Collectors.groupingBy(m ->
+                            m.getHomeTeam().getId() + "-" + m.getAwayTeam().getId() + "-" + m.getKickoffAt()
+                    ));
 
             int deletedCount = 0;
             for (List<MatchEntity> group : groupedMatches.values()) {
                 if (group.size() > 1) {
-                    // Залишаємо перший, видаляємо решту
                     for (int i = 1; i < group.size(); i++) {
                         matchDbService.delete(group.get(i).getId());
                         deletedCount++;
@@ -434,7 +488,6 @@ public class DataMigrationService {
         }
     }
 
-    // Допоміжний метод для безпечної конвертації в Integer
     private Integer getInteger(Object value) {
         if (value == null) {
             return 0;

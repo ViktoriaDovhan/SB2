@@ -13,19 +13,19 @@ public class DataInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final CacheManager cacheManager;
-    private final DataMigrationService dataMigrationService;
 
-    public DataInitializer(UserRepository userRepository, PasswordEncoder passwordEncoder, CacheManager cacheManager, DataMigrationService dataMigrationService) {
+    public DataInitializer(UserRepository userRepository,
+                           PasswordEncoder passwordEncoder,
+                           CacheManager cacheManager) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.cacheManager = cacheManager;
-        this.dataMigrationService = dataMigrationService;
     }
 
     @Override
     public void run(String... args) throws Exception {
         System.out.println("🔄 Ініціалізація тестових користувачів...");
-        
+
         try {
             if (userRepository.findByUsername("user").isEmpty()) {
                 UserEntity user = new UserEntity();
@@ -65,35 +65,6 @@ public class DataInitializer implements CommandLineRunner {
 
             initializeCaches();
 
-            if (dataMigrationService.isDatabaseEmpty()) {
-                System.out.println("🔄 Міграція команд з кешу в базу даних...");
-                dataMigrationService.migrateTeamsFromCacheToDatabase();
-
-                dataMigrationService.cleanupTeamCacheFiles();
-            } else {
-                System.out.println("ℹ️ База даних вже містить команди, міграція пропущена");
-            }
-
-            // Міграція матчів з кешу
-            System.out.println("🔄 Перевірка та міграція матчів...");
-            dataMigrationService.migrateMatchesFromCacheToDatabase();
-
-            // Очищення дублікатів
-            System.out.println("🧹 Очищення дублікатів матчів...");
-            dataMigrationService.removeDuplicateMatches();
-
-            // Міграція турнірних таблиць
-            System.out.println("🔄 Міграція турнірних таблиць з API...");
-            dataMigrationService.migrateStandingsForAllLeagues();
-
-            // Міграція бомбардирів
-            System.out.println("🔄 Міграція бомбардирів з API...");
-            dataMigrationService.migrateScorersForAllLeagues();
-
-            // Видалення команд УПЛ
-            System.out.println("🗑️ Видалення команд УПЛ...");
-            dataMigrationService.removeUPLTeams();
-
             System.out.println("✅ Ініціалізація користувачів завершена успішно!");
         } catch (Exception e) {
             System.err.println("❌ Помилка при ініціалізації користувачів: " + e.getMessage());
@@ -102,12 +73,10 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
-    
     private void initializeCaches() {
         System.out.println("🔄 Ініціалізація кешів системи...");
 
         try {
-
             String[] cacheNames = {"matches", "teams", "standings", "players", "statistics", "predictions"};
 
             for (String cacheName : cacheNames) {
@@ -121,10 +90,6 @@ public class DataInitializer implements CommandLineRunner {
             System.out.println("✅ Ініціалізація кешів завершена успішно!");
         } catch (Exception e) {
             System.err.println("❌ Помилка при ініціалізації кешів: " + e.getMessage());
-
         }
     }
 }
-
-
-

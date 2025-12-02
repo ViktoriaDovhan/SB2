@@ -229,53 +229,74 @@ public class MatchController {
         }
 
         LocalDateTime now = LocalDateTime.now();
+
         Map<String, List<MatchEntity>> byLeague = matches.stream()
                 .collect(Collectors.groupingBy(MatchEntity::getLeague));
 
         List<MatchEntity> result = new ArrayList<>();
 
         for (List<MatchEntity> leagueMatches : byLeague.values()) {
+
             List<MatchEntity> past = leagueMatches.stream()
                     .filter(m -> m.getKickoffAt().isBefore(now))
                     .collect(Collectors.toList());
+
             List<MatchEntity> future = leagueMatches.stream()
                     .filter(m -> !m.getKickoffAt().isBefore(now))
                     .collect(Collectors.toList());
 
+            // 1) Визначаємо "поточний" і "наступний" тур за номером туру
             Set<Integer> targetMatchdays = new HashSet<>();
+
             past.stream()
                     .map(MatchEntity::getMatchday)
                     .filter(Objects::nonNull)
                     .max(Integer::compareTo)
                     .ifPresent(targetMatchdays::add);
+
             future.stream()
                     .map(MatchEntity::getMatchday)
                     .filter(Objects::nonNull)
                     .min(Integer::compareTo)
                     .ifPresent(targetMatchdays::add);
 
+            // 2) Визначаємо всі дати цих турів, щоб захопити матчі,
+            //    у яких matchday = null, але дата така сама
             Set<LocalDate> targetDates = new HashSet<>();
-            past.stream()
-                    .map(m -> m.getKickoffAt().toLocalDate())
-                    .max(LocalDate::compareTo)
-                    .ifPresent(targetDates::add);
-            future.stream()
-                    .map(m -> m.getKickoffAt().toLocalDate())
-                    .min(LocalDate::compareTo)
-                    .ifPresent(targetDates::add);
+
+            if (!targetMatchdays.isEmpty()) {
+                leagueMatches.stream()
+                        .filter(m -> m.getMatchday() != null && targetMatchdays.contains(m.getMatchday()))
+                        .map(m -> m.getKickoffAt().toLocalDate())
+                        .forEach(targetDates::add);
+            } else {
+                // фолбек, якщо взагалі немає matchday у лізі
+                past.stream()
+                        .map(m -> m.getKickoffAt().toLocalDate())
+                        .max(LocalDate::compareTo)
+                        .ifPresent(targetDates::add);
+                future.stream()
+                        .map(m -> m.getKickoffAt().toLocalDate())
+                        .min(LocalDate::compareTo)
+                        .ifPresent(targetDates::add);
+            }
 
             List<MatchEntity> leagueFiltered = leagueMatches.stream()
                     .filter(m -> {
                         Integer md = m.getMatchday();
                         LocalDate date = m.getKickoffAt().toLocalDate();
-                        if (md != null && !targetMatchdays.isEmpty() && targetMatchdays.contains(md)) {
+
+                        // матч із потрібного туру
+                        if (!targetMatchdays.isEmpty() && md != null && targetMatchdays.contains(md)) {
                             return true;
                         }
+                        // або матч з дати цих турів (для тих, у кого matchday == null)
                         return targetDates.contains(date);
                     })
                     .collect(Collectors.toList());
 
             if (leagueFiltered.isEmpty()) {
+                // на всяк випадок — нічого не відфільтрували, тоді повертаємо всі матчі ліги
                 result.addAll(leagueMatches);
             } else {
                 result.addAll(leagueFiltered);

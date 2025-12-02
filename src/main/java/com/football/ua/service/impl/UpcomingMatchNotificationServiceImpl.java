@@ -50,31 +50,21 @@ public class UpcomingMatchNotificationServiceImpl implements UpcomingMatchNotifi
     public List<UpcomingMatchNotification> getUpcomingMatches() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime twoDaysLater = now.plusHours(48);
-        
-        System.out.println("🔍 Перевірка майбутніх матчів:");
-        System.out.println("   Зараз: " + now);
-        System.out.println("   До: " + twoDaysLater);
-        
+
         List<MatchEntity> allMatches = matchRepository.findAll();
-        System.out.println("   Всього матчів в базі: " + allMatches.size());
-        
+
         List<UpcomingMatchNotification> result = allMatches.stream()
             .filter(match -> {
                 LocalDateTime kickoff = match.getKickoffAt();
                 boolean isAfterNow = kickoff.isAfter(now);
                 boolean isBeforeTwoDays = kickoff.isBefore(twoDaysLater);
                 boolean include = isAfterNow && isBeforeTwoDays;
-                
-                System.out.println("   Матч ID=" + match.getId() + " о " + kickoff + 
-                                 " | після now: " + isAfterNow + 
-                                 " | до +48h: " + isBeforeTwoDays +
-                                 " | ВКЛЮЧИТИ: " + include);
+
                 return include;
             })
             .map(this::toNotification)
             .collect(Collectors.toList());
-        
-        System.out.println("   Результат: знайдено " + result.size() + " матчі(ів)");
+
         return result;
     }
     
@@ -93,7 +83,7 @@ public class UpcomingMatchNotificationServiceImpl implements UpcomingMatchNotifi
                 awayTeam = match.getAwayTeam().getName();
             }
         } catch (Exception e) {
-            System.out.println("⚠️ Помилка отримання команд для матчу ID=" + match.getId() + ": " + e.getMessage());
+            // Silently handle team name retrieval errors
         }
         
         return new UpcomingMatchNotification(

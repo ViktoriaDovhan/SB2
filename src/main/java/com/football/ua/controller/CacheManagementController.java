@@ -21,9 +21,11 @@ public class CacheManagementController {
     private static final Logger log = LoggerFactory.getLogger(CacheManagementController.class);
 
     private final CacheManager cacheManager;
+    private final com.football.ua.service.DataMigrationService dataMigrationService;
 
-    public CacheManagementController(CacheManager cacheManager) {
+    public CacheManagementController(CacheManager cacheManager, com.football.ua.service.DataMigrationService dataMigrationService) {
         this.cacheManager = cacheManager;
+        this.dataMigrationService = dataMigrationService;
     }
 
     @GetMapping("/stats")
@@ -125,6 +127,22 @@ public class CacheManagementController {
         );
 
         log.debug("Перевірка існування кешу '{}': {}", cacheName, exists);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/cleanup/invalid-matches")
+    @Operation(summary = "Видалити невалідні матчі", description = "Видаляє матчі без команд (Unknown)")
+    public ResponseEntity<Map<String, Object>> cleanupInvalidMatches() {
+        log.info("Запит на видалення невалідних матчів");
+
+        int deletedCount = dataMigrationService.removeInvalidMatches();
+
+        Map<String, Object> response = Map.of(
+            "deletedCount", deletedCount,
+            "message", deletedCount > 0 ? "Невалідні матчі успішно видалено" : "Невалідні матчі не знайдені"
+        );
+
+        log.info("Видалено {} невалідних матчів", deletedCount);
         return ResponseEntity.ok(response);
     }
 }

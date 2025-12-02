@@ -79,6 +79,17 @@ public class MatchController {
                 filtered.sort(Comparator.comparing(MatchEntity::getKickoffAt).reversed());
             }
 
+            // Фільтруємо матчі без команд або з іменем "Unknown"
+            filtered = filtered.stream()
+                .filter(match -> {
+                    if (match.getHomeTeam() == null || match.getAwayTeam() == null) return false;
+                    String homeName = match.getHomeTeam().getName();
+                    String awayName = match.getAwayTeam().getName();
+                    return homeName != null && !homeName.trim().isEmpty() && !homeName.equalsIgnoreCase("Unknown") &&
+                           awayName != null && !awayName.trim().isEmpty() && !awayName.equalsIgnoreCase("Unknown");
+                })
+                .collect(Collectors.toList());
+
             List<Match> matches = filtered.stream()
                 .map(this::toDto)
                 .collect(Collectors.toList());

@@ -180,15 +180,34 @@ function displayNews(news, containerId, withInteractions = false) {
     `).join('');
 }
 
+let currentMatches = [];
+let currentLeague = 'UCL';
+
 async function loadMatches() {
+    // Default to UCL if not set
+    loadMatchesByLeague(currentLeague);
+}
+
+async function loadMatchesByLeague(leagueCode) {
+    currentLeague = leagueCode;
+    const container = document.getElementById('matches-list');
+    if (container) {
+        container.innerHTML = '<div class="loading-spinner">Завантаження...</div>';
+    }
+
     try {
-        // 1. Fetch DB matches
-        const dbMatchesP = fetch('/api/matches');
+        // Fetch all matches for the league (using the existing endpoint that fetches all season matches)
+        // We might need to filter by league on the client side if the endpoint returns everything
+        // But let's check if we can use /api/teams/matches/all and filter, or if there is a better way.
+        // The previous code used /api/teams/matches/all which returned everything.
+        // Let's use that and filter client-side for now as per plan.
 
-        // 2. Fetch External matches (All Season)
-        const allExternalMatchesP = fetch('/api/teams/matches/all');
-
-        const [dbMatchesR, externalR] = await Promise.all([dbMatchesP, allExternalMatchesP]);
+        const [dbMatchesR, externalR] = await Promise.all([
+            fetch('/api/matches?league=' + leagueCode + '&full=true'), // Request full list from DB
+            fetch('/api/teams/matches/all') // This might be heavy, but it's what we have. 
+            // Optimization: If we could pass league to external API endpoint, it would be better.
+            // But for now, let's stick to the plan.
+        ]);
 
         let allMatches = [];
 
@@ -204,7 +223,9 @@ async function loadMatches() {
         if (externalR.ok) {
             const json = await externalR.json();
             if (json && Array.isArray(json.matches)) {
-                const normalized = json.matches.map(m => normalizeExternalMatch(m));
+                const normalized = json.matches
+                    .filter(m => m.league === leagueCode) // Filter by league
+                    .map(m => normalizeExternalMatch(m));
                 allMatches = [...allMatches, ...normalized];
             }
         }
@@ -215,37 +236,131 @@ async function loadMatches() {
         // Sort by date (newest first)
         uniqueMatches.sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
 
-        const showScores = document.getElementById('showScores')?.checked ?? true;
+        currentMatches = uniqueMatches;
 
-        const now = new Date();
-        const upcomingMatches = uniqueMatches
-            .filter(m => new Date(m.kickoffAt) > now)
-            .slice(0, 6);
+        // Identify Matchdays
+        const matchdays = [...new Set(uniqueMatches.map(m => getMatchdayFromDate(m.kickoffAt)))].sort((a, b) => a - b);
 
-        if (typeof renderMatchesList === 'function') {
-            renderMatchesList(upcomingMatches, 'home-matches', showScores);
-            renderMatchesList(uniqueMatches, 'all-matches', showScores);
-        } else {
-            displayMatches(upcomingMatches, 'home-matches', showScores, true);
-            displayMatches(uniqueMatches, 'all-matches', showScores, true);
-        }
+        // Find current matchday (closest to today)
+        const currentMatchday = findCurrentMatchday(uniqueMatches);
+
+        renderMatchdaySelector(matchdays, currentMatchday);
+        filterMatchesByMatchday(currentMatchday);
 
         updateStatistics('matches', uniqueMatches.length);
     } catch (error) {
         console.error('Помилка:', error);
         showMessage('Не вдалося завантажити матчі', 'error');
+        if (container) container.innerHTML = '<div class="error-state">Помилка завантаження</div>';
     }
 }
+
+function getMatchdayFromDate(dateString) {
+    // This is a simplified logic. Ideally, the API should return the matchday.
+    // If API doesn't return matchday, we might need to group by week or similar.
+    // For now, let's assume we can group by "Tour" if available, or just use a placeholder.
+    // Since the external API returns 'matchday' (we saw it in backend code), let's try to use it.
+    // But `normalizeExternalMatch` didn't include it. Let's update `normalizeExternalMatch`.
+    return 0; // Placeholder, will be fixed in normalizeExternalMatch
+}
+
+function findCurrentMatchday(matches) {
+    const now = new Date();
+    // Find the first match that is in the future
+    const nextMatch = matches.slice().reverse().find(m => new Date(m.kickoffAt) > now);
+    return nextMatch ? nextMatch.matchday : (matches[0]?.matchday || 1);
+}
+
+function renderMatchdaySelector(matchdays, activeMatchday) {
+    const selector = document.getElementById('matchday-selector');
+    if (!selector) return;
+
+    // If we don't have real matchdays, we might need to generate them or handle differently.
+    // Let's assume we have them.
+
+    // Group matches by matchday to get the list of available matchdays
+    const availableMatchdays = [...new Set(currentMatches.map(m => m.matchday))].filter(m => m != null).sort((a, b) => a - b);
+
+    if (availableMatchdays.length === 0) {
+        selector.innerHTML = '<span class="matchday-pill">Всі матчі</span>';
+        return;
+    }
+
+    selector.innerHTML = availableMatchdays.map(day => `
+        <div class="matchday-pill ${day === activeMatchday ? 'active' : ''}" 
+             onclick="filterMatchesByMatchday(${day}); setActivePill(this)">
+            Тур ${day}
+        </div>
+    `).join('');
+
+    // Scroll to active
+    setTimeout(() => {
+        const active = selector.querySelector('.active');
+        if (active) {
+            active.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        }
+    }, 100);
+}
+
+function setActivePill(element) {
+    document.querySelectorAll('.matchday-pill').forEach(p => p.classList.remove('active'));
+    element.classList.add('active');
+}
+
+function filterMatchesByMatchday(matchday) {
+    const container = document.getElementById('matches-list');
+    if (!container) return;
+
+    const filtered = currentMatches.filter(m => m.matchday === matchday);
+    const showScores = document.getElementById('showScores')?.checked ?? true;
+
+    if (filtered.length === 0) {
+        container.innerHTML = '<div class="empty-state">Немає матчів для цього туру</div>';
+        return;
+    }
+
+    // Sort: Upcoming first (asc), then Past (desc) ? 
+    // Usually within a tour, we just want chronological order.
+    filtered.sort((a, b) => new Date(a.kickoffAt) - new Date(b.kickoffAt));
+
+    displayMatches(filtered, 'matches-list', showScores, true);
+}
+
+function scrollMatchdays(direction) {
+    const selector = document.getElementById('matchday-selector');
+    if (selector) {
+        const scrollAmount = 200;
+        selector.scrollBy({
+            left: direction === 'left' ? -scrollAmount : scrollAmount,
+            behavior: 'smooth'
+        });
+    }
+}
+
+// Initialize Match League Tabs
+document.querySelectorAll('.league-tab[data-match-league]').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+        e.preventDefault();
+        // Remove active class from all tabs
+        document.querySelectorAll('.league-tab[data-match-league]').forEach(t => t.classList.remove('active'));
+        // Add active class to clicked tab
+        tab.classList.add('active');
+
+        const league = tab.dataset.matchLeague;
+        loadMatchesByLeague(league);
+    });
+});
 
 function normalizeExternalMatch(m) {
     return {
         id: m.id,
-        homeTeam: m.homeTeam?.name || 'Unknown',
-        awayTeam: m.awayTeam?.name || 'Unknown',
+        homeTeam: m.homeTeam || 'Unknown',
+        awayTeam: m.awayTeam || 'Unknown',
         homeScore: m.score?.home ?? null,
         awayScore: m.score?.away ?? null,
         kickoffAt: m.kickoffAt,
         league: m.league,
+        matchday: m.matchday, // Ensure this is passed
         isExternal: true
     };
 }

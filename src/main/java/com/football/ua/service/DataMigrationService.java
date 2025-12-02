@@ -322,7 +322,10 @@ public class DataMigrationService {
                     Object kickoffRaw = matchData.get("kickoffAt");
                     LocalDateTime kickoffAt = toLocalDateTime(kickoffRaw);
 
-                    if (homeTeamName == null || awayTeamName == null || kickoffAt == null) {
+                    // Валідація: пропускаємо матчі з порожніми/null командами
+                    if (homeTeamName == null || awayTeamName == null || kickoffAt == null ||
+                        homeTeamName.trim().isEmpty() || awayTeamName.trim().isEmpty() ||
+                        homeTeamName.equalsIgnoreCase("Unknown") || awayTeamName.equalsIgnoreCase("Unknown")) {
                         log.warn("⚠️ Пропускаємо матч з некоректними даними: home={}, away={}, kickoff={}",
                                 homeTeamName, awayTeamName, kickoffRaw);
                         continue;
@@ -615,6 +618,61 @@ public class DataMigrationService {
             }
         }
         return 0;
+    }
+
+    /**
+     * Видаляє матчі без команд (Unknown) з бази даних
+     */
+    @org.springframework.cache.annotation.CacheEvict(value = "matches", allEntries = true)
+    public int removeInvalidMatches() {
+        log.info("🧹 Початок очищення невалідних матчів (без команд)...");
+        log.info("🗑️ Очищення кешу 'matches' перед видаленням...");
+        
+        try {
+            List<MatchEntity> allMatches = matchDbService.list();
+            if (allMatches.isEmpty()) {
+                log.info("ℹ️ Матчі відсутні, очищення не потрібне");
+                return 0;
+            }
+
+            int deletedCount = 0;
+            for (MatchEntity match : allMatches) {
+                boolean isInvalid = false;
+                
+                if (match.getHomeTeam() == null || match.getAwayTeam() == null) {
+                    isInvalid = true;
+                } else {
+                    String homeName = match.getHomeTeam().getName();
+                    String awayName = match.getAwayTeam().getName();
+                    
+                    if (homeName == null || homeName.trim().isEmpty() || homeName.equalsIgnoreCase("Unknown") ||
+                        awayName == null || awayName.trim().isEmpty() || awayName.equalsIgnoreCase("Unknown")) {
+                        isInvalid = true;
+                    }
+                }
+
+                if (isInvalid) {
+                    log.info("🗑️ Видалення невалідного матчу ID {}: homeTeam={}, awayTeam={}", 
+                        match.getId(), 
+                        match.getHomeTeam() != null ? match.getHomeTeam().getName() : "NULL",
+                        match.getAwayTeam() != null ? match.getAwayTeam().getName() : "NULL");
+                    matchDbService.delete(match.getId());
+                    deletedCount++;
+                }
+            }
+
+            if (deletedCount > 0) {
+                log.info("✅ Видалено {} невалідних матчів", deletedCount);
+            } else {
+                log.info("✅ Невалідні матчі не знайдені");
+            }
+
+            return deletedCount;
+
+        } catch (Exception e) {
+            log.error("❌ Помилка під час очищення невалідних матчів: {}", e.getMessage(), e);
+            return 0;
+        }
     }
 
     /**

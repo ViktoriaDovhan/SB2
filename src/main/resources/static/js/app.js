@@ -1799,18 +1799,14 @@ function filterMatchesByMode(matches, league, mode) {
             if (!kickoffDate || isNaN(kickoffDate.getTime())) {
                 // Якщо немає дати, використовуємо рахунок для визначення минулого/майбутнього
                 if (mode === 'past') {
-                    // Для минулих матчів перевіряємо наявність рахунку (враховуємо null)
-                    const hasScore = (match.score && (match.score.home !== undefined && match.score.home !== null ||
-                        match.score.away !== undefined && match.score.away !== null)) ||
-                        (match.homeScore !== undefined && match.homeScore !== null &&
-                         match.awayScore !== undefined && match.awayScore !== null);
+                    // Для минулих матчів перевіряємо наявність рахунку
+                    const hasScore = (match.score && (match.score.home !== undefined || match.score.away !== undefined)) ||
+                        (match.homeScore !== undefined && match.awayScore !== undefined);
                     return hasScore;
                 } else {
-                    // Для майбутніх матчів перевіряємо відсутність рахунку (враховуємо null)
-                    const hasNoScore = (!match.score || (match.score.home === undefined || match.score.home === null) &&
-                        (match.score.away === undefined || match.score.away === null)) &&
-                        (match.homeScore === undefined || match.homeScore === null ||
-                         match.awayScore === undefined || match.awayScore === null);
+                    // Для майбутніх матчів перевіряємо відсутність рахунку
+                    const hasNoScore = (!match.score || (match.score.home === undefined && match.score.away === undefined)) &&
+                        (match.homeScore === undefined || match.awayScore === undefined);
                     return hasNoScore;
                 }
             }

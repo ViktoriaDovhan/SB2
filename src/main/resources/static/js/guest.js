@@ -156,8 +156,8 @@ async function loadMatches() {
         if (externalData && Array.isArray(externalData.matches)) {
             const normalized = externalData.matches.map(m => ({
                 id: m.id,
-                homeTeam: m.homeTeam?.name || 'Unknown',
-                awayTeam: m.awayTeam?.name || 'Unknown',
+                homeTeam: m.homeTeam || 'Unknown',
+                awayTeam: m.awayTeam || 'Unknown',
                 homeScore: m.score?.home ?? null,
                 awayScore: m.score?.away ?? null,
                 kickoffAt: m.kickoffAt,

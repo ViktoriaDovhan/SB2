@@ -88,7 +88,32 @@
                                 <span class="score-toggle-label">Показувати рахунок</span>
                             </label>
                         </div>
-                        <div id="all-matches" class="matches-grid"></div>
+
+                        <!-- Filter Bar -->
+                        <div class="matches-filters">
+                            <div class="filter-group">
+                                <select id="filter-league" class="filter-select">
+                                    <option value="">Всі ліги</option>
+                                    <!-- Options injected via JS -->
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <select id="filter-tour" class="filter-select">
+                                    <option value="">Всі тури</option>
+                                    <!-- Options injected via JS -->
+                                </select>
+                            </div>
+                            <div class="filter-group search-group">
+                                <input type="text" id="filter-search" class="filter-input"
+                                    placeholder="Пошук команди...">
+                            </div>
+                        </div>
+
+                        <div id="matches-content-container">
+                            <div id="matches-list" class="matches-grid"></div>
+                            <button id="load-more-matches" class="btn-secondary"
+                                style="display: none; margin: 20px auto; display: block;">Завантажити ще</button>
+                        </div>
                     </section>
 
                     <section id="teams" class="panel">

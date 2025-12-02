@@ -211,6 +211,46 @@ public class DataMigrationService {
         }
     }
 
+    /**
+     * Безпечна міграція матчів - перевіряє наявність перед створенням
+     */
+    public Map<String, Integer> safeMigrateMatchesForAllLeagues() {
+        log.info("🔄 Початок БЕЗПЕЧНОЇ міграції матчів з API для всіх ліг");
+
+        // Перевіряємо, чи є вже матчі в БД
+        List<MatchEntity> existingMatches = matchDbService.list();
+        if (existingMatches != null && !existingMatches.isEmpty()) {
+            log.warn("⚠️ В БД вже є {} матчів. Використовуйте forceMigrateMatchesForAllLeagues() для примусового оновлення", existingMatches.size());
+            Map<String, Integer> results = new java.util.LinkedHashMap<>();
+            results.put("warning", existingMatches.size());
+            return results;
+        }
+
+        return migrateMatchesForAllLeagues();
+    }
+
+    /**
+     * Примусова міграція матчів - видаляє всі існуючі та створює нові
+     */
+    public Map<String, Integer> forceMigrateMatchesForAllLeagues() {
+        log.info("🔄 Початок ПРИМУСОВОЇ міграції матчів з API для всіх ліг");
+
+        // Видаляємо всі існуючі матчі перед міграцією
+        try {
+            List<MatchEntity> allMatches = matchDbService.list();
+            if (allMatches != null && !allMatches.isEmpty()) {
+                log.info("🗑️ Видаляємо {} існуючих матчів перед примусовою міграцією", allMatches.size());
+                for (MatchEntity match : allMatches) {
+                    matchDbService.delete(match.getId());
+                }
+            }
+        } catch (Exception e) {
+            log.error("❌ Помилка видалення існуючих матчів: {}", e.getMessage());
+        }
+
+        return migrateMatchesForAllLeagues();
+    }
+
     public Map<String, Integer> migrateMatchesForAllLeagues() {
         log.info("🔄 Початок міграції матчів з API для всіх ліг");
         Map<String, Integer> results = new java.util.LinkedHashMap<>();
@@ -219,6 +259,14 @@ public class DataMigrationService {
 
         for (String league : leagues) {
             try {
+                // Перевіряємо, чи вже є матчі для цієї ліги
+                int existingCount = matchDbService.listByLeague(league).size();
+                if (existingCount > 0) {
+                    log.info("ℹ️ Для ліги {} вже є {} матчів, пропускаємо міграцію", league, existingCount);
+                    results.put(league, 0);
+                    continue;
+                }
+
                 int count = migrateMatchesForLeague(league);
                 results.put(league, count);
                 log.info("✅ Міграція матчів для {}: {} матчів", league, count);
@@ -230,6 +278,11 @@ public class DataMigrationService {
 
         int total = results.values().stream().mapToInt(Integer::intValue).sum();
         log.info("✅ Міграція матчів завершена: {} матчів для {} ліг", total, leagues.size());
+
+        // Видалення дублікатів після міграції (якщо вони з'явилися)
+        if (total > 0) {
+            removeDuplicateMatches();
+        }
 
         return results;
     }
@@ -452,14 +505,72 @@ public class DataMigrationService {
                 return;
             }
 
+            // 1. Логування статистики по лігах
+            Map<String, Long> matchesByLeague = allMatches.stream()
+                    .collect(java.util.stream.Collectors.groupingBy(
+                            MatchEntity::getLeague,
+                            java.util.stream.Collectors.counting()
+                    ));
+            
+            log.info("📊 Статистика матчів у БД (Всього: {}):", allMatches.size());
+            matchesByLeague.forEach((league, count) -> 
+                log.info("   - {}: {}", league, count)
+            );
+
+            // 🔍 ДЕТАЛЬНИЙ АНАЛІЗ LALIGA (де є 390 матчів замість 380)
+            if (matchesByLeague.getOrDefault("LaLiga", 0L) > 380) {
+                log.info("⚠️ Виявлено аномалію в LaLiga: {} матчів (очікується 380)", matchesByLeague.get("LaLiga"));
+                
+                List<MatchEntity> laLigaMatches = allMatches.stream()
+                        .filter(m -> "LaLiga".equals(m.getLeague()))
+                        .toList();
+
+                // Групуємо за парами команд (незалежно від того, хто вдома, а хто в гостях, щоб знайти всі ігри між ними)
+                // Але в чемпіонаті вони грають двічі: Home vs Away і Away vs Home.
+                // Тож просто перевіримо, чи є повтори Home vs Away.
+                
+                Map<String, List<MatchEntity>> exactPairings = laLigaMatches.stream()
+                        .collect(java.util.stream.Collectors.groupingBy(m -> 
+                            m.getHomeTeam().getName() + " vs " + m.getAwayTeam().getName()
+                        ));
+                
+                log.info("🔍 Аналіз пар команд LaLiga:");
+                exactPairings.forEach((pair, matches) -> {
+                    if (matches.size() > 1) {
+                        log.info("   ❗ Знайдено дублікат пари: {} ({} матчів)", pair, matches.size());
+                        matches.forEach(m -> log.info("      - ID: {}, Date: {}, Status: {}", m.getId(), m.getKickoffAt(), m.getStatus()));
+                        
+                        // Спробуємо видалити дублікати, якщо вони мають різні ID але однакові команди
+                        // Залишаємо той, що має статус FINISHED, або якщо обидва однакові - то перший
+                        if (matches.size() > 1) {
+                             // Сортуємо: FINISHED перші, потім за ID
+                             matches.sort((m1, m2) -> {
+                                 if ("FINISHED".equals(m1.getStatus()) && !"FINISHED".equals(m2.getStatus())) return -1;
+                                 if (!"FINISHED".equals(m1.getStatus()) && "FINISHED".equals(m2.getStatus())) return 1;
+                                 return m1.getId().compareTo(m2.getId());
+                             });
+                             
+                             // Видаляємо всі крім першого (найбільш актуального)
+                             for (int i = 1; i < matches.size(); i++) {
+                                 MatchEntity toDelete = matches.get(i);
+                                 log.info("      🗑️ Видаляю дублікат ID: {}", toDelete.getId());
+                                 matchDbService.delete(toDelete.getId());
+                             }
+                        }
+                    }
+                });
+            }
+
+            // 2. Стандартний пошук дублікатів (за іменами та часом)
             Map<String, List<MatchEntity>> groupedMatches = allMatches.stream()
                     .collect(java.util.stream.Collectors.groupingBy(m ->
-                            m.getHomeTeam().getId() + "-" + m.getAwayTeam().getId() + "-" + m.getKickoffAt()
+                            m.getHomeTeam().getName() + "-" + m.getAwayTeam().getName() + "-" + m.getKickoffAt()
                     ));
 
             int deletedCount = 0;
             for (List<MatchEntity> group : groupedMatches.values()) {
                 if (group.size() > 1) {
+                    group.sort(java.util.Comparator.comparing(MatchEntity::getId));
                     for (int i = 1; i < group.size(); i++) {
                         matchDbService.delete(group.get(i).getId());
                         deletedCount++;
@@ -468,9 +579,7 @@ public class DataMigrationService {
             }
 
             if (deletedCount > 0) {
-                log.info("✅ Видалено {} дублікатів матчів", deletedCount);
-            } else {
-                log.info("✅ Дублікатів не знайдено");
+                log.info("✅ Видалено {} точних дублікатів матчів", deletedCount);
             }
 
         } catch (Exception e) {
@@ -506,5 +615,35 @@ public class DataMigrationService {
             }
         }
         return 0;
+    }
+
+    /**
+     * 🔧 УТИЛІТА: Повне перестворення матчів (використовувати тільки в екстренних випадках)
+     * Видаляє всі матчі та створює їх заново з API. Використовувати обережно!
+     */
+    public void recreateAllMatches() {
+        log.warn("🔥 ПОЧАТОК ПОВНОГО ПЕРЕСТВОРЕННЯ МАТЧІВ - ЦЕ МОЖЕ ЗЛамаТИ СИСТЕМУ!");
+
+        try {
+            // Видаляємо всі матчі
+            List<MatchEntity> allMatches = matchDbService.list();
+            log.info("🗑️ Видаляємо {} існуючих матчів...", allMatches.size());
+
+            for (MatchEntity match : allMatches) {
+                matchDbService.delete(match.getId());
+            }
+
+            log.info("✅ Видалено всі матчі. Починаємо створення заново...");
+
+            // Створюємо матчі заново
+            Map<String, Integer> results = migrateMatchesForAllLeagues();
+            int total = results.values().stream().mapToInt(Integer::intValue).sum();
+
+            log.warn("🔄 ПЕРЕСТВОРЕННЯ ЗАВЕРШЕНО: створено {} нових матчів з послідовними ID", total);
+
+        } catch (Exception e) {
+            log.error("❌ КРИТИЧНА ПОМИЛКА при перестворенні матчів: {}", e.getMessage(), e);
+            throw new RuntimeException("Помилка перестворення матчів", e);
+        }
     }
 }

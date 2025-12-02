@@ -49,9 +49,24 @@ public class MatchDbServiceImpl implements MatchDbService {
         match.setAwayTeam(away);
         match.setLeague(league);
 
+        // Перевірка точного збігу
         List<MatchEntity> existing = matchRepository.findByHomeTeamAndAwayTeamAndKickoffAt(home, away, kickoffAt);
         if (!existing.isEmpty()) {
             return existing.get(0);
+        }
+
+        // Додаткова перевірка: матчі між тими самими командами в межах +/- 1 години
+        // (на випадок невеликих розбіжностей в часі з API)
+        LocalDateTime startTime = kickoffAt.minusHours(1);
+        LocalDateTime endTime = kickoffAt.plusHours(1);
+
+        List<MatchEntity> nearbyMatches = matchRepository.findAll().stream()
+                .filter(m -> m.getHomeTeam().equals(home) && m.getAwayTeam().equals(away))
+                .filter(m -> !m.getKickoffAt().isBefore(startTime) && m.getKickoffAt().isBefore(endTime))
+                .toList();
+
+        if (!nearbyMatches.isEmpty()) {
+            return nearbyMatches.get(0);
         }
 
         return matchRepository.save(match);
@@ -78,6 +93,12 @@ public class MatchDbServiceImpl implements MatchDbService {
     @Cacheable(value = "matches")
     public List<MatchEntity> list() {
         return matchRepository.findAll();
+    }
+
+    @Override
+    @Cacheable(value = "matches")
+    public List<MatchEntity> listByLeague(String league) {
+        return matchRepository.findByLeague(league);
     }
 }
 

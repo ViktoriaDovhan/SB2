@@ -8,6 +8,7 @@ import com.football.ua.model.entity.UserEntity;
 import com.football.ua.repo.UserRepository;
 import com.football.ua.service.ExternalTeamApiService;
 import com.football.ua.service.ForumDbService;
+import com.football.ua.service.MatchDbService;
 import com.football.ua.service.ModerationService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
@@ -47,19 +48,22 @@ public class ModeratorController {
     private final UserRepository userRepository;
     private final ExternalTeamApiService externalTeamApiService;
     private final com.football.ua.service.DataMigrationService dataMigrationService;
+    private final MatchDbService matchDbService;
 
     public ModeratorController(ObjectMapper objectMapper,
                               ForumDbService forum,
                               ObjectProvider<ModerationService> moderationProvider,
                               UserRepository userRepository,
                               ExternalTeamApiService externalTeamApiService,
-                              com.football.ua.service.DataMigrationService dataMigrationService) throws IOException {
+                              com.football.ua.service.DataMigrationService dataMigrationService,
+                              MatchDbService matchDbService) throws IOException {
         this.objectMapper = objectMapper;
         this.forum = forum;
         this.moderationProvider = moderationProvider;
         this.userRepository = userRepository;
         this.externalTeamApiService = externalTeamApiService;
         this.dataMigrationService = dataMigrationService;
+        this.matchDbService = matchDbService;
         this.resourcesPath = getPathToResources();
             System.out.println("✅ Шлях для запису файлу гравця тижня: " + resourcesPath);
     }
@@ -199,15 +203,28 @@ public class ModeratorController {
     public ResponseEntity<Map<String, Object>> refreshMatchesFromApi() {
         try {
             log.info("👮 MODERATOR: Запит на примусове оновлення матчів з API");
+
+            // Перевірка наявності матчів перед міграцією
+            List<com.football.ua.model.entity.MatchEntity> existingMatches = matchDbService.list();
+            if (existingMatches != null && !existingMatches.isEmpty()) {
+                log.warn("⚠️ MODERATOR: В БД вже є {} матчів. Повторна міграція може створити дублікати!", existingMatches.size());
+
+                Map<String, Object> warningResult = new HashMap<>();
+                warningResult.put("status", "warning");
+                warningResult.put("message", "В базі даних вже є " + existingMatches.size() + " матчів. Повторна міграція може призвести до створення дублікатів та високих ID. Використовуйте цей ендпоінт тільки при необхідності!");
+                warningResult.put("existing_matches", existingMatches.size());
+                return ResponseEntity.status(HttpStatus.CONFLICT).body(warningResult);
+            }
+
             Map<String, Integer> results = dataMigrationService.migrateMatchesForAllLeagues();
-            
+
             int total = results.values().stream().mapToInt(Integer::intValue).sum();
-            
+
             Map<String, Object> response = new HashMap<>();
             response.put("status", "success");
             response.put("message", "Оновлено " + total + " матчів для " + results.size() + " ліг");
             response.put("details", results);
-            
+
             log.info("✅ MODERATOR: Матчі успішно оновлено з API");
             return ResponseEntity.ok(response);
         } catch (Exception e) {
@@ -324,6 +341,35 @@ public class ModeratorController {
         Path projectRoot = Paths.get(new File(".").getAbsolutePath()).getParent();
         return projectRoot.resolve("src").resolve("main").resolve("resources");
     }
+    @PostMapping("/matches/recreate")
+    @Operation(summary = "Повне перестворення матчів",
+               description = "👮 MODERATOR - ВИДАЛЯЄ ВСІ МАТЧІ та створює їх заново. Використовувати ТІЛЬКИ в екстренних випадках!",
+               security = @SecurityRequirement(name = "bearerAuth"))
+    public ResponseEntity<Map<String, Object>> recreateAllMatches() {
+        try {
+            log.warn("👮 MODERATOR: ЗАПИТ НА ПОВНЕ ПЕРЕСТВОРЕННЯ МАТЧІВ!");
+
+            List<com.football.ua.model.entity.MatchEntity> existingMatches = matchDbService.list();
+            int existingCount = existingMatches != null ? existingMatches.size() : 0;
+
+            Map<String, Object> confirmResult = new HashMap<>();
+            confirmResult.put("status", "confirmation_required");
+            confirmResult.put("message", "Ця операція ВИДАЛИТЬ всі " + existingCount + " матчів та створить їх заново. ID будуть послідовними, але це може зламати існуючі посилання!");
+            confirmResult.put("warning", "Використовувати тільки якщо високі ID створюють проблеми!");
+            confirmResult.put("existing_matches", existingCount);
+
+            // Тимчасово - повертаємо підтвердження. В реальному коді потрібно додати query parameter для підтвердження
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(confirmResult);
+
+        } catch (Exception e) {
+            log.error("❌ MODERATOR: Помилка при перевірці матчів для перестворення: {}", e.getMessage());
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("status", "error");
+            errorResponse.put("message", "Помилка: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
+
     public record CreateTopicDto(String title, String author) {}
     public record CreatePostDto(String author, String text) {}
 

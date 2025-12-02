@@ -10,6 +10,7 @@ public interface MatchDbService {
     MatchEntity updateScore(Long id, Integer homeScore, Integer awayScore);
     void delete(Long id);
     List<MatchEntity> list();
+    List<MatchEntity> listByLeague(String league);
 }
 
 

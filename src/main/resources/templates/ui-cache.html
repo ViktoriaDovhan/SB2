@@ -59,89 +59,80 @@
                             <!-- Загальна статистика -->
                         </div>
 
-                        <!-- Teams Management Section -->
+                        <!-- Data Management Section -->
                         <div class="cache-section" sec:authorize="hasRole('MODERATOR')">
                             <div class="section-title">
-                                <h3>⚽ Управління командами</h3>
-                                <p>Оновлення даних команд з зовнішнього API</p>
+                                <h3>🎛️ Панель управління даними</h3>
+                                <p>Оновлення та синхронізація даних з зовнішнього API та запуск batch-завдань</p>
                             </div>
 
-                            <div class="teams-controls">
-                                <button id="btnRefreshTeamsFromApi" class="btn btn-success">
-                                    🚀 Оновити команди з API
-                                </button>
-                                <div id="teamsStatus" class="teams-status">
-                                    <!-- Статус буде показуватися тут -->
+                            <!-- Action Cards Grid -->
+                            <div class="action-grid">
+                                <!-- Teams Card -->
+                                <div class="action-card">
+                                    <div class="action-icon">⚽</div>
+                                    <h4 class="action-title">Команди</h4>
+                                    <p class="action-desc">Оновити дані команд</p>
+                                    <button id="btnRefreshTeamsFromApi" class="btn-action btn-action-success">
+                                        Оновити
+                                    </button>
+                                </div>
+
+                                <!-- Matches Card -->
+                                <div class="action-card">
+                                    <div class="action-icon">📅</div>
+                                    <h4 class="action-title">Матчі</h4>
+                                    <p class="action-desc">Оновити розклад матчів</p>
+                                    <button id="btnRefreshMatchesFromApi" class="btn-action btn-action-success">
+                                        Оновити
+                                    </button>
+                                </div>
+
+                                <!-- Standings Card -->
+                                <div class="action-card">
+                                    <div class="action-icon">📊</div>
+                                    <h4 class="action-title">Таблиці</h4>
+                                    <p class="action-desc">Оновити турнірні таблиці</p>
+                                    <button id="btnRefreshStandingsFromApi" class="btn-action btn-action-success">
+                                        Оновити
+                                    </button>
+                                </div>
+
+                                <!-- Scorers Card -->
+                                <div class="action-card">
+                                    <div class="action-icon">🥇</div>
+                                    <h4 class="action-title">Бомбардири</h4>
+                                    <p class="action-desc">Оновити топ-бомбардирів</p>
+                                    <button id="btnRefreshScorersFromApi" class="btn-action btn-action-success">
+                                        Оновити
+                                    </button>
+                                </div>
+
+                                <!-- Refresh All Card -->
+                                <div class="action-card action-card-highlight">
+                                    <div class="action-icon">🔄</div>
+                                    <h4 class="action-title">Оновити все</h4>
+                                    <p class="action-desc">Повне оновлення всіх даних</p>
+                                    <button id="btnRefreshAllFromApi" class="btn-action btn-action-primary">
+                                        Оновити все
+                                    </button>
+                                </div>
+
+                                <!-- Batch Job Card -->
+                                <div class="action-card action-card-special">
+                                    <div class="action-icon">⚙️</div>
+                                    <h4 class="action-title">Batch Job</h4>
+                                    <p class="action-desc">Міграція кеш → БД</p>
+                                    <button id="btnRunBatchJob" class="btn-action btn-action-warning">
+                                        Запустити
+                                    </button>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Matches Management Section -->
-                        <div class="cache-section" sec:authorize="hasRole('MODERATOR')">
-                            <div class="section-title">
-                                <h3>⚽ Управління матчами</h3>
-                                <p>Оновлення даних матчів з зовнішнього API</p>
-                            </div>
-
-                            <div class="teams-controls">
-                                <button id="btnRefreshMatchesFromApi" class="btn btn-success">
-                                    🚀 Оновити матчі з API
-                                </button>
-                                <div id="matchesStatus" class="teams-status">
-                                    <!-- Статус буде показуватися тут -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Standings Management Section -->
-                        <div class="cache-section" sec:authorize="hasRole('MODERATOR')">
-                            <div class="section-title">
-                                <h3>📊 Управління таблицями</h3>
-                                <p>Оновлення турнірних таблиць з зовнішнього API</p>
-                            </div>
-
-                            <div class="teams-controls">
-                                <button id="btnRefreshStandingsFromApi" class="btn btn-success">
-                                    🚀 Оновити таблиці з API
-                                </button>
-                                <div id="standingsStatus" class="teams-status">
-                                    <!-- Статус буде показуватися тут -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Scorers Management Section -->
-                        <div class="cache-section" sec:authorize="hasRole('MODERATOR')">
-                            <div class="section-title">
-                                <h3>🥇 Управління бомбардирами</h3>
-                                <p>Оновлення даних бомбардирів з зовнішнього API</p>
-                            </div>
-
-                            <div class="teams-controls">
-                                <button id="btnRefreshScorersFromApi" class="btn btn-success">
-                                    🚀 Оновити бомбардирів з API
-                                </button>
-                                <div id="scorersStatus" class="teams-status">
-                                    <!-- Статус буде показуватися тут -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Refresh All Button -->
-                        <div class="cache-section" sec:authorize="hasRole('MODERATOR')">
-                            <div class="section-title">
-                                <h3>🔄 Оновити все</h3>
-                                <p>Оновлення ВСІХ даних (команди + матчі + таблиці + бомбардири)</p>
-                            </div>
-
-                            <div class="teams-controls">
-                                <button id="btnRefreshAllFromApi" class="btn btn-primary"
-                                    style="font-size: 16px; padding: 12px 24px;">
-                                    🔄 Оновити ВСЕ з API
-                                </button>
-                                <div id="allRefreshStatus" class="teams-status">
-                                    <!-- Статус буде показуватися тут -->
-                                </div>
+                            <!-- Status Display Area -->
+                            <div id="actionStatusArea" class="action-status-area">
+                                <div class="status-indicator"></div>
+                                <span id="actionStatusText" class="status-text">Готово до роботи</span>
                             </div>
                         </div>
 
@@ -209,15 +200,13 @@
         const btnRefreshAllStats = document.getElementById('btnRefreshAllStats');
         const btnClearAllCaches = document.getElementById('btnClearAllCaches');
         const btnRefreshTeamsFromApi = document.getElementById('btnRefreshTeamsFromApi');
-        const teamsStatus = document.getElementById('teamsStatus');
         const btnRefreshMatchesFromApi = document.getElementById('btnRefreshMatchesFromApi');
-        const matchesStatus = document.getElementById('matchesStatus');
         const btnRefreshStandingsFromApi = document.getElementById('btnRefreshStandingsFromApi');
-        const standingsStatus = document.getElementById('standingsStatus');
         const btnRefreshScorersFromApi = document.getElementById('btnRefreshScorersFromApi');
-        const scorersStatus = document.getElementById('scorersStatus');
         const btnRefreshAllFromApi = document.getElementById('btnRefreshAllFromApi');
-        const allRefreshStatus = document.getElementById('allRefreshStatus');
+        const btnRunBatchJob = document.getElementById('btnRunBatchJob');
+        const actionStatusArea = document.getElementById('actionStatusArea');
+        const actionStatusText = document.getElementById('actionStatusText');
         const showEmptyCachesCheckbox = document.getElementById('showEmptyCaches');
 
         // Global state for stats
@@ -464,7 +453,7 @@
         async function refreshTeamsFromApi() {
             try {
                 setButtonLoading(btnRefreshTeamsFromApi, true);
-                showTeamsStatus('⏳ Оновлення команд з API...', 'info');
+                showActionStatus('⏳ Оновлення команд з API...', 'loading');
 
                 const response = await fetch('/api/moderator/teams/refresh', {
                     method: 'POST',
@@ -480,35 +469,19 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    showTeamsStatus(`✅ ${result.message}`, 'success');
+                    showActionStatus(`✅ Команди: ${result.message}`, 'success');
                     showAlert(`🚀 ${result.message}`, 'success');
                 } else {
-                    showTeamsStatus(`⚠️ ${result.message}`, 'warning');
+                    showActionStatus(`⚠️ Команди: ${result.message}`, 'error');
                     showAlert(`⚠️ ${result.message}`, 'error');
                 }
 
             } catch (error) {
                 console.error('Teams API Error:', error);
-                showTeamsStatus(`❌ Помилка: ${error.message}`, 'error');
+                showActionStatus(`❌ Команди: ${error.message}`, 'error');
                 showAlert(`❌ Помилка оновлення команд: ${error.message}`, 'error');
             } finally {
                 setButtonLoading(btnRefreshTeamsFromApi, false);
-            }
-        }
-
-
-        // Показати статус команд
-        function showTeamsStatus(message, type = 'info') {
-            if (!teamsStatus) return;
-
-            teamsStatus.innerHTML = `<span class="status-${type}">${message}</span>`;
-            teamsStatus.style.display = 'block';
-
-            // Автоматично сховати через 10 секунд для успіху
-            if (type === 'success') {
-                setTimeout(() => {
-                    teamsStatus.style.display = 'none';
-                }, 10000);
             }
         }
 
@@ -517,7 +490,7 @@
         async function refreshMatchesFromApi() {
             try {
                 setButtonLoading(btnRefreshMatchesFromApi, true);
-                showMatchesStatus('⏳ Оновлення матчів з API...', 'info');
+                showActionStatus('⏳ Оновлення матчів з API...', 'loading');
 
                 const response = await fetch('/api/moderator/matches/refresh', {
                     method: 'POST',
@@ -539,16 +512,16 @@
                             .map(([league, count]) => `${league}: ${count}`)
                             .join(', ');
                     }
-                    showMatchesStatus(`✅ ${result.message}${detailsText ? ` (${detailsText})` : ''}`, 'success');
+                    showActionStatus(`✅ Матчі: ${result.message}${detailsText ? ` (${detailsText})` : ''}`, 'success');
                     showAlert(`🚀 ${result.message}`, 'success');
                 } else {
-                    showMatchesStatus(`⚠️ ${result.message}`, 'warning');
+                    showActionStatus(`⚠️ Матчі: ${result.message}`, 'error');
                     showAlert(`⚠️ ${result.message}`, 'error');
                 }
 
             } catch (error) {
                 console.error('Matches API Error:', error);
-                showMatchesStatus(`❌ Помилка: ${error.message}`, 'error');
+                showActionStatus(`❌ Матчі: ${error.message}`, 'error');
                 showAlert(`❌ Помилка оновлення матчів: ${error.message}`, 'error');
             } finally {
                 setButtonLoading(btnRefreshMatchesFromApi, false);
@@ -559,7 +532,7 @@
         async function refreshStandingsFromApi() {
             try {
                 setButtonLoading(btnRefreshStandingsFromApi, true);
-                showStandingsStatus('⏳ Оновлення таблиць з API...', 'info');
+                showActionStatus('⏳ Оновлення таблиць з API...', 'loading');
 
                 const response = await fetch('/api/moderator/standings/refresh', {
                     method: 'POST',
@@ -575,16 +548,16 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    showStandingsStatus(`✅ ${result.message}`, 'success');
+                    showActionStatus(`✅ Таблиці: ${result.message}`, 'success');
                     showAlert(`🚀 ${result.message}`, 'success');
                 } else {
-                    showStandingsStatus(`⚠️ ${result.message}`, 'warning');
+                    showActionStatus(`⚠️ Таблиці: ${result.message}`, 'error');
                     showAlert(`⚠️ ${result.message}`, 'error');
                 }
 
             } catch (error) {
                 console.error('Standings API Error:', error);
-                showStandingsStatus(`❌ Помилка: ${error.message}`, 'error');
+                showActionStatus(`❌ Таблиці: ${error.message}`, 'error');
                 showAlert(`❌ Помилка оновлення таблиць: ${error.message}`, 'error');
             } finally {
                 setButtonLoading(btnRefreshStandingsFromApi, false);
@@ -595,7 +568,7 @@
         async function refreshScorersFromApi() {
             try {
                 setButtonLoading(btnRefreshScorersFromApi, true);
-                showScorersStatus('⏳ Оновлення бомбардирів з API...', 'info');
+                showActionStatus('⏳ Оновлення бомбардирів з API...', 'loading');
 
                 const response = await fetch('/api/moderator/scorers/refresh', {
                     method: 'POST',
@@ -611,16 +584,16 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    showScorersStatus(`✅ ${result.message}`, 'success');
+                    showActionStatus(`✅ Бомбардири: ${result.message}`, 'success');
                     showAlert(`🚀 ${result.message}`, 'success');
                 } else {
-                    showScorersStatus(`⚠️ ${result.message}`, 'warning');
+                    showActionStatus(`⚠️ Бомбардири: ${result.message}`, 'error');
                     showAlert(`⚠️ ${result.message}`, 'error');
                 }
 
             } catch (error) {
                 console.error('Scorers API Error:', error);
-                showScorersStatus(`❌ Помилка: ${error.message}`, 'error');
+                showActionStatus(`❌ Бомбардири: ${error.message}`, 'error');
                 showAlert(`❌ Помилка оновлення бомбардирів: ${error.message}`, 'error');
             } finally {
                 setButtonLoading(btnRefreshScorersFromApi, false);
@@ -631,7 +604,7 @@
         async function refreshAllFromApi() {
             try {
                 setButtonLoading(btnRefreshAllFromApi, true);
-                showAllRefreshStatus('⏳ Оновлення ВСІХ даних з API... Це може зайняти 1-2 хвилини...', 'info');
+                showActionStatus('⏳ Повне оновлення ВСІХ даних... Це може зайняти 1-2 хвилини...', 'loading');
 
                 const response = await fetch('/api/moderator/all/refresh', {
                     method: 'POST',
@@ -647,63 +620,83 @@
                 const result = await response.json();
 
                 if (result.status === 'success') {
-                    showAllRefreshStatus(`✅ ${result.message}`, 'success');
+                    showActionStatus(`✅ Все оновлено: ${result.message}`, 'success');
                     showAlert(`🚀 ${result.message}`, 'success');
                     // Оновлюємо статистику кешів
                     loadAllCacheStats();
                 } else {
-                    showAllRefreshStatus(`⚠️ ${result.message}`, 'warning');
+                    showActionStatus(`⚠️ Оновлення: ${result.message}`, 'error');
                     showAlert(`⚠️ ${result.message}`, 'error');
                 }
 
             } catch (error) {
                 console.error('All Refresh API Error:', error);
-                showAllRefreshStatus(`❌ Помилка: ${error.message}`, 'error');
+                showActionStatus(`❌ Повне оновлення: ${error.message}`, 'error');
                 showAlert(`❌ Помилка повного оновлення: ${error.message}`, 'error');
             } finally {
                 setButtonLoading(btnRefreshAllFromApi, false);
             }
         }
 
-        // Показати статус матчів
-        function showMatchesStatus(message, type = 'info') {
-            if (!matchesStatus) return;
-            matchesStatus.innerHTML = `<span class="status-${type}">${message}</span>`;
-            matchesStatus.style.display = 'block';
-            if (type === 'success') {
-                setTimeout(() => { matchesStatus.style.display = 'none'; }, 10000);
+        // Показати статус дії
+        function showActionStatus(message, type = 'info') {
+            if (!actionStatusArea || !actionStatusText) return;
+
+            actionStatusText.textContent = message;
+
+            // Видалити всі попередні класи статусу
+            actionStatusArea.classList.remove('status-loading', 'status-success', 'status-error');
+
+            // Додати відповідний клас
+            if (type === 'loading' || type === 'info') {
+                actionStatusArea.classList.add('status-loading');
+            } else if (type === 'success') {
+                actionStatusArea.classList.add('status-success');
+                // Автоматично повернути до звичайного стану через 10 секунд
+                setTimeout(() => {
+                    actionStatusArea.classList.remove('status-success');
+                    actionStatusText.textContent = 'Готово до роботи';
+                }, 10000);
+            } else if (type === 'error') {
+                actionStatusArea.classList.add('status-error');
+                // Автоматично повернути до звичайного стану через 15 секунд
+                setTimeout(() => {
+                    actionStatusArea.classList.remove('status-error');
+                    actionStatusText.textContent = 'Готово до роботи';
+                }, 15000);
             }
         }
 
-        // Показати статус таблиць
-        function showStandingsStatus(message, type = 'info') {
-            if (!standingsStatus) return;
-            standingsStatus.innerHTML = `<span class="status-${type}">${message}</span>`;
-            standingsStatus.style.display = 'block';
-            if (type === 'success') {
-                setTimeout(() => { standingsStatus.style.display = 'none'; }, 10000);
+        // Запустити Spring Batch Job
+        async function runBatchJob() {
+            try {
+                setButtonLoading(btnRunBatchJob, true);
+                showActionStatus('⏳ Запуск Spring Batch Job (cacheToDatabaseJob)...', 'loading');
+
+                const response = await fetch('/api/batch/cache-to-db/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin'
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.text().catch(() => `HTTP ${response.status}`);
+                    throw new Error(errorData || `HTTP помилка ${response.status}`);
+                }
+
+                const result = await response.text();
+                showActionStatus(`✅ Batch Job: ${result}`, 'success');
+                showAlert(`⚙️ ${result}`, 'success');
+
+            } catch (error) {
+                console.error('Batch Job Error:', error);
+                showActionStatus(`❌ Batch Job: ${error.message}`, 'error');
+                showAlert(`❌ Помилка запуску Batch Job: ${error.message}`, 'error');
+            } finally {
+                setButtonLoading(btnRunBatchJob, false);
             }
         }
 
-        // Показати статус бомбардирів
-        function showScorersStatus(message, type = 'info') {
-            if (!scorersStatus) return;
-            scorersStatus.innerHTML = `<span class="status-${type}">${message}</span>`;
-            scorersStatus.style.display = 'block';
-            if (type === 'success') {
-                setTimeout(() => { scorersStatus.style.display = 'none'; }, 10000);
-            }
-        }
-
-        // Показати статус повного оновлення
-        function showAllRefreshStatus(message, type = 'info') {
-            if (!allRefreshStatus) return;
-            allRefreshStatus.innerHTML = `<span class="status-${type}">${message}</span>`;
-            allRefreshStatus.style.display = 'block';
-            if (type === 'success') {
-                setTimeout(() => { allRefreshStatus.style.display = 'none'; }, 15000);
-            }
-        }
 
         // Обробники подій
         if (btnRefreshAllStats) btnRefreshAllStats.addEventListener('click', loadAllCacheStats);
@@ -713,6 +706,7 @@
         if (btnRefreshStandingsFromApi) btnRefreshStandingsFromApi.addEventListener('click', refreshStandingsFromApi);
         if (btnRefreshScorersFromApi) btnRefreshScorersFromApi.addEventListener('click', refreshScorersFromApi);
         if (btnRefreshAllFromApi) btnRefreshAllFromApi.addEventListener('click', refreshAllFromApi);
+        if (btnRunBatchJob) btnRunBatchJob.addEventListener('click', runBatchJob);
         if (showEmptyCachesCheckbox) showEmptyCachesCheckbox.addEventListener('change', renderCacheTable);
 
         // Експорт функцій для inline onclick

@@ -33,13 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
         loadTeamsByLeague('UCL');
     }
 
-    // Initialize score toggle for matches
-    const showScoresCheckbox = document.getElementById('showScores');
-    if (showScoresCheckbox) {
-        showScoresCheckbox.addEventListener('change', () => {
-            loadMatches();
-        });
-    }
+    // Initialize score toggle for matches - додаємо з затримкою, щоб елемент точно існував
+    setTimeout(() => {
+        const showScoresElement = document.getElementById('showScores');
+        if (showScoresElement) {
+            showScoresElement.addEventListener('change', () => {
+                loadMatches();
+            });
+        }
+    }, 100);
 
     setupTabs();
 });
@@ -138,56 +140,254 @@ async function loadNews() {
     }
 }
 
-async function loadMatches() {
-    try {
-        const dbMatchesP = fetch('/api/matches').then(r => r.json());
-        const externalMatchesP = fetch('/api/teams/matches/all').then(r => r.json());
+let allMatchesCache = [];
+let currentFilteredMatches = [];
+let matchesPage = 1;
+const MATCHES_PER_PAGE = 20;
 
-        const [dbMatches, externalData] = await Promise.all([dbMatchesP, externalMatchesP]);
+async function loadMatches() {
+    const container = document.getElementById('matches-list');
+    if (container) {
+        container.innerHTML = '<div class="loading-spinner">Завантаження...</div>';
+    }
+
+    try {
+        const [dbMatchesR, externalR] = await Promise.all([
+            fetch('/api/matches?full=true'),
+            fetch('/api/teams/matches/all')
+        ]);
 
         let allMatches = [];
 
-        // Process DB matches
-        if (Array.isArray(dbMatches)) {
-            allMatches = [...dbMatches];
+        if (dbMatchesR.ok) {
+            const json = await dbMatchesR.json();
+            if (Array.isArray(json)) {
+                allMatches = [...json];
+            }
         }
 
-        // Process external matches
-        if (externalData && Array.isArray(externalData.matches)) {
-            const normalized = externalData.matches.map(m => ({
-                id: m.id,
-                homeTeam: m.homeTeam || 'Unknown',
-                awayTeam: m.awayTeam || 'Unknown',
-                homeScore: m.score?.home ?? null,
-                awayScore: m.score?.away ?? null,
-                kickoffAt: m.kickoffAt,
-                league: m.league,
-                isExternal: true
-            }));
-            allMatches = [...allMatches, ...normalized];
+        if (externalR.ok) {
+            const json = await externalR.json();
+            if (json && Array.isArray(json.matches)) {
+                const normalized = json.matches.map(m => normalizeExternalMatch(m));
+                allMatches = [...allMatches, ...normalized];
+            }
         }
 
-        // Deduplicate by ID
         const uniqueMatches = Array.from(new Map(allMatches.map(m => [m.id, m])).values());
-
-        // Sort by date (newest first)
         uniqueMatches.sort((a, b) => new Date(b.kickoffAt) - new Date(a.kickoffAt));
 
-        // Check if scores should be shown
-        const showScoresCheckbox = document.getElementById('showScores');
-        const showScores = showScoresCheckbox ? showScoresCheckbox.checked : true;
+        allMatchesCache = uniqueMatches;
 
-        // Render matches
-        if (typeof renderMatchesList === 'function') {
-            renderMatchesList(uniqueMatches, 'all-matches', showScores);
-        }
+        renderFilters(uniqueMatches);
+        filterAndRenderMatches(true);
+
+        updateStatistics('matches', uniqueMatches.length);
+
+        document.getElementById('filter-league')?.addEventListener('change', () => filterAndRenderMatches(true));
+        document.getElementById('filter-tour')?.addEventListener('change', () => filterAndRenderMatches(true));
+        document.getElementById('filter-search')?.addEventListener('input', debounce(() => filterAndRenderMatches(true), 300));
+        document.getElementById('load-more-matches')?.addEventListener('click', () => {
+            matchesPage++;
+            renderMatchesPage();
+        });
 
     } catch (error) {
-        console.error('Помилка завантаження матчів:', error);
-        const container = document.getElementById('all-matches');
-        if (container) {
-            container.innerHTML = '<p class="empty-state">Помилка завантаження матчів</p>';
+        console.error('Помилка:', error);
+        if (container) container.innerHTML = '<div class="error-state">Помилка завантаження</div>';
+    }
+}
+
+function normalizeExternalMatch(m) {
+    return {
+        id: m.id,
+        homeTeam: m.homeTeam?.name || m.homeTeam || 'Unknown',
+        awayTeam: m.awayTeam?.name || m.awayTeam || 'Unknown',
+        homeTeamEmblem: m.homeTeam?.crest || m.homeTeamEmblem || '',
+        awayTeamEmblem: m.awayTeam?.crest || m.awayTeamEmblem || '',
+        homeScore: m.score?.home ?? null,
+        awayScore: m.score?.away ?? null,
+        kickoffAt: m.kickoffAt,
+        league: m.league,
+        matchday: m.matchday,
+        isExternal: true
+    };
+}
+
+function getLeagueIcon(league) {
+    const icons = {
+        'UCL': '⭐',
+        'EPL': '🏴',
+        'LaLiga': '🇪🇸',
+        'Bundesliga': '🇩🇪',
+        'SerieA': '🇮🇹',
+        'Ligue1': '🇫🇷',
+        'UPL': '🇺🇦'
+    };
+    return icons[league] || '⚽';
+}
+
+function renderFilters(matches) {
+    const leagueSelect = document.getElementById('filter-league');
+    const tourSelect = document.getElementById('filter-tour');
+
+    if (!leagueSelect || !tourSelect) return;
+
+    const leagues = [...new Set(matches.map(m => m.league))].filter(Boolean).sort();
+    leagueSelect.innerHTML = '<option value="">Всі ліги</option>' +
+        leagues.map(l => `<option value="${l}">${getLeagueName(l)}</option>`).join('');
+
+    const tours = [...new Set(matches.map(m => m.matchday))].filter(Boolean).sort((a, b) => a - b);
+    tourSelect.innerHTML = '<option value="">Всі тури</option>' +
+        tours.map(t => `<option value="${t}">Тур ${t}</option>`).join('');
+}
+
+function getLeagueName(code) {
+    const names = {
+        'UCL': '⭐ Ліга Чемпіонів',
+        'EPL': '🏴 АПЛ',
+        'LaLiga': '🇪🇸 Ла Ліга',
+        'Bundesliga': '🇩🇪 Бундесліга',
+        'SerieA': '🇮🇹 Серія А',
+        'Ligue1': '🇫🇷 Ліга 1',
+        'UPL': '🇺🇦 УПЛ'
+    };
+    return names[code] || code;
+}
+
+function filterAndRenderMatches(resetPage = false) {
+    if (resetPage) matchesPage = 1;
+
+    const leagueFilter = document.getElementById('filter-league')?.value;
+    const tourFilter = document.getElementById('filter-tour')?.value;
+    const searchText = document.getElementById('filter-search')?.value.toLowerCase();
+    const showScores = document.getElementById('showScores')?.checked ?? true;
+
+    currentFilteredMatches = allMatchesCache.filter(m => {
+        const matchLeague = m.league || '';
+        const matchTour = m.matchday ? m.matchday.toString() : '';
+        const home = (m.homeTeam || '').toLowerCase();
+        const away = (m.awayTeam || '').toLowerCase();
+
+        if (leagueFilter && matchLeague !== leagueFilter) return false;
+        if (tourFilter && matchTour !== tourFilter) return false;
+        if (searchText && !home.includes(searchText) && !away.includes(searchText)) return false;
+
+        return true;
+    });
+
+    const container = document.getElementById('matches-list');
+    if (resetPage && container) container.innerHTML = '';
+
+    if (currentFilteredMatches.length === 0) {
+        if (container) container.innerHTML = '<div class="empty-state">Матчів не знайдено</div>';
+        const loadMoreBtn = document.getElementById('load-more-matches');
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        return;
+    }
+
+    renderMatchesPage();
+}
+
+function renderMatchesPage() {
+    const container = document.getElementById('matches-list');
+    const loadMoreBtn = document.getElementById('load-more-matches');
+    const showScores = document.getElementById('showScores')?.checked ?? true;
+
+    const start = (matchesPage - 1) * MATCHES_PER_PAGE;
+    const end = start + MATCHES_PER_PAGE;
+    const pageMatches = currentFilteredMatches.slice(start, end);
+
+    if (pageMatches.length === 0) {
+        if (loadMoreBtn) loadMoreBtn.style.display = 'none';
+        return;
+    }
+
+    let lastDate = '';
+    let html = '';
+
+    pageMatches.forEach(match => {
+        const matchDate = new Date(match.kickoffAt).toLocaleDateString('uk-UA', { weekday: 'long', day: 'numeric', month: 'long' });
+
+        if (matchDate !== lastDate) {
+            html += `<div class="match-date-header">${matchDate}</div>`;
+            lastDate = matchDate;
         }
+
+        html += createMatchCardHtml(match, showScores);
+    });
+
+    if (container) {
+        if (matchesPage === 1) {
+            container.innerHTML = html;
+        } else {
+            container.insertAdjacentHTML('beforeend', html);
+        }
+    }
+
+    if (loadMoreBtn) {
+        loadMoreBtn.style.display = end < currentFilteredMatches.length ? 'block' : 'none';
+    }
+}
+
+function createMatchCardHtml(match, showScores) {
+    const homeScore = match.homeScore ?? '?';
+    const awayScore = match.awayScore ?? '?';
+    const scoreDisplay = showScores ? `${homeScore} - ${awayScore}` : '? - ?';
+
+    // Отримуємо емблеми команд
+    const homeTeamEmblem = match.homeTeamEmblem || '';
+    const awayTeamEmblem = match.awayTeamEmblem || '';
+    const league = match.league || '';
+    const leagueIcon = getLeagueIcon(league);
+
+    // Створюємо HTML для іконок команд (як у вкладці Команди)
+    const homeIconHtml = homeTeamEmblem 
+        ? `<img src="${escapeHtml(homeTeamEmblem)}" alt="${escapeHtml(match.homeTeam || 'Команда 1')}" class="team-crest" onerror="this.outerHTML='${leagueIcon}'">`
+        : `<span class="team-crest-fallback">${leagueIcon}</span>`;
+    
+    const awayIconHtml = awayTeamEmblem 
+        ? `<img src="${escapeHtml(awayTeamEmblem)}" alt="${escapeHtml(match.awayTeam || 'Команда 2')}" class="team-crest" onerror="this.outerHTML='${leagueIcon}'">`
+        : `<span class="team-crest-fallback">${leagueIcon}</span>`;
+
+    return `
+        <div class="match-card">
+            <div class="match-content">
+                <div class="team team-home">
+                    ${homeIconHtml}
+                    <span class="team-name">${escapeHtml(match.homeTeam || 'Команда 1')}</span>
+                </div>
+                <div class="match-score">${scoreDisplay}</div>
+                <div class="team team-away">
+                    <span class="team-name">${escapeHtml(match.awayTeam || 'Команда 2')}</span>
+                    ${awayIconHtml}
+                </div>
+            </div>
+            <div class="match-info">
+                <span class="info-badge">🏆 ${getLeagueName(match.league)}</span>
+                <span class="info-badge">📅 ${formatDateTime(match.kickoffAt)}</span>
+                ${match.matchday ? `<span class="info-badge">Тур ${match.matchday}</span>` : ''}
+            </div>
+        </div>
+    `;
+}
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+function updateStatistics(type, count) {
+    const statElement = document.getElementById(`stat-${type}`);
+    if (statElement) {
+        statElement.textContent = count;
     }
 }
 

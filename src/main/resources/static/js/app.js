@@ -744,62 +744,8 @@ function displayUpcomingMatchesNotifications(matches) {
     const container = document.getElementById('upcoming-matches-notifications');
     if (!container) return;
 
-    const cardsHtml = matches.map(match => {
-        const kickoffDate = new Date(match.kickoffAt);
-        const now = new Date();
-        const hoursUntil = Math.floor((kickoffDate - now) / (1000 * 60 * 60));
-
-        const dateStr = kickoffDate.toLocaleDateString('uk-UA', {
-            day: 'numeric',
-            month: 'long',
-            weekday: 'short'
-        });
-
-        const timeStr = kickoffDate.toLocaleTimeString('uk-UA', {
-            hour: '2-digit',
-            minute: '2-digit'
-        });
-
-        let countdownText;
-        if (hoursUntil < 1) {
-            countdownText = 'Менше години!';
-        } else if (hoursUntil < 24) {
-            countdownText = `Через ${hoursUntil} год`;
-        } else {
-            const days = Math.floor(hoursUntil / 24);
-            countdownText = `Через ${days} ${days === 1 ? 'день' : 'дні'}`;
-        }
-
-        return `
-            <div class="notification-match-card">
-                <div class="match-teams">
-                    ${match.homeTeam} 🆚 ${match.awayTeam}
-                </div>
-                <div class="match-time">
-                    📅 ${dateStr} о ${timeStr}
-                </div>
-                <div class="match-time">
-                    <span class="match-countdown">${countdownText}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-
-    container.innerHTML = `
-        <div class="notification-banner">
-            <div class="notification-icon">⚽🔔</div>
-            <div class="notification-content">
-                <div class="notification-title">
-                    🎯 Наступний тур в найближчі 2 дні
-                </div>
-                <div class="notification-matches">
-                    ${cardsHtml}
-                </div>
-            </div>
-        </div>
-    `;
-
-    container.style.display = 'block';
+    // Вимкнути сповіщення - просто приховуємо контейнер
+    container.style.display = 'none';
 }
 function initMatchDateTimeInput() {
     const dateTimeInput = document.getElementById('matchDateTime');
@@ -1392,10 +1338,6 @@ async function renderLeagueTable(container, league) {
                         </tbody>
                     </table>
                 </div>
-                ${table.some(t => t.source === 'api') ?
-                    '<small style="color: var(--gray); display: block; margin-top: 12px; text-align: center;">📡 Дані з реального API + локальні матчі</small>' :
-                    '<small style="color: var(--gray); display: block; margin-top: 12px; text-align: center;">📍 Дані з локальних матчів</small>'
-                }
             ` : `
                 <div class="empty-content">
                     <p>Недостатньо даних для побудови таблиці</p>

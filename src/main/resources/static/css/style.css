@@ -537,8 +537,8 @@ body {
 }
 
 .option-toggle:hover {
-    background: var(--light-gray);
     border-color: var(--primary);
+    background: #f0f9f4;
 }
 
 .option-toggle input[type="checkbox"] {
@@ -901,10 +901,12 @@ body {
 .match-content .match-score {
     font-size: 28px;
     font-weight: 700;
-    color: var(--dark);
+    color: var(--primary);
     text-align: center;
     min-width: 80px;
-    padding: 0 8px;
+    padding: 8px 16px;
+    background: var(--light-gray);
+    border-radius: 8px;
 }
 
 .team-crest {
@@ -1314,6 +1316,76 @@ label small {
     color: var(--primary);
     margin-top: 8px;
 }
+
+/* Опції перемикання (як у команд) */
+.league-options {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    width: 100%;
+    clear: both;
+}
+
+/* Спеціальні стилі для league-options у вкладці Команди */
+#teams .league-options {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    justify-content: flex-start;
+    gap: 12px;
+}
+
+.option-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    background: var(--white);
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    user-select: none;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--dark);
+    position: relative;
+}
+
+.option-toggle:hover {
+    border-color: var(--primary);
+    background: #f0f9f4;
+}
+
+.option-toggle input[type="checkbox"] {
+    display: none;
+}
+
+.option-toggle:has(input[type="checkbox"]:checked) {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--white);
+}
+
+.option-toggle:has(input[type="checkbox"]:checked) .option-icon,
+.option-toggle:has(input[type="checkbox"]:checked) .option-label {
+    color: var(--white);
+}
+
+.option-icon {
+    font-size: 16px;
+    color: var(--gray);
+    transition: color 0.3s ease;
+}
+
+.option-label {
+    font-weight: 500;
+    color: inherit;
+    transition: color 0.3s ease;
+}
+
 
 .forum-topics {
     display: grid;
@@ -2411,23 +2483,208 @@ input[type="checkbox"]:checked+.score-toggle-checkbox::after {
 }
 
 .match-date-header {
-    background: #f0f2f5;
-    padding: 8px 16px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    padding: 12px 16px;
     border-radius: 8px;
-    font-weight: 600;
-    color: var(--gray);
+    font-weight: 700;
+    color: var(--white);
     margin: 20px 0 12px 0;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
+    font-size: 16px;
+    text-align: center;
+    box-shadow: var(--shadow);
 }
 
 .match-date-header::before {
     content: '📅';
+    margin-right: 8px;
 }
 
 /* Matches List Animation */
 .matches-grid {
     min-height: 200px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+}
+
+/* Фільтри матчів */
+.matches-filters {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding: 16px;
+    background: var(--white);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 150px;
+}
+
+.filter-group.search-group {
+    flex: 2;
+    min-width: 200px;
+}
+
+.filter-select,
+.filter-input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    background: var(--white);
+    font-family: inherit;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.filter-input {
+    cursor: text;
+}
+
+.filter-input::placeholder {
+    color: var(--gray);
+    opacity: 0.7;
+}
+
+/* Покращені стилі для карток матчів - використовуємо структуру як у вкладці Команди */
+.match-content {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px;
+    align-items: center;
+}
+
+.match-content .team {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--dark);
+}
+
+.match-content .team-home {
+    justify-content: flex-end;
+    text-align: right;
+}
+
+.match-content .team-away {
+    justify-content: flex-start;
+    text-align: left;
+}
+
+.match-content .team-name {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.team-crest {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    flex-shrink: 0;
+    border-radius: 4px;
+}
+
+.team-crest-fallback {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+}
+
+.match-score {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary);
+    text-align: center;
+    padding: 8px 16px;
+    background: var(--light-gray);
+    border-radius: 8px;
+    min-width: 80px;
+}
+
+.match-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--light-gray);
+}
+
+.info-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: var(--light-gray);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--dark);
+}
+
+/* Кнопка завантажити ще */
+.load-more-btn {
+    display: block;
+    width: 100%;
+    max-width: 300px;
+    margin: 24px auto;
+    padding: 14px 28px;
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow);
+}
+
+.load-more-btn:hover {
+    background: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.load-more-btn:active {
+    transform: translateY(0);
+}
+
+/* Адаптивність */
+@media (max-width: 768px) {
+    .matches-filters {
+        flex-direction: column;
+    }
+    
+    .filter-group {
+        width: 100%;
+        min-width: 100%;
+    }
+    
+    .match-teams {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .team-name.team-home,
+    .team-name.team-away {
+        text-align: center;
+    }
+    
+    .match-score {
+        order: -1;
+    }
 }

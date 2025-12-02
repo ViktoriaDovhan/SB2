@@ -27,9 +27,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     setupTabs();
 
-    document.getElementById('showScores').addEventListener('change', () => {
-        loadMatches();
-    });
+    // Обробка чекбоксу показу рахунку - додаємо з затримкою, щоб елемент точно існував
+    setTimeout(() => {
+        const showScoresElement = document.getElementById('showScores');
+        if (showScoresElement) {
+            showScoresElement.addEventListener('change', () => {
+                refreshScoreDisplay();
+            });
+        }
+    }, 100);
 
     // Ініціалізація обробника чекбоксу майбутніх матчів
     if (typeof initUpcomingMatchesCheckbox === 'function') {
@@ -232,6 +238,8 @@ async function loadMatches() {
             renderMatchesPage();
         });
 
+        // Обробка зміни чекбоксу показу рахунку - вже додано вище
+
     } catch (error) {
         console.error('Помилка:', error);
         showMessage('Не вдалося завантажити матчі', 'error');
@@ -341,17 +349,63 @@ function renderMatchesPage() {
     }
 }
 
+function refreshScoreDisplay() {
+    // Просто змінюємо відображення рахунку для поточних відображених матчів
+    const showScores = document.getElementById('showScores')?.checked ?? true;
+    const matchCards = document.querySelectorAll('.match-card');
+
+    matchCards.forEach(card => {
+        const scoreElement = card.querySelector('.match-score');
+        const infoBadge = card.querySelector('.info-badge');
+
+        if (scoreElement && infoBadge) {
+            const matchId = infoBadge.textContent?.replace('ID: ', '');
+            if (matchId) {
+                // Знаходимо матч в currentFilteredMatches
+                const match = currentFilteredMatches.find(m => m.id.toString() === matchId);
+                if (match) {
+                    const homeScore = match.homeScore ?? '?';
+                    const awayScore = match.awayScore ?? '?';
+                    const scoreDisplay = showScores ? `${homeScore} - ${awayScore}` : '? - ?';
+                    scoreElement.textContent = scoreDisplay;
+                }
+            }
+        }
+    });
+}
+
 function createMatchCardHtml(match, showScores) {
     const homeScore = match.homeScore ?? '?';
     const awayScore = match.awayScore ?? '?';
     const scoreDisplay = showScores ? `${homeScore} - ${awayScore}` : '? - ?';
 
+    // Отримуємо емблеми команд
+    const homeTeamEmblem = match.homeTeamEmblem || '';
+    const awayTeamEmblem = match.awayTeamEmblem || '';
+    const league = match.league || '';
+    const leagueIcon = getLeagueIcon(league);
+
+    // Створюємо HTML для іконок команд (як у вкладці Команди)
+    const homeIconHtml = homeTeamEmblem 
+        ? `<img src="${escapeHtml(homeTeamEmblem)}" alt="${escapeHtml(match.homeTeam || 'Команда 1')}" class="team-crest" onerror="this.outerHTML='${leagueIcon}'">`
+        : `<span class="team-crest-fallback">${leagueIcon}</span>`;
+    
+    const awayIconHtml = awayTeamEmblem 
+        ? `<img src="${escapeHtml(awayTeamEmblem)}" alt="${escapeHtml(match.awayTeam || 'Команда 2')}" class="team-crest" onerror="this.outerHTML='${leagueIcon}'">`
+        : `<span class="team-crest-fallback">${leagueIcon}</span>`;
+
     return `
         <div class="match-card">
-            <div class="match-teams">
-                <span class="team-name team-home">${escapeHtml(match.homeTeam || 'Команда 1')}</span>
-                <span class="match-score">${scoreDisplay}</span>
-                <span class="team-name team-away">${escapeHtml(match.awayTeam || 'Команда 2')}</span>
+            <div class="match-content">
+                <div class="team team-home">
+                    ${homeIconHtml}
+                    <span class="team-name">${escapeHtml(match.homeTeam || 'Команда 1')}</span>
+                </div>
+                <div class="match-score">${scoreDisplay}</div>
+                <div class="team team-away">
+                    <span class="team-name">${escapeHtml(match.awayTeam || 'Команда 2')}</span>
+                    ${awayIconHtml}
+                </div>
             </div>
             <div class="match-info">
                 <span class="info-badge">🏆 ${getLeagueName(match.league)}</span>
@@ -377,8 +431,10 @@ function debounce(func, wait) {
 function normalizeExternalMatch(m) {
     return {
         id: m.id,
-        homeTeam: m.homeTeam || 'Unknown',
-        awayTeam: m.awayTeam || 'Unknown',
+        homeTeam: m.homeTeam?.name || m.homeTeam || 'Unknown',
+        awayTeam: m.awayTeam?.name || m.awayTeam || 'Unknown',
+        homeTeamEmblem: m.homeTeam?.crest || m.homeTeamEmblem || '',
+        awayTeamEmblem: m.awayTeam?.crest || m.awayTeamEmblem || '',
         homeScore: m.score?.home ?? null,
         awayScore: m.score?.away ?? null,
         kickoffAt: m.kickoffAt,
@@ -386,6 +442,19 @@ function normalizeExternalMatch(m) {
         matchday: m.matchday,
         isExternal: true
     };
+}
+
+function getLeagueIcon(league) {
+    const icons = {
+        'UCL': '⭐',
+        'EPL': '🏴',
+        'LaLiga': '🇪🇸',
+        'Bundesliga': '🇩🇪',
+        'SerieA': '🇮🇹',
+        'Ligue1': '🇫🇷',
+        'UPL': '🇺🇦'
+    };
+    return icons[league] || '⚽';
 }
 
 function displayMatches(matches, containerId, showScores, withNotifications = false) {
@@ -404,12 +473,33 @@ function displayMatches(matches, containerId, showScores, withNotifications = fa
         const scoreDisplay = showScores ? `${homeScore} - ${awayScore}` : '? - ?';
         const isFuture = new Date(match.kickoffAt) > new Date();
 
+        // Отримуємо емблеми команд
+        const homeTeamEmblem = match.homeTeamEmblem || '';
+        const awayTeamEmblem = match.awayTeamEmblem || '';
+        const league = match.league || '';
+        const leagueIcon = getLeagueIcon(league);
+
+        // Створюємо HTML для іконок команд (як у вкладці Команди)
+        const homeIconHtml = homeTeamEmblem 
+            ? `<img src="${escapeHtml(homeTeamEmblem)}" alt="${escapeHtml(match.homeTeam || 'Команда 1')}" class="team-crest" onerror="this.outerHTML='${leagueIcon}'">`
+            : `<span class="team-crest-fallback">${leagueIcon}</span>`;
+        
+        const awayIconHtml = awayTeamEmblem 
+            ? `<img src="${escapeHtml(awayTeamEmblem)}" alt="${escapeHtml(match.awayTeam || 'Команда 2')}" class="team-crest" onerror="this.outerHTML='${leagueIcon}'">`
+            : `<span class="team-crest-fallback">${leagueIcon}</span>`;
+
         return `
             <div class="match-card">
-                <div class="match-teams">
-                    <span class="team-name team-home">${escapeHtml(match.homeTeam || 'Команда 1')}</span>
-                    <span class="match-score">${scoreDisplay}</span>
-                    <span class="team-name team-away">${escapeHtml(match.awayTeam || 'Команда 2')}</span>
+                <div class="match-content">
+                    <div class="team team-home">
+                        ${homeIconHtml}
+                        <span class="team-name">${escapeHtml(match.homeTeam || 'Команда 1')}</span>
+                    </div>
+                    <div class="match-score">${scoreDisplay}</div>
+                    <div class="team team-away">
+                        <span class="team-name">${escapeHtml(match.awayTeam || 'Команда 2')}</span>
+                        ${awayIconHtml}
+                    </div>
                 </div>
                 <div class="match-info">
                     <span class="info-badge">📅 ${formatDate(match.kickoffAt)}</span>

@@ -39,46 +39,28 @@ public class DataMigrationService {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // ==================== МІГРАЦІЯ КОМАНД ====================
 
     public void migrateTeamsFromCacheToDatabase() {
-        log.info("🔄 Початок міграції команд з кешу в базу даних");
+        log.info("🔄 Початок міграції команд з API в базу даних");
 
         try {
-            File allTeamsFile = new File("cache/teams/all_teams.json");
-            if (!allTeamsFile.exists()) {
-                log.warn("⚠️ Файл cache/teams/all_teams.json не знайдено, пропускаємо міграцію");
-                return;
-            }
+            // Отримуємо команди з API (це також створить кеш)
+            log.info("📥 Завантаження команд з API...");
+            Map<String, List<Team>> teamsFromApi = externalTeamApiService.getTeamsFromApi();
 
-            @SuppressWarnings("unchecked")
-            Map<String, Object> cacheData = objectMapper.readValue(allTeamsFile, Map.class);
-            @SuppressWarnings("unchecked")
-            Map<String, List<Map<String, Object>>> teamsData = (Map<String, List<Map<String, Object>>>) cacheData.get("data");
-
-            if (teamsData == null || teamsData.isEmpty()) {
-                log.warn("⚠️ Дані команд не знайдені в кеші");
+            if (teamsFromApi == null || teamsFromApi.isEmpty()) {
+                log.warn("⚠️ Не отримано дані команд з API");
                 return;
             }
 
             List<Team> allTeams = new ArrayList<>();
 
-            for (Map.Entry<String, List<Map<String, Object>>> entry : teamsData.entrySet()) {
+            for (Map.Entry<String, List<Team>> entry : teamsFromApi.entrySet()) {
                 String league = entry.getKey();
-                List<Map<String, Object>> leagueTeams = entry.getValue();
+                List<Team> leagueTeams = entry.getValue();
 
                 log.info("Обробка ліги {}: {} команд", league, leagueTeams.size());
-
-                for (Map<String, Object> teamData : leagueTeams) {
-                    try {
-                        Team team = convertMapToTeam(teamData, league);
-                        if (team != null) {
-                            allTeams.add(team);
-                        }
-                    } catch (Exception e) {
-                        log.warn("❌ Помилка конвертації команди: {}", e.getMessage());
-                    }
-                }
+                allTeams.addAll(leagueTeams);
             }
 
             if (!allTeams.isEmpty()) {

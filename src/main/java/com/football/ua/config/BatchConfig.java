@@ -32,7 +32,7 @@ public class BatchConfig {
     public Step migrateTeamsStep() {
         return new StepBuilder("migrateTeamsStep", jobRepository)
                 .tasklet((contribution, chunkContext) -> {
-                    // 1 крок міграція команд з кешу в БД
+                    // 1 крок міграція команд з API в БД
                     dataMigrationService.migrateTeamsFromCacheToDatabase();
                     return RepeatStatus.FINISHED;
                 }, transactionManager)
